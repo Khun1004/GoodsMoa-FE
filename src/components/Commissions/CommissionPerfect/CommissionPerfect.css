@@ -1,0 +1,214 @@
+.perfect-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.perfect-commission-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+    padding: 40px;
+    width: 100%;
+    text-align: center;
+    transition: transform 0.3s ease;
+}
+
+.perfect-commission-card:hover {
+    transform: translateY(-5px);
+}
+
+.perfect-icon {
+    margin-bottom: 24px;
+    animation: bounce 1s ease infinite alternate;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+@keyframes bounce {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(-10px); }
+}
+
+.perfect-title {
+    font-size: 28px;
+    color: #333;
+    margin-bottom: 30px;
+    font-weight: 600;
+}
+
+.perfect-commission-info {
+    display: flex;
+    align-items: center;
+    background: #f9f9f9;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 30px;
+    text-align: left;
+}
+
+.perfect-image-container {
+    flex-shrink: 0;
+    margin-right: 20px;
+}
+
+.perfect-image {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.perfect-details {
+    flex-grow: 1;
+}
+
+.perfect-price {
+    color: black;
+}
+
+.perfect-commission-title {
+    font-size: 20px;
+    margin: 0 0 8px 0;
+    color: #222;
+}
+
+.perfect-commission-category {
+    font-size: 14px;
+    color: #666;
+    margin: 0 0 12px 0;
+}
+
+.perfect-price-range {
+    font-size: 16px;
+    color: #333;
+}
+
+.perfect-price-range strong {
+    color: #4CAF50;
+}
+
+.perfect-notice {
+    background: #f0f8ff;
+    border-left: 4px solid #4CAF50;
+    padding: 15px;
+    margin-bottom: 30px;
+    text-align: left;
+    border-radius: 0 8px 8px 0;
+}
+
+.perfect-notice p {
+    margin: 8px 0;
+    color: #555;
+    font-size: 15px;
+}
+
+.comparison-table {
+    width: 100%;
+    margin: 30px 0;
+    border-collapse: collapse;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.comparison-table table {
+    width: 100%;
+    border: 1px solid #e0e0e0;
+}
+
+.comparison-table th {
+    padding: 15px;
+    text-align: center;
+    vertical-align: top;
+    border: 1px solid #e0e0e0;
+}
+
+.comparison-table td {
+    padding: 15px;
+    text-align: left;
+    vertical-align: top;
+    border: 1px solid #e0e0e0;
+}
+
+.comparison-table th {
+    background-color: #c3f1a7;
+    font-weight: 600;
+    color: #7c0000;
+}
+
+.comparison-table tr:nth-child(even) {
+    background-color: #fafafa;
+}
+
+.comparison-table h4 {
+    margin: 0 0 10px 0;
+    color: #333;
+    font-size: 16px;
+}
+
+.comparison-table p {
+    margin: 0;
+    color: #666;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.perfect-button-group {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+}
+
+.perfect-button {
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: none;
+}
+
+.perfect-button-primary {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.perfect-button-primary:hover {
+    background-color: #3e8e41;
+    transform: translateY(-2px);
+}
+
+.perfect-button-secondary {
+    background-color: white;
+    color: #4CAF50;
+    border: 1px solid #4CAF50;
+}
+
+.perfect-button-secondary:hover {
+    background-color: #f1f8f1;
+    transform: translateY(-2px);
+}
+
+@media (max-width: 600px) {
+    .perfect-card {
+    padding: 25px;
+    }
+    
+    .perfect-commission-info {
+    flex-direction: column;
+    text-align: center;
+    }
+    
+    .perfect-image-container {
+    margin-right: 0;
+    margin-bottom: 15px;
+    }
+    
+    .perfect-button-group {
+    flex-direction: column;
+    }
+}

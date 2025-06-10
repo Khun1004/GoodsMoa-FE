@@ -1,0 +1,174 @@
+/* Products.css */
+.products-container {
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.products-header {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 10px;
+    margin-bottom: 30px;
+}
+
+.products-content {
+    display: flex;
+    gap: 20px;
+    width: 100%;
+}
+
+.productsTitle {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.recom-icon {
+    font-size: 30px;
+}
+
+.products-left {
+    flex: 1;
+    width: 100%;
+}
+
+.main-product-image {
+    max-width: 500px;
+    height: 100%;
+    max-height: 620px;
+    border-radius: 10px;
+    border: 3px solid black;
+    object-fit: cover;
+}
+
+.products-section {
+    flex: 3;
+}
+
+.products-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+    width: 100%;
+}
+
+.products-cards {
+    position: relative;
+    width: 100%;
+}
+
+.products-image {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 3px solid black;
+}
+
+.product-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-top: 8px;
+    padding: 0 5px;
+}
+
+.profile-icon {
+    font-size: 20px;
+    color: #666;
+}
+
+.username {
+    font-size: 12px;
+    color: rgb(173, 173, 173);
+    flex-grow: 1;
+    margin-left: 8px;
+}
+
+.views {
+    font-size: 12px;
+    color: #666;
+}
+
+.profile-info {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+    width: 100%;
+}
+
+.product-user-profile {
+    display: flex;
+    align-items: center;
+}
+
+.product-user-profile img {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 1px solid black;
+    object-fit: cover;
+}
+
+.divider {
+    margin-top: 2rem;
+    border-color: #e5e7eb;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 1200px) {
+    .products-content {
+        flex-direction: column;
+    }
+
+    .products-left {
+        order: -1;
+        width: 100%;
+        margin-bottom: 20px;
+    }
+
+    .products-section {
+        order: 0;
+        width: 100%;
+    }
+
+    .main-product-image {
+        width: 100%;
+        max-width: 100%;
+        max-height: 400px;
+    }
+}
+
+
+@media (max-width: 768px) {
+    .products-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+    
+    .main-product-image {
+        max-height: 350px;
+    }
+    
+    .products-image {
+        height: 140px;
+    }
+}
+
+@media (max-width: 576px) {
+    .products-grid {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+    
+    .main-product-image {
+        max-height: 250px;
+    }
+    
+    .products-image {
+        height: 180px;
+    }
+}

@@ -1,0 +1,298 @@
+.sale-container {
+    width: 100%;
+    /* max-width: 1300px;
+    margin: 0 auto;
+    padding: 20px; */
+}
+
+.sale-banner {
+    position: relative;
+    width: 100%;
+    height: 250px;
+    overflow: hidden;
+    margin-bottom: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sale-video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.sale-video::-webkit-media-controls-picture-in-picture-button {
+    display: none !important;
+}
+
+.sale-banner-content {
+    text-align: center;
+    backdrop-filter: blur(5px);
+    padding: 20px;
+    border-radius: 10px;
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.sale-title {
+    font-size: 30px;
+    font-weight: bold;
+    color: black;
+    margin-bottom: 10px;
+}
+
+.sale-search-input {
+    width: 100%;
+    max-width: 500px;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    background-color: rgb(238, 238, 238);
+}
+
+.sale-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.sale-icon {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    height: 100px;
+    width: 80px;
+}
+
+.sale-heading {
+    font-size: 30px;
+    font-weight: bold;
+    color: #333;
+}
+
+@keyframes heart {
+    0% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-5px);
+    }
+    100% {
+        transform: translateY(0);
+    }
+}
+
+.heart-icon {
+    font-size: 30px;
+    color: #ff0000;
+    position: absolute;
+    top: 20px;
+    animation: heart 1s ease-in-out 0.8s infinite alternate;
+}
+
+.salebox-icon {
+    font-size: 48px;
+    color: #fdcb6e;
+    position: absolute;
+    bottom: 25px;
+}
+
+.sale-grid,
+.saleWrite-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 20px;
+}
+
+.sale-card {
+    position: relative;
+    text-align: center;
+    transition: 0.3s ease-in-out;
+}
+
+.sale-image {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 5px;
+    border: 1px solid black;
+    transition: opacity 0.3s ease-in-out;
+}
+
+.sale-profile-info {
+    position: absolute;
+    bottom: 60px;      /* 사진 아래쪽에서 2px 띄움 */
+    left: 2px;        /* 사진 왼쪽에서 2px 띄움 */
+    transform: none;
+    opacity: 0;
+    visibility: hidden;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background-color: rgba(211, 213, 216, 0.7);
+    border-radius: 6px;
+    padding: 4px;
+    line-height: 1;
+}
+
+.sale-card:hover .sale-profile-info {
+    opacity: 1;
+    visibility: visible;
+}
+
+.sale-profile-pic {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-bottom: 5px;
+    border: 1px solid black;
+}
+
+.sale-user-name {
+    font-size: 14px;
+    font-weight: bold;
+    color: black;
+    margin: 0;
+}
+
+.sale-label {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background-color: #3b82f6;
+    color: white;
+    font-size: 12px;
+    padding: 3px 6px;
+    border-radius: 5px;
+}
+
+.sale-like-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    color: gray;
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: 0.3s;
+    border: 1px solid black;
+    border-radius: 50%;
+    padding: 5px;
+    background-color: white;
+}
+
+.sale-like-button.liked {
+    color: red;
+}
+
+.sale-product-name {
+    margin-top: 10px;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.go-to-order-btn {
+    background-color: #ff6347;
+    color: white;
+    border: none;
+    padding: 10px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 1200px) {
+    .sale-grid,
+    .saleWrite-grid {
+        grid-template-columns: repeat(5, 1fr);
+    }
+}
+
+@media (max-width: 800px) {
+    .sale-grid,
+    .saleWrite-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .sale-grid,
+    .saleWrite-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* 리뷰 섹션 스타일 */
+.reviews-section {
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+}
+
+.reviews-section h3 {
+    font-size: 18px;
+    margin-bottom: 15px;
+    color: #333;
+}
+
+.review-item {
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #f5f5f5;
+}
+
+.review-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.review-rating {
+    display: flex;
+}
+
+.review-rating .filled {
+    color: gold;
+}
+
+.review-date {
+    color: #888;
+    font-size: 13px;
+}
+
+.review-text {
+    margin: 10px 0;
+    line-height: 1.5;
+    color: #333;
+}
+
+.review-images {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.review-images img {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: transform 0.3s;
+}
+
+.review-images img:hover {
+    transform: scale(1.05);
+}
+
+.no-reviews {
+    color: #888;
+    text-align: center;
+    padding: 20px 0;
+}

@@ -1,0 +1,122 @@
+.purchaseConfirmation-container {
+    width: 100%;
+}
+
+.purchaseConfirmationTitle {
+    font-size: 25px;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+.backpurchaseConfirmation {
+    width: 50px;
+    height: 50px;
+    background-color: rgb(250, 244, 244);
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 30px;
+    cursor: pointer;
+    margin-bottom: 20px;
+}
+
+.purchaseConfirmation-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 8px;
+}
+
+.date {
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.order-details {
+    color: gray;
+    font-size: 0.9rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.purchase-info {
+    margin-top: 12px;
+}
+
+.status {
+    font-weight: bold;
+    color: gray;
+}
+
+.purchaseConfirmation-product {
+    display: flex;
+    align-items: center;
+    margin-top: 8px;
+    border: 1px solid rgb(255, 187, 0);
+    border-radius: 10px;
+}
+
+.product-image {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 6px;
+}
+
+.product-details {
+    margin-left: 12px;
+}
+
+.brand {
+    font-weight: bold;
+}
+
+.product-name {
+    color: #333;
+}
+
+.size {
+    font-size: 0.9rem;
+    color: gray;
+}
+
+.price {
+    font-size: 1.1rem;
+    font-weight: bold;
+    margin-top: 4px;
+}
+
+.actions {
+    margin-top: 12px;
+}
+
+.review-button {
+    width: 100%;
+    color: blue;
+    border: 1px solid blue;
+    padding: 10px;
+    border-radius: 6px;
+    font-weight: bold;
+    background: none;
+    cursor: pointer;
+}
+
+.bottom-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 8px;
+}
+
+.delivery-button,
+.repurchase-button {
+    width: 48%;
+    border: 1px solid #ddd;
+    padding: 10px;
+    border-radius: 6px;
+    background: none;
+    cursor: pointer;
+}
+  

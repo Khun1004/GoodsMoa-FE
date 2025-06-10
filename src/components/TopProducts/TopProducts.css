@@ -1,0 +1,128 @@
+/* Container and Layout */
+.top-products-container {
+    padding: 20px;
+}
+
+.header-section {
+    margin-bottom: 24px;
+}
+
+.header-subtitle {
+    font-size: 0.875rem;
+    color: #ff7f50; /* Primary color */
+}
+
+.header-title {
+    font-size: 2rem;
+    font-weight: bold;
+}
+
+.header-description {
+    font-size: 0.75rem;
+    color: #6b7280; /* Gray color */
+}
+
+.product-grid {
+    display: grid;
+    grid-template-columns: 1fr; /* Mobile */
+    grid-gap: 20px;
+    justify-items: center;
+}
+
+@media (min-width: 640px) {
+    .product-grid {
+        grid-template-columns: repeat(2, 1fr); /* Small screens */
+    }
+}
+
+@media (min-width: 768px) {
+    .product-grid {
+        grid-template-columns: repeat(3, 1fr); /* Medium screens */
+        gap: 5px;
+    }
+}
+
+/* Product Card */
+.product-card {
+    background-color: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s, transform 0.3s;
+    position: relative;
+    max-width: 300px;
+    cursor: pointer;
+    overflow: hidden;
+}
+
+.product-card:hover {
+    background-color: black;
+    color: white;
+    transform: translateY(-5px);
+}
+
+.image-section {
+    height: 100px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.product-image {
+    width: 140px;
+    transform: translateY(-20px);
+    transition: transform 0.3s;
+}
+
+.product-card:hover .product-image {
+    transform: scale(1.05);
+}
+
+.product-details {
+    text-align: center;
+    padding: 16px;
+}
+
+.rating {
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+}
+
+.star-icon {
+    color: #ffcc00; /* Yellow for stars */
+}
+
+.product-title {
+    font-size: 1.25rem;
+    font-weight: bold;
+    margin-top: 10px;
+}
+
+.product-description {
+    font-size: 0.875rem;
+    color: #6b7280; /* Gray color */
+    margin: 10px 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.order-button {
+    background-color: #ff7f50; /* Primary color */
+    color: white;
+    padding: 8px 16px;
+    border-radius: 9999px;
+    transition: background-color 0.3s, transform 0.3s;
+    margin-top: 12px;
+}
+
+.order-button:hover {
+    background-color: white;
+    color: #ff7f50;
+    transform: scale(1.05);
+}
+
+.product-card:hover .order-button {
+    background-color: white;
+    color: #ff7f50;
+}

@@ -1,0 +1,216 @@
+.refund-confirm-container {
+    width: 100%;
+}
+
+.cancel-title {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 30px;
+    color: #333;
+}
+
+.progress-steps {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 30px;
+    position: relative;
+}
+
+.progress-steps::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background-color: #7a0606;
+    z-index: 1;
+    transform: translateY(-50%);
+}
+
+.step {
+    position: relative;
+    text-align: center;
+    z-index: 2;
+    background-color: #f5f5f5;
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-size: 14px;
+    color: #999;
+    width: 150px;
+    height: 50px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.step.completed {
+    background-color: #4caf50;
+    color: white;
+}
+
+.step.active {
+    background-color: #ff6b00;
+    color: white;
+    font-weight: bold;
+}
+
+.section-title {
+    font-size: 18px;
+    font-weight: bold;
+    margin: 20px 0 15px;
+    color: #333;
+}
+
+.selected-product,
+.selected-reason {
+    margin-bottom: 20px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.product-info {
+    background-color: #f9f9f9;
+    padding: 15px;
+    border-radius: 8px;
+}
+
+.product-name {
+    font-size: 16px;
+    margin-bottom: 5px;
+}
+
+.product-details {
+    font-size: 14px;
+    color: #666;
+}
+
+.reason-text {
+    background-color: #f9f9f9;
+    padding: 15px;
+    border-radius: 8px;
+    font-size: 16px;
+}
+
+.sub-title {
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 15px;
+    color: #333;
+}
+
+.refund-detail {
+    background-color: #f9f9f9;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    font-size: 15px;
+}
+
+.detail-row:last-child {
+    margin-bottom: 0;
+}
+
+.amount {
+    font-weight: bold;
+}
+
+.expected-refund {
+    background-color: #fff8f2;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.expected-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.label {
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.refund-span {
+    color: black;
+}
+
+.total-amount {
+    font-size: 18px;
+    font-weight: bold;
+    color: #ff6b00;
+}
+
+.payment-method {
+    background-color: #f9f9f9;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.amount {
+    color: black;
+}
+
+.method-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    font-size: 15px;
+}
+
+.amount-row {
+    text-align: right;
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.refund-notice {
+    padding: 15px;
+    background-color: #f5f5f5;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #666;
+    line-height: 1.5;
+    margin-bottom: 30px;
+}
+
+.button-group {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.prev-button, .confirm-button {
+    flex: 1;
+    width: 100%;
+    padding: 15px;
+    background-color: #ff6b00;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 20px;
+}
+
+.prev-button {
+    background-color: #f5f5f5;
+    color: #333;
+    border: 1px solid #e0e0e0;
+}
+
+.prev-buttonm, .confirm-button {
+    background-color: #ff6b00;
+    color: white;
+    border: none;
+}

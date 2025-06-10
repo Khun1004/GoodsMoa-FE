@@ -1,0 +1,541 @@
+@import url("https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900&display=swap");
+
+.purchaseHistory_container {
+    margin: 0 auto;
+    padding: 16px;
+    max-width: 1200px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.pur-title {
+    font-size: 30px;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+.pur-title, .notice {
+    padding: 0 10px;
+    width: 100%;
+}
+
+.notice {
+    color: red;
+    font-size: 0.875rem;
+    margin-bottom: 24px;
+}
+
+.filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 20px;
+    position: relative;
+    align-items: center;
+}
+
+.filter-type {
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.iconDate {
+    margin: 0 8px;
+    color: black;
+    font-size: 14px;
+}
+
+.btn {
+    border: 2px solid #000000;
+    padding: 6px 10px;
+    background-color: white;
+    cursor: pointer;
+    border-radius: 10px;
+    margin-right: 8px;
+    gap: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    font-size: 14px;
+}
+
+.btn:hover {
+    background-color: rgb(0, 0, 0);
+    color: white;
+}
+
+.status-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 20px;
+    justify-content: center;
+}
+
+.btn-active {
+    background-color: #e5e7eb;
+    padding: 6px 12px;
+    border-radius: 4px;
+}
+
+.history-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+.history-table tr {
+    border-top: 3px solid #000000;
+    border-bottom: 3px solid #000000;
+}
+
+.history-table th, .history-table td {
+    padding: 8px;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.history-table th {
+    background-color: #d7c2ff;
+}
+
+.product-info {
+    display: flex;
+    align-items: center;
+}
+
+.product-img {
+    width: 50px;
+    height: 50px;
+    border-radius: 5px;
+    object-fit: cover;
+    margin-bottom: 5px;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    margin-top: 24px;
+    gap: 4px;
+    flex-wrap: wrap;
+}
+
+.page-btn {
+    padding: 8px 12px;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.page-btn:hover {
+    background-color: #f1f1f1;
+}
+
+.page-number {
+    padding: 8px 12px;
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    transition: all 0.3s ease;
+}
+
+.page-number:hover, .page-number.active {
+    background-color: black;
+    color: white;
+    border-radius: 100px;
+}
+
+/* btnClr */
+.btnClr {
+    position: relative;
+    width: 140px;
+    height: 50px;
+    margin: 10px;
+}
+
+.btnClr a {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.051);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+    border-top: 1px solid rgba(250, 52, 52, 0.1);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    z-index: 10;
+    color: black;
+    font-weight: bold;
+    border-radius: 10px;
+    letter-spacing: 1px;
+    text-decoration: none;
+    transition: 0.5s;
+    overflow: hidden;
+    backdrop-filter: blur(15px);
+}
+
+.btnClr:hover a {
+    letter-spacing: 2px;
+}
+
+.btnClr a:before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(to left, rgba(255, 255, 255, 0.149), transparent);
+    transform: skewX(45deg);
+    transition: 0.5s;
+    transition-delay: 0.5s;
+}
+
+a:hover::before {
+    transform: skewX(45deg) translateX(200%);
+    transition-delay: 0s;
+}
+
+.btnClr:before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--clr-glow);
+    bottom: -5px;
+    width: 30px;
+    height: 10px;
+    border-radius: 10px;
+    transition: 0.5s;
+    transition-delay: 0s;
+}
+
+.btnClr:hover::before {
+    bottom: 0px;
+    height: 50%;
+    width: 80%;
+    border-radius: 30px;
+    transition-delay: 0.5s;
+}
+
+.btnClr:after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--clr-glow);
+    top: -5px;
+    width: 30px;
+    height: 10px;
+    border-radius: 10px;
+    transition: 0.5s;
+    transition-delay: 0s;
+}
+
+.btnClr:hover::after {
+    top: 0px;
+    height: 50%;
+    width: 80%;
+    border-radius: 30px;
+    transition-delay: 0.5s;
+}
+
+.btnClr:nth-child(1):before,
+.btnClr:nth-child(1):after {
+    background: var(--clr);
+    box-shadow: 0 0 5px var(--clr), 0 0 15px var(--clr), 0 0 30px var(--clr),
+        0 0 60px var(--clr);
+}
+
+.btnClr:nth-child(2):before,
+.btnClr:nth-child(2):after {
+    background: var(--clr);
+    box-shadow: 0 0 5px var(--clr), 0 0 15px var(--clr), 0 0 30px var(--clr),
+        0 0 60px var(--clr);
+}
+
+.btnClr:nth-child(3):before,
+.btnClr:nth-child(3):after {
+    background: var(--clr);
+    box-shadow: 0 0 5px var(--clr), 0 0 15px var(--clr), 0 0 30px var(--clr),
+        0 0 60px var(--clr);
+}
+
+.btnClr:nth-child(4):before,
+.btnClr:nth-child(4):after {
+    background: var(--clr);
+    box-shadow: 0 0 5px var(--clr), 0 0 15px var(--clr), 0 0 30px var(--clr),
+        0 0 60px var(--clr);
+}
+
+.categoryDropdown-group,
+.typeDropdown-group {
+    position: relative;
+}
+
+.categorybtn,
+.typebtn {
+    border: 2px solid #000000;
+    padding: 6px 12px;
+    background-color: white;
+    cursor: pointer;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 160px;
+    transition: all 0.3s ease;
+}
+
+.categorybtn:hover,
+.typebtn:hover {
+    background-color: #f1f1f1;
+}
+
+.input-date {
+    display: flex;
+    align-items: center;
+    border: 2px solid #000000;
+    padding: 4px 8px;
+    border-radius: 10px;
+}
+
+.input-date input {
+    padding: 6px;
+    border: none;
+    outline: none;
+    width: 130px;
+}
+
+.searchbtn {
+    border: 2px solid #000000;
+    padding: 6px 12px;
+    min-width: 120px;
+    background-color: white;
+    cursor: pointer;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+}
+
+.searchbtn:hover {
+    background-color: #f1f1f1;
+}
+
+.categoryDropdown-box,
+.typeDropdown-box {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background-color: white;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    width: 100%;
+    max-width: 200px;
+    margin-top: 8px;
+}
+
+.dropdown-item {
+    padding: 8px 16px;
+    cursor: pointer;
+    text-align: center;
+    transition: background-color 0.3s ease;
+}
+
+.dropdown-item:hover {
+    background-color: #f1f1f1;
+}
+
+/* 추가된 스타일: status-circle */
+.status-circle {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    background-color: #ff4757;
+    color: white;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: bold;
+    z-index: 20;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.action-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* 반응형 스타일 */
+@media screen and (max-width: 1024px) {
+    .pur-title {
+        font-size: 24px;
+    }
+    
+    .filters {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .categorybtn, .typebtn, .searchbtn {
+        width: 100%;
+    }
+    
+    .input-date {
+        width: 100%;
+        justify-content: space-between;
+    }
+    
+    .status-buttons {
+        justify-content: center;
+    }
+    
+    .btnClr {
+        width: 120px;
+        margin: 8px;
+    }
+    
+    /* 테이블 스크롤을 위한 컨테이너 */
+    .table-container {
+        width: 100%;
+        overflow-x: auto;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .pur-title {
+        font-size: 20px;
+    }
+    
+    .notice {
+        font-size: 0.75rem;
+    }
+    
+    .btn {
+        padding: 4px 8px;
+        font-size: 12px;
+    }
+    
+    .status-buttons {
+        gap: 5px;
+    }
+    
+    .btnClr {
+        width: 100px;
+        height: 40px;
+        margin: 5px;
+    }
+    
+    .btnClr a {
+        font-size: 12px;
+    }
+    
+    .pagination {
+        gap: 2px;
+    }
+    
+    .page-btn, .page-number {
+        padding: 6px 10px;
+        font-size: 14px;
+    }
+    
+    /* Mobile-specific table view */
+    .mobile-row {
+        display: flex;
+        flex-direction: column;
+        border: 1px solid #ddd;
+        margin-bottom: 16px;
+        padding: 10px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .mobile-row-item {
+        display: flex;
+        padding: 8px 0;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .mobile-row-item:last-child {
+        border-bottom: none;
+    }
+    
+    .mobile-label {
+        font-weight: bold;
+        min-width: 120px;
+    }
+    
+    .mobile-value {
+        flex: 1;
+    }
+    
+    .desktop-table {
+        display: none;
+    }
+    
+    .mobile-view {
+        display: block;
+    }
+}
+
+/* Default states */
+.desktop-table {
+    display: table;
+}
+
+.mobile-view {
+    display: none;
+}
+
+@media screen and (max-width: 480px) {
+    .pur-title {
+        font-size: 18px;
+    }
+    
+    .purchaseHistory_container {
+        padding: 10px;
+    }
+    
+    .btnClr {
+        width: 80px;
+        height: 36px;
+        margin: 4px;
+    }
+    
+    .btnClr a {
+        font-size: 10px;
+        letter-spacing: 0;
+    }
+    
+    .btnClr:hover a {
+        letter-spacing: 1px;
+    }
+    
+    .status-circle {
+        width: 20px;
+        height: 20px;
+        font-size: 10px;
+        top: -8px;
+        right: -8px;
+    }
+}

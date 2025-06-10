@@ -1,0 +1,26 @@
+.main-sale-container {
+    width: 100%;
+    text-align: center;
+}
+
+.seeSale {
+    background-color: black;
+    border: 1px black;
+    color: white;
+    border-radius: 10px;
+    padding: 10px;
+    margin-top: 20px;
+    display: inline-block;
+    width: 500px;
+}
+
+.seeSale:hover {
+    background-color: white;
+    color: black;
+    border: 1px solid black;
+}
+
+.divider {
+    margin-top: 2rem;
+    border-color: #e5e7eb;
+}

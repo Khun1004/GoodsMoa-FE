@@ -1,0 +1,173 @@
+.container {
+    width: 100%;
+    justify-content: flex-start;
+    margin-left: 0;
+    margin-top: 0;
+}
+
+/* Center the Search bar (remove centering) */
+.Search {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    background-color: #fff;
+    padding-left: 1rem;
+}
+
+.search-controls {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+}
+
+.search-controls li {
+    margin: 0 10px;
+}
+
+/* Search Box container */
+.search-input-container {
+    display: flex;
+    align-items: center;
+    position: relative;
+    width: 100%;
+}
+
+/* Search box input extends fully */
+.search-input-container input {
+    width: 100%;
+    padding: 10px;
+    padding-left: 2.5rem;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 16px;
+    box-sizing: border-box;
+}
+
+/* Adjustments for different screen sizes */
+@media (min-width: 640px) {
+    .search-input-container input {
+        width: 100%;
+    }
+}
+
+@media (min-width: 2000px) {
+    .search-input-container input {
+        width: 100%;
+    }
+}
+
+.search-icon {
+    position: absolute;
+    left: 10px;
+    color: #aaa;
+}
+
+.search-controls .back-button,
+.search-controls .home-button {
+    cursor: pointer;
+    font-size: 18px;
+}
+
+.search-controls .back-button:hover,
+.search-controls .home-button:hover {
+    background-color: #f0f0f1;
+    border-radius: 50%;
+}
+
+/* Divider */
+.divider {
+    margin-top: 2rem;
+    border-color: #e5e7eb;
+}
+
+/* Popular Products Section */
+.topProducts {
+    width: 100%;
+    padding: 1rem 0;
+}
+
+.commission-cards {
+    width: 100%;
+    margin-top: 1.5rem;
+    padding: 0 1rem;
+}
+
+.section-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+}
+
+.card-grid {
+    display: grid;
+    grid-template-columns: repeat(1, 1fr);
+    gap: 1rem;
+}
+
+@media (min-width: 640px) {
+    .card-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 1024px) {
+    .card-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+.card {
+    background-color: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 1rem;
+    transition: background-color 0.3s;
+}
+
+.card:hover {
+    background-color: #e7e6fc;
+}
+
+.card-image {
+    width: 100%;
+    border-radius: 0.5rem;
+}
+
+.card-title {
+    font-weight: bold;
+    font-size: 1.125rem;
+    margin-top: 0.5rem;
+}
+
+.card-description {
+    font-size: 0.875rem;
+    color: #4b5563;
+}
+
+/* Add this to your Search.css */
+.no-results-message {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 20px 30px;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    border-radius: 10px;
+    font-size: 20px;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    z-index: 1000;
+    width: 80%;
+    max-width: 400px;
+}
+
+.title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+}

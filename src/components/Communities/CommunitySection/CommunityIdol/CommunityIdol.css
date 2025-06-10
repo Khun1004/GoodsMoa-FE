@@ -1,0 +1,363 @@
+.idol-container {
+    font-family: 'Noto Sans KR', sans-serif;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    color: #333;
+    background-color: #fffdfd;
+}
+
+/* 헤더 */
+.idol-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #ffcdd2;
+}
+
+.idol-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: #d81b60;
+    margin: 0;
+}
+
+.idol-select-wrapper select {
+    padding: 8px 15px;
+    border: 1px solid #e91e63;
+    border-radius: 20px;
+    background-color: #fce4ec;
+    color: #c2185b;
+    font-weight: 500;
+    cursor: pointer;
+    outline: none;
+}
+
+/* 테이블 부분 */
+.idol-table {
+    margin-top: 20px;
+    width: 100%;
+    border-collapse: collapse;
+    background-color: white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 30px;
+}
+
+.idol-table th {
+    background-color: #f8bbd0;
+    color: #880e4f;
+    padding: 12px;
+    text-align: center;
+    font-weight: 600;
+}
+
+.idol-table td {
+    padding: 12px;
+    border-bottom: 1px solid #f5f5f5;
+    text-align: center;
+}
+
+.idol-table tr:hover td {
+    background-color: #fff9f9;
+}
+
+.idol-link {
+    color: #333;
+    text-decoration: none;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.idol-link:hover {
+    color: #e91e63;
+    text-decoration: underline;
+}
+
+.idol-thumbnail {
+    width: 80px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 4px;
+    border: 1px solid #eee;
+    transition: transform 0.3s;
+}
+
+.idol-thumbnail:hover {
+    transform: scale(1.05);
+}
+
+/* 게시글 상세 */
+.idol-detail {
+    background-color: white;
+    border-radius: 10px;
+    padding: 25px;
+    margin-bottom: 30px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+}
+
+.idol-detail h3 {
+    font-size: 22px;
+    color: #c2185b;
+    margin-top: 0;
+    padding-bottom: 10px;
+    border-bottom: 1px dashed #ffcdd2;
+}
+
+.idol-detail-img {
+    max-width: 100%;
+    height: 80px;
+    border-radius: 8px;
+    margin: 15px 0;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* 댓글 섹션 */
+.idol-comments {
+    background-color: white;
+    border-radius: 10px;
+    padding: 25px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+}
+
+.idolCommentsTitle {
+    font-size: 20px;
+    color: #d81b60;
+    margin-top: 0;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #f8bbd0;
+}
+
+/* 댓글 아이템 (상위) */
+.idolCommentsNote {
+    position: relative;
+    padding: 20px 20px 20px 60px;
+    border-bottom: 1px solid #f0f0f0;
+    /* background-color: #f9f9f9; */
+    margin-left: 0;
+}
+
+.idolCommentsNote:last-child {
+    border-bottom: none;
+}
+
+.comment-profile {
+    position: absolute;
+    left: -30px;
+    top: 10px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #ff80ab;
+    background-color: white;
+}
+
+.idolCommentsNote::before {
+    content: '';
+    position: absolute;
+    left: -12px;
+    top: 45px;
+    width: 2px;
+    height: calc(100% - 45px);
+    background-color: #ffc1e3;
+    z-index: 0;
+}
+
+.comment-bubble {
+    margin-left: -30px;
+    background-color: #f0f0f5;
+    border-radius: 16px;
+    padding: 14px 18px;
+    border: 1px solid #e0e0e0;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.comment-nickname {
+    font-weight: 600;
+    color: #e91e63;
+    margin-right: 8px;
+}
+
+.comment-timestamp {
+    font-size: 12px;
+    color: #999;
+}
+
+.comment-content {
+    margin-top: 8px;
+    line-height: 1.5;
+}
+
+/* 대댓글 아이템 스타일 */
+.communityIdolReply-item {
+    position: relative;
+    margin: 15px 0 15px 10px;
+    padding: 10px 15px;
+    background-color: #fdfdfe;
+    border-radius: 12px;
+    border: 1px solid #f0f0f0;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+}
+
+/* 대댓글 프로필 이미지 */
+.replyComment-profile {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid #ffb6c1;
+    flex-shrink: 0;
+}
+
+/* 대댓글 내용 컨테이너 */
+.communityIdolReply-item > div {
+    flex: 1;
+}
+
+/* 대댓글 닉네임 */
+.replyComment-nickname {
+    font-weight: 600;
+    color: #e91e63;
+    font-size: 14px;
+    margin-bottom: 4px;
+}
+
+/* 대댓글 타임스탬프 */
+.replyComment-timestamp {
+    font-size: 11px;
+    color: #999;
+    margin-left: 6px;
+}
+
+/* 대댓글 내용 */
+.replyComment-content {
+    font-size: 13px;
+    line-height: 1.4;
+    color: #333;
+    word-break: break-word;
+}
+
+/* 대댓글 가리키는 줄 (프로필 이미지 왼쪽) */
+.communityIdolReply-item::before {
+    content: '';
+    position: absolute;
+    left: -48px;
+    top: 20px;
+    width: 48px;
+    height: 2px;
+    background-color: #ffc1e3;
+}
+
+.communityIdolReply-item::before {
+    content: '';
+    position: absolute;
+    left: -83px;
+    top: 26px;
+    width: 80px;
+    height: 3px;
+    background-color: #ffc1e3;
+}
+
+.communityIdolReply-item .comment-profile {
+    width: 30px;
+    height: 30px;
+    left: -60px;
+    top: 8px;
+    border: 1px solid #ffb6c1;
+}
+
+/* 댓글 작성 폼 */
+.communityIdolComment-form {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+.communityIdolComment-form input {
+    flex: 1;
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+    border-radius: 25px;
+    outline: none;
+}
+
+.communityIdolComment-form input:focus {
+    border-color: #e91e63;
+}
+
+.communityIdolComment-form button {
+    padding: 0 20px;
+    background-color: #e91e63;
+    color: white;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.communityIdolComment-form button:hover {
+    background-color: #c2185b;
+}
+
+/* 대댓글 작성 폼 */
+.communityIdolReply-form {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+    margin-left: 10px;
+}
+
+.communityIdolReply-form input {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 20px;
+    background-color: #f5f5f5;
+    outline: none;
+}
+
+.communityIdolReply-form button {
+    padding: 0 15px;
+    background-color: #ff80ab;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.communityIdolReply-form button:hover {
+    background-color: #e91e63;
+}
+
+/* 반응형 */
+@media (max-width: 768px) {
+    .idol-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+
+    .comment-profile {
+        left: -25px;
+        width: 32px;
+        height: 32px;
+    }
+
+    .idolCommentsNote {
+        padding-left: 50px;
+    }
+
+    .communityIdolReply-item {
+        margin-left: 40px;
+    }
+
+    .communityIdolReply-item .comment-profile {
+        left: -45px;
+    }
+}

@@ -1,0 +1,130 @@
+.communityForm-container {
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.communityForm-formContainer {
+    width: 100%;
+    margin: 0 auto;
+}
+
+.communityFormTitle {
+    text-align: center;
+    margin-bottom: 30px;
+    color: #333;
+    font-size: 24px;
+}
+
+.communityForm-input {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+.communityForm-select {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 16px;
+    background-color: white;
+}
+
+.communityForm-mediaUpload {
+    margin-bottom: 20px;
+}
+
+.communityForm-mediaUpload label {
+    display: block;
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+.communityForm-uploadBox {
+    width: 150px;
+    height: 150px;
+    border: 2px dashed #ccc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: #666;
+    cursor: pointer;
+    margin-bottom: 10px;
+}
+
+.communityForm-uploadBox:hover {
+    border-color: #999;
+}
+
+.editor-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-bottom: 10px;
+    padding: 10px;
+    background-color: #f0f0f0;
+    border-radius: 5px;
+}
+
+.editor-toolbar button {
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    padding: 5px 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.editor-toolbar button:hover {
+    background-color: #f0f0f0;
+}
+
+.communityForm-editor {
+    border: 1px solid #ddd;
+    min-height: 300px;
+    padding: 15px;
+    margin-bottom: 20px;
+    background-color: white;
+    border-radius: 5px;
+}
+
+.communityForm-buttonGroup {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.communityForm-submitButton {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.communityForm-submitButton:hover {
+    background-color: #45a049;
+}
+
+.communityForm-cancelButton {
+    background-color: #f44336;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.communityForm-cancelButton:hover {
+    background-color: #d32f2f;
+}

@@ -1,0 +1,254 @@
+/* Base styles */
+.editAddress {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 30px 20px;
+    min-height: 100vh;
+    box-sizing: border-box;
+}
+
+.editAddress-main {
+    width: 100%;
+    background: white;
+    padding: 30px;
+    border-radius: 20px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.manage-del {
+    font-size: 28px;
+    font-weight: bold;
+    margin-bottom: 30px;
+    color: #6c63ff;
+    text-align: center;
+}
+
+.editAddress-item {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.editAddress-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.editAddress-label {
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+}
+
+.editAddress-label span {
+    color: red;
+    font-weight: bold;
+    font-size: 22px;
+}
+
+.editAddress-value {
+    padding: 12px 16px;
+    font-size: 16px;
+    border-radius: 10px;
+    border: 1.5px solid #ccc;
+    background-color: #fdfdfd;
+    transition: border-color 0.3s ease;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.editAddress-value:focus {
+    border-color: #6c63ff;
+    box-shadow: 0 0 8px rgba(108, 99, 255, 0.3);
+    outline: none;
+}
+
+.default-address {
+    display: flex;
+    align-items: center;
+    font-size: 18px;
+    margin-top: 20px;
+    background-color: #f0f0ff;
+    padding: 15px 20px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.default-address:hover {
+    background-color: #e5e5ff;
+}
+
+.check-icon {
+    margin-right: 12px;
+    font-size: 20px;
+    color: #6c63ff;
+}
+
+.update-container {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 40px;
+}
+
+.save, .cancel {
+    padding: 12px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    width: 150px;
+    transition: all 0.3s ease;
+}
+
+.save {
+    background-color: #6c63ff;
+    color: white;
+}
+
+.save:hover {
+    background-color: #5a52e6;
+}
+
+.cancel {
+    background-color: #e0e0e0;
+    color: #333;
+}
+
+.cancel:hover {
+    background-color: #d1d1d1;
+}
+
+.address-search-wrapper {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+}
+
+.search-address-btn {
+    padding: 10px 16px;
+    background-color: #6c63ff;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    white-space: nowrap;
+}
+
+.search-address-btn:hover {
+    background-color: #5a52e6;
+}
+
+/* Tablet styles */
+@media (max-width: 1024px) {
+    .editAddress-main {
+        padding: 25px;
+        max-width: 700px;
+    }
+    
+    .manage-del {
+        font-size: 24px;
+    }
+    
+    .editAddress-label {
+        font-size: 16px;
+    }
+    
+    .editAddress-value {
+        font-size: 15px;
+    }
+    
+    .default-address {
+        font-size: 16px;
+    }
+}
+
+/* Mobile styles */
+@media (max-width: 768px) {
+    .editAddress {
+        padding: 15px 10px;
+    }
+    
+    .editAddress-main {
+        padding: 20px 15px;
+        border-radius: 15px;
+    }
+    
+    .manage-del {
+        font-size: 22px;
+        margin-bottom: 20px;
+    }
+    
+    .editAddress-item {
+        gap: 20px;
+    }
+    
+    .editAddress-group {
+        gap: 6px;
+    }
+    
+    .editAddress-label {
+        font-size: 15px;
+    }
+    
+    .editAddress-value {
+        padding: 10px 14px;
+        font-size: 14px;
+    }
+    
+    .address-search-wrapper {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .search-address-btn {
+        width: 100%;
+        padding: 12px;
+    }
+    
+    .default-address {
+        font-size: 15px;
+        padding: 12px 15px;
+    }
+    
+    .update-container {
+        flex-direction: column;
+        gap: 10px;
+        margin-top: 30px;
+    }
+    
+    .save, .cancel {
+        width: 100%;
+        padding: 12px;
+        font-size: 15px;
+    }
+}
+
+/* Extra small device styles */
+@media (max-width: 480px) {
+    .editAddress-main {
+        padding: 15px 12px;
+    }
+    
+    .manage-del {
+        font-size: 20px;
+    }
+    
+    .editAddress-item {
+        gap: 15px;
+    }
+    
+    .editAddress-label {
+        font-size: 14px;
+    }
+    
+    .editAddress-value {
+        padding: 8px 12px;
+    }
+}

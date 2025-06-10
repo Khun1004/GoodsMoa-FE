@@ -1,0 +1,339 @@
+.demandFormMandemand-management-container {
+    width: 100%;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: 'Noto Sans KR', sans-serif;
+}
+
+.demandFormMandemand-management-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.demandFormMandemand-management-header h1 {
+    font-size: 24px;
+    font-weight: 700;
+    color: #333;
+}
+
+.demandFormManedit-demand-btn {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 10px 20px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.demandFormManedit-demand-btn:hover {
+    background-color: #2980b9;
+}
+
+.demandFormMandemand-card {
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    margin-bottom: 30px;
+}
+
+.demandFormMandemand-card-header {
+    display: flex;
+    padding: 24px;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.demandFormMandemand-main-thumbnail {
+    width: 200px;
+    height: 200px;
+    overflow: hidden;
+    border-radius: 8px;
+    margin-right: 24px;
+    flex-shrink: 0;
+}
+
+.demandFormMandemand-main-thumbnail img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.demandFormMandemand-header-info {
+    flex-grow: 1;
+}
+
+.demandFormMandemand-title {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    color: #333;
+}
+
+.demandFormMandemand-category, .demandFormMandemand-period {
+    margin-bottom: 10px;
+    font-size: 15px;
+    color: #555;
+}
+
+.demandFormMancategory-label, .demandFormManperiod-label {
+    font-weight: 600;
+    color: #333;
+}
+
+.demandFormMandemand-tags {
+    display: flex;
+    flex-wrap: wrap;
+    margin-top: 16px;
+}
+
+.demandFormMantag {
+    background-color: #e9f5ff;
+    color: #3498db;
+    border-radius: 16px;
+    padding: 6px 12px;
+    margin-right: 8px;
+    margin-bottom: 8px;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.demandFormMandemand-products-section,
+.demandFormMandemand-description-section,
+.demandFormMandemand-stats-section {
+    padding: 24px;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.demandFormMandemand-products-section h3,
+.demandFormMandemand-description-section h3 {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    color: #333;
+}
+
+.demandFormMandemand-products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+}
+
+.demandFormManproduct-card {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    transition: transform 0.3s;
+}
+
+.demandFormManproduct-card:hover {
+    transform: translateY(-5px);
+}
+
+.demandFormManproduct-thumbnail {
+    height: 150px;
+    overflow: hidden;
+}
+
+.demandFormManproduct-thumbnail img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.demandFormManproduct-info {
+    padding: 12px;
+}
+
+.demandFormManproduct-name {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #333;
+}
+
+.demandFormManproduct-price {
+    font-size: 15px;
+    font-weight: 600;
+    color: #e74c3c;
+    margin-bottom: 4px;
+}
+
+.demandFormManproduct-quantity {
+    font-size: 14px;
+    color: #666;
+}
+
+.demandFormMandemand-description-content {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 16px;
+    line-height: 1.6;
+    color: #333;
+}
+
+.demandFormMandemand-description-content img {
+    max-width: 100%;
+    height: auto;
+}
+
+.demandFormMandemand-stats-section {
+    display: flex;
+    justify-content: space-around;
+    padding: 24px;
+}
+
+.demandFormManstat-card {
+    text-align: center;
+    padding: 16px;
+    width: 30%;
+    border-radius: 8px;
+    background-color: #f8f9fa;
+}
+
+.demandFormManstat-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: #3498db;
+    margin-bottom: 8px;
+}
+
+.demandFormManstat-label {
+    font-size: 14px;
+    color: #666;
+}
+
+.demandFormManloading-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 300px;
+    font-size: 18px;
+    color: #666;
+}
+
+.demandFormManno-data-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 300px;
+    text-align: center;
+    padding: 20px;
+}
+
+.demandFormManno-data-container h2 {
+    margin-bottom: 20px;
+    color: #666;
+}
+
+.demandFormMannew-demand-btn {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 12px 24px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.demandFormMannew-demand-btn:hover {
+    background-color: #2980b9;
+}
+
+.demandFormMandelete-demand-btn {
+    background-color: #e74c3c;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 10px 20px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    margin-left: 10px;
+}
+
+.demandFormMandelete-demand-btn:hover {
+    background-color: #c0392b;
+}
+
+.demandFormManmodal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.demandFormManmodal-content {
+    background-color: white;
+    padding: 30px;
+    border-radius: 8px;
+    max-width: 400px;
+    width: 100%;
+    text-align: center;
+}
+
+.demandFormManmodal-buttons {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+    gap: 10px;
+}
+
+.demandFormManmodal-confirm-btn {
+    background-color: #e74c3c;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 16px;
+    cursor: pointer;
+}
+
+.demandFormManmodal-cancel-btn {
+    background-color: #95a5a6;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 16px;
+    cursor: pointer;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+    .demandFormMandemand-card-header {
+    flex-direction: column;
+    }
+    
+    .demandFormMandemand-main-thumbnail {
+    width: 100%;
+    height: 200px;
+    margin-right: 0;
+    margin-bottom: 16px;
+    }
+    
+    .demandFormMandemand-products-grid {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    }
+    
+    .demandFormMandemand-stats-section {
+    flex-direction: column;
+    align-items: center;
+    }
+    
+    .demandFormManstat-card {
+    width: 80%;
+    margin-bottom: 16px;
+    }
+}

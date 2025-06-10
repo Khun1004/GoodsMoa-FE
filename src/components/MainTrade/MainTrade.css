@@ -1,0 +1,154 @@
+.banner-container {
+    min-height: 550px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 12px;
+}
+
+.container {
+    width: 100%;
+}
+
+.mainTradeHeader {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.mainTradeIcon {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    height: 100px;
+    width: 80px;
+}
+
+.mainTradeTitle {
+    font-size: 30px;
+    font-weight: bold;
+    color: #333;
+}
+
+@keyframes dropBox {
+    0% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-5px);
+    }
+    100% {
+        transform: translateY(0);
+    }
+}
+
+@keyframes liftHand {
+    0% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-5px);
+    }
+    100% {
+        transform: translateY(0);
+    }
+}
+
+.box {
+    font-size: 40px;
+    color: #6c5ce7;
+    position: absolute;
+    top: 20px;
+    animation: dropBox 1s ease-in-out 0.8s infinite alternate;
+}
+
+.hand {
+    font-size: 48px;
+    color: #fdcb6e;
+    position: absolute;
+    bottom: 25px;
+    /* animation: liftHand 1s ease-in-out 0.8s infinite alternate; */
+}
+
+.banner-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 24px;
+    align-items: center;
+}
+
+@media (min-width: 640px) {
+    .banner-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.banner-image {
+    max-width: 400px;
+    height: 350px;
+    width: 100%;
+    margin: 0 auto;
+    object-fit: cover;
+    box-shadow: -10px 10px 12px rgba(0, 0, 0, 1);
+}
+
+.banner-text {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.banner-title {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.banner-title span {
+    color: red;
+    size: 30px;
+}
+
+@media (min-width: 640px) {
+    .banner-title {
+        font-size: 32px;
+    }
+}
+
+.banner-features {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.feature-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.feature-icon {
+    font-size: 24px;
+    height: 48px;
+    width: 48px;
+    padding: 16px;
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.bg-violet {
+    background-color: #ede9fe;
+}
+
+.bg-orange {
+    background-color: #ffedd5;
+}
+
+.bg-green {
+    background-color: #dcfce7;
+}
+
+.bg-yellow {
+    background-color: #fef9c3;
+}

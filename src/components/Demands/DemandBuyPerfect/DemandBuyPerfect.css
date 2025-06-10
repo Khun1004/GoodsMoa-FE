@@ -1,0 +1,100 @@
+.perfect-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 40px 0;
+    background: #f5f5f5;
+    min-height: 100vh;
+}
+
+.perfect-card {
+    background: white;
+    padding: 40px;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    width: 90%;
+    max-width: 700px;
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+.perfect-card h2 {
+    color: #4caf50;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.perfect-card p {
+    text-align: center;
+    color: #555;
+    margin-bottom: 20px;
+}
+
+.perfect-items {
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+.perfect-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
+
+.perfect-img {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-right: 16px;
+}
+
+.perfect-info {
+    flex: 1;
+}
+
+.perfect-name {
+    font-weight: bold;
+    margin-bottom: 4px;
+}
+
+.perfect-subtotal {
+    color: #888;
+    font-size: 14px;
+}
+
+.perfect-total {
+    text-align: right;
+    font-size: 18px;
+    font-weight: bold;
+    margin-top: 20px;
+}
+
+.perfect-btn {
+    display: block;
+    width: 100%;
+    margin-top: 30px;
+    padding: 14px;
+    background-color: #4caf50;
+    color: white;
+    font-size: 16px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+.perfect-btn:hover {
+    background-color: #45a049;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

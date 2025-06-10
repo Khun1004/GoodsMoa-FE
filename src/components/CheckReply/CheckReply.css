@@ -1,0 +1,44 @@
+.check-reply-container {
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    width: 100%;
+    margin: 0 auto;
+    background-color: #fff;
+}
+
+.check-reply-header, .check-reply-body {
+    margin-bottom: 20px;
+}
+
+.check-reply-header h2, .check-reply-body h2 {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.check-reply-header p, .check-reply-body p {
+    font-size: 1.2rem;
+}
+
+.question-content, .reply-content{
+    background-color:#ddd;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+.reply-content {
+    color: red;
+}
+
+.confirm-btn {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.confirm-btn:hover {
+    background-color: #45a049;
+}

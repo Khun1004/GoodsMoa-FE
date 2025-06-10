@@ -1,0 +1,187 @@
+.announcement-container {
+    width: 100%;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.announcement-board {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.announcement-board-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #eaeaea;
+}
+
+.header-title {
+    display: flex;
+    align-items: center;
+}
+
+.bell-icon {
+    margin-right: 10px;
+    fill: none;
+    stroke: #e53e3e;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.announcement-board-header h2 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #2d3748;
+}
+
+.announcement-board-add-button {
+    padding: 8px 12px;
+    background-color: #4299e1;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.announcement-board-add-button:hover {
+    background-color: #3182ce;
+}
+
+.announcement-list {
+    padding: 10px;
+}
+
+.announcement-item {
+    margin-bottom: 10px;
+    border-radius: 6px;
+    background-color: #f8f9fa;
+    overflow: hidden;
+    transition: box-shadow 0.2s ease;
+}
+
+.announcement-item:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.announcement-item.important {
+    border-left: 4px solid #e53e3e;
+}
+
+.announcement-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    cursor: pointer;
+}
+
+.title-container {
+    display: flex;
+    align-items: center;
+    flex: 1;
+}
+
+.important-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background-color: #e53e3e;
+    color: white;
+    font-weight: bold;
+    margin-right: 10px;
+    font-size: 12px;
+}
+
+.announcement-title {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+.announcement-meta {
+    display: flex;
+    align-items: center;
+}
+
+.announcement-date {
+    color: #718096;
+    font-size: 0.875rem;
+    margin-right: 10px;
+}
+
+.chevron {
+    font-size: 1.25rem;
+    color: #a0aec0;
+    transform: rotate(90deg);
+    transition: transform 0.2s ease;
+    margin-right: 10px;
+}
+
+.chevron.expanded {
+    transform: rotate(-90deg);
+}
+
+.delete-button {
+    background-color: transparent;
+    border: none;
+    color: #718096;
+    font-size: 0.75rem;
+    padding: 4px 8px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+}
+
+.delete-button:hover {
+    background-color: #e2e8f0;
+    color: #e53e3e;
+}
+
+.announcement-content {
+    padding: 0 16px 16px;
+    background-color: white;
+    border-top: 1px solid #edf2f7;
+}
+
+.content-date {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+    margin-top: 10px;
+    color: #718096;
+    font-size: 0.875rem;
+}
+
+.calendar-icon {
+    margin-right: 5px;
+    fill: none;
+    stroke: #718096;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.announcement-content p {
+    margin: 0;
+    line-height: 1.5;
+    color: #4a5568;
+}
+
+.no-announcements {
+    padding: 20px;
+    text-align: center;
+    color: #718096;
+}

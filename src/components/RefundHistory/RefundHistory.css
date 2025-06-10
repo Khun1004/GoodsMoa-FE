@@ -1,0 +1,95 @@
+.refund-historyTitle {
+    font-size: 30px;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+.order-cancel-card {
+    width: 100%;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 10px;
+}
+
+.order-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 16px;
+    margin-bottom: 8px;
+}
+
+.order-detail-link {
+    color: #007aff;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+.cancel-info {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 10px;
+}
+
+.product-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.product-image {
+    width: 60px;
+    height: 60px;
+    border-radius: 5px;
+}
+
+.product-details {
+    flex-grow: 1;
+}
+
+.rocket-badge {
+    font-size: 14px;
+    color: #007aff;
+    font-weight: bold;
+}
+
+.product-name {
+    font-size: 14px;
+    margin: 5px 0;
+}
+
+.product-price {
+    font-size: 14px;
+    color: #444;
+}
+
+.cart-button {
+    border: 1px solid #ccc;
+    background: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 14px;
+    cursor: pointer;
+    border: 1px solid black;
+}
+
+.cancel-detail-button {
+    width: 100%;
+    border: 1px solid black;
+    background: #f5f5f5;
+    padding: 10px;
+    font-size: 14px;
+    cursor: pointer;
+    margin-top: 10px;
+    border-radius: 5px;
+}
+
+.refundHistory-deleteBtn {
+    background-color: #ddd;
+    border: 1px solid black;
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    width: 80px;
+    margin-top: 10px;
+}

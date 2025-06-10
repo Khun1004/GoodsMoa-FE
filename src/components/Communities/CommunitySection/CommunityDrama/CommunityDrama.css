@@ -1,0 +1,361 @@
+.drama-container {
+    font-family: 'Noto Sans KR', sans-serif;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    color: #333;
+}
+
+/* 헤더 */
+.drama-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #6f42c1;
+}
+
+.drama-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: #6f42c1;
+    margin: 0;
+}
+
+.drama-select-wrapper select {
+    padding: 8px 15px;
+    border: 1px solid #6f42c1;
+    border-radius: 20px;
+    background-color: #e9ecef;
+    color: #5a32a3;
+    font-weight: 500;
+    cursor: pointer;
+    outline: none;
+}
+
+/* 테이블 부분 */
+.drama-table {
+    margin-top: 20px;
+    width: 100%;
+    border-collapse: collapse;
+    background-color: white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 30px;
+}
+
+.drama-table th {
+    background-color: #d8b4fe;
+    color: #5a32a3;
+    padding: 12px;
+    text-align: center;
+    font-weight: 600;
+}
+
+.drama-table td {
+    padding: 12px;
+    border-bottom: 1px solid #f5f5f5;
+    text-align: center;
+}
+
+.drama-table tr:hover td {
+    background-color: #f3e8ff;
+}
+
+.drama-link {
+    color: #333;
+    text-decoration: none;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.drama-link:hover {
+    color: #6f42c1;
+    text-decoration: underline;
+}
+
+.drama-thumbnail {
+    width: 80px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 4px;
+    border: 1px solid #eee;
+    transition: transform 0.3s;
+}
+
+.drama-thumbnail:hover {
+    transform: scale(1.05);
+}
+
+/* 게시글 상세 */
+.drama-detail {
+    background-color: white;
+    border-radius: 10px;
+    padding: 25px;
+    margin-bottom: 30px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+}
+
+.drama-detail h3 {
+    font-size: 22px;
+    color: #6f42c1;
+    margin-top: 0;
+    padding-bottom: 10px;
+    border-bottom: 1px dashed #d8b4fe;
+}
+
+.drama-detail-img {
+    max-width: 100%;
+    height: 80px;
+    border-radius: 8px;
+    margin: 15px 0;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* 댓글 섹션 */
+.drama-comments {
+    background-color: white;
+    border-radius: 10px;
+    padding: 25px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+}
+
+.drama-comments-title {
+    font-size: 20px;
+    color: #6f42c1;
+    margin-top: 0;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #d8b4fe;
+}
+
+/* 댓글 아이템 (상위) */
+.drama-comment-item {
+    position: relative;
+    padding: 20px 20px 20px 60px;
+    border-bottom: 1px solid #f0f0f0;
+    margin-left: 0;
+}
+
+.drama-comment-item:last-child {
+    border-bottom: none;
+}
+
+.comment-profile {
+    position: absolute;
+    left: -30px;
+    top: 10px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #b197fc;
+    background-color: white;
+}
+
+.drama-comment-item::before {
+    content: '';
+    position: absolute;
+    left: -12px;
+    top: 45px;
+    width: 2px;
+    height: calc(100% - 45px);
+    background-color: #e0cffc;
+    z-index: 0;
+}
+
+.comment-bubble {
+    margin-left: -30px;
+    background-color: #f8f9fa;
+    border-radius: 16px;
+    padding: 14px 18px;
+    border: 1px solid #e0e0e0;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.comment-nickname {
+    font-weight: 600;
+    color: #6f42c1;
+    margin-right: 8px;
+}
+
+.comment-timestamp {
+    font-size: 12px;
+    color: #999;
+}
+
+.comment-content {
+    margin-top: 8px;
+    line-height: 1.5;
+}
+
+/* 대댓글 아이템 스타일 */
+.drama-reply-item {
+    position: relative;
+    margin: 15px 0 15px 10px;
+    padding: 10px 15px;
+    background-color: #fdfdfe;
+    border-radius: 12px;
+    border: 1px solid #f0f0f0;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+}
+
+/* 대댓글 프로필 이미지 */
+.reply-profile {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid #b197fc;
+    flex-shrink: 0;
+}
+
+/* 대댓글 내용 컨테이너 */
+.drama-reply-item > div {
+    flex: 1;
+}
+
+/* 대댓글 닉네임 */
+.reply-nickname {
+    font-weight: 600;
+    color: #6f42c1;
+    font-size: 14px;
+    margin-bottom: 4px;
+}
+
+/* 대댓글 타임스탬프 */
+.reply-timestamp {
+    font-size: 11px;
+    color: #999;
+    margin-left: 6px;
+}
+
+/* 대댓글 내용 */
+.reply-content {
+    font-size: 13px;
+    line-height: 1.4;
+    color: #333;
+    word-break: break-word;
+}
+
+/* 대댓글 가리키는 줄 (프로필 이미지 왼쪽) */
+.drama-reply-item::before {
+    content: '';
+    position: absolute;
+    left: -48px;
+    top: 20px;
+    width: 48px;
+    height: 2px;
+    background-color: #e0cffc;
+}
+
+.drama-reply-item::before {
+    content: '';
+    position: absolute;
+    left: -83px;
+    top: 26px;
+    width: 80px;
+    height: 3px;
+    background-color: #e0cffc;
+}
+
+.drama-reply-item .comment-profile {
+    width: 30px;
+    height: 30px;
+    left: -60px;
+    top: 8px;
+    border: 1px solid #b197fc;
+}
+
+/* 댓글 작성 폼 */
+.drama-comment-form {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+.drama-comment-form input {
+    flex: 1;
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+    border-radius: 25px;
+    outline: none;
+}
+
+.drama-comment-form input:focus {
+    border-color: #6f42c1;
+}
+
+.drama-comment-form button {
+    padding: 0 20px;
+    background-color: #6f42c1;
+    color: white;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.drama-comment-form button:hover {
+    background-color: #5a32a3;
+}
+
+/* 대댓글 작성 폼 */
+.drama-reply-form {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+    margin-left: 10px;
+}
+
+.drama-reply-form input {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 20px;
+    background-color: #f5f5f5;
+    outline: none;
+}
+
+.drama-reply-form button {
+    padding: 0 15px;
+    background-color: #b197fc;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.drama-reply-form button:hover {
+    background-color: #6f42c1;
+}
+
+/* 반응형 */
+@media (max-width: 768px) {
+    .drama-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+
+    .comment-profile {
+        left: -25px;
+        width: 32px;
+        height: 32px;
+    }
+
+    .drama-comment-item {
+        padding-left: 50px;
+    }
+
+    .drama-reply-item {
+        margin-left: 40px;
+    }
+
+    .drama-reply-item .comment-profile {
+        left: -45px;
+    }
+}

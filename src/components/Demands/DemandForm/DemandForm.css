@@ -1,0 +1,243 @@
+.demand-form {
+    width: 100%;
+    margin: auto;
+    padding: 24px;
+    font-family: Arial, sans-serif;
+    color: #222;
+}
+
+.demandFormTitle {
+    font-size: 25px;
+    font-weight: bold;
+    margin-bottom: 16px;
+}
+
+.thumbnail-preview {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+.thumbnail-upload {
+    background-color: #f0f0f0;
+    padding: 24px;
+    border-radius: 10px;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.thumbnail-box,
+.demandFormProduct-thumbnail {
+    width: 200px;
+    height: 160px;
+    background: #e0e0e0;
+    margin: auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    border-radius: 10px;
+}
+
+.plus-sign {
+    font-size: 32px;
+    font-weight: bold;
+}
+
+.demandForm-group {
+    margin-bottom: 20px;
+}
+
+.demandForm-group label,
+.demandForm-group h2,
+.demandFormDesTitle {
+    font-weight: bold;
+    display: block;
+    margin-bottom: 6px;
+}
+
+.demandText,
+.demandStartDate,
+.demandEndDate,
+input[type="number"],
+.demandFormSelect {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #aaa;
+    border-radius: 6px;
+    font-size: 14px;
+    margin-bottom: 8px;
+}
+
+.date-range-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 16px;
+    margin-top: 8px;
+}
+
+.date-field {
+    flex: 1;
+}
+
+.date-input-wrapper {
+    position: relative;
+}
+
+.date-input-wrapper input[type="date"] {
+    width: 100%;
+    padding-right: 36px;
+}
+
+.demandFormSeparate {
+    color: black;
+    margin-bottom: 15px;
+}
+
+.calendar-icon {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 18px;
+    color: #666;
+    pointer-events: none;
+}
+
+.demandCheckbox-group {
+    margin-top: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.tag-input-area {
+    display: flex;
+    gap: 8px;
+    margin-top: 6px;
+}
+
+.tag-input-area input {
+    flex: 1;
+}
+
+.tag-input-area button,
+.add-product-btn,
+.write-btn,
+.submit-btn {
+    padding: 10px 16px;
+    background: #444;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.addDemandProduct-wrapper {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 10px;
+}
+
+.tag-list {
+    margin-top: 10px;
+}
+
+.demandTag {
+    display: inline-flex;
+    align-items: center;
+    background-color: #f0f0f0;
+    border-radius: 10px;
+    padding: 5px 10px;
+    margin: 5px;
+    font-size: 14px;
+}
+
+.demandDelete-tag {
+    background: none;
+    font-size: 18px;
+    border: none;
+    color: #888;
+    font-weight: bold;
+    margin-left: 8px;
+    cursor: pointer;
+}
+
+.delete-tag:hover {
+    color: #f00;
+}
+
+.demandFormProduct-box {
+    background: #f0f0f0;
+    padding: 16px;
+    border-radius: 10px;
+    margin-bottom: 16px;
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    align-items: flex-start;
+}
+
+.product-details {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.description-box {
+    background: #e0e0e0;
+    padding: 40px;
+    text-align: center;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+.demandFormWriteBtn,
+.demandFormEditBtn {
+    width: 100%;
+    max-width: 100px;
+    padding: 10px;
+    background: #000000;
+    border: none;
+    color: white;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-bottom: 10px;
+    margin-top: 20px;
+}
+
+.demandFormWriteBtn:hover,
+.demandFormEditBtn:hover {
+    background-color: rgb(158, 64, 2);
+}
+.submit-btn {
+    width: 100%;
+    background: #ccc;
+    color: black;
+    font-weight: bold;
+}
+
+.delete-btn {
+    background-color: #ff4d4d;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    margin-top: 8px;
+    cursor: pointer;
+    border-radius: 6px;
+}
+
+.product-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    border: 1px solid #ddd;
+    padding: 12px;
+    margin-bottom: 10px;
+    border-radius: 8px;
+}

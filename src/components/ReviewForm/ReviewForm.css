@@ -1,0 +1,165 @@
+.reviewForm-container {
+    width: 100%;
+}
+
+.reviewForm-Title {
+    text-align: left;
+    margin-bottom: 30px;
+    color: #333;
+    font-size: 25px;
+    font-weight: bold;
+}
+
+.product-selection {
+    margin-bottom: 20px;
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #ff6b00;
+    margin-bottom: 15px;
+}
+
+.review-product-item {
+    display: flex;
+    align-items: center;
+}
+
+.review-product-image {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 5px;
+    margin-right: 20px;
+}
+
+.review-product-info h3 {
+    margin: 0 0 10px 0;
+    color: #333;
+}
+
+.review-product-info p {
+    margin: 5px 0;
+    color: #666;
+}
+
+.reviewFormStars {
+    display: flex;
+    align-items: center;
+    font-size: 18px;
+    margin-top: 10px;
+}
+
+.reviewFormStar {
+    font-size: 30px;
+    cursor: pointer;
+    color: #ddd;
+    transition: color 0.2s ease;
+}
+
+.reviewFormStar.selected {
+    color: #ffcc00;
+}
+
+.reviewFormStarRating-text {
+    font-size: 20px;
+    color: #333;
+    margin-left: 10px;
+}
+
+.review-textarea-container {
+    margin: 20px 0;
+}
+
+.review-textarea {
+    width: 100%;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    resize: vertical;
+    font-size: 14px;
+    min-height: 150px;
+}
+
+.review-textarea:focus {
+    outline: none;
+    border-color: #4a90e2;
+}
+
+.reviewFormsubmit-container {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 30px;
+}
+
+.reviewFormcancel-button, .reviewFormsubmit-button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s;
+}
+
+.reviewFormcancel-button {
+    background-color: #f1f1f1;
+    color: #333;
+}
+
+.reviewFormcancel-button:hover {
+    background-color: #e1e1e1;
+}
+
+.reviewFormsubmit-button {
+    background-color: #4a90e2;
+    color: white;
+}
+
+.reviewFormsubmit-button:hover {
+    background-color: #3a7bc8;
+}
+
+.image-upload-section {
+    margin-top: 20px;
+}
+
+.image-upload-info {
+    font-size: 14px;
+    color: #777;
+    margin-top: 5px;
+}
+
+.image-preview-container {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.image-preview {
+    position: relative;
+    width: 80px;
+    height: 80px;
+}
+
+.image-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 5px;
+    border: 1px solid black;
+}
+
+.remove-image-button {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: rgba(255, 0, 0, 0.7);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    width: 20px;
+    height: 20px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}

@@ -1,0 +1,563 @@
+/* Reset and base styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Main Navbar Container */
+.navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    background-color: #fff;
+    z-index: 50;
+    transition: all 0.2s ease;
+}
+
+/* Upper Navbar Section */
+.navbar__upper {
+    height: 70px;
+}
+
+/* Video Background */
+.navbar__upper .headerVideo {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 0;
+}
+
+/* Upper Navbar Content Container */
+.navbar__upper .container {
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 100%;
+    padding: 0 1.5rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Logo Styling */
+.navbar__logo {
+    font-weight: bold;
+    position: relative;
+    font-size: 2rem;
+    display: flex;
+    align-items: center;
+}
+
+.navbar__logo-img {
+    width: 60px;
+    margin-right: 0.5rem;
+    transition: width 0.3s ease;
+}
+
+/* Bouncing Text Animation */
+.navbar__bouncing-text span {
+    display: inline-block;
+    animation: bounce-text 1s ease-in-out infinite;
+    color: white;
+}
+
+.navbar__bouncing-text span:nth-child(1) { animation-delay: 0s; }
+.navbar__bouncing-text span:nth-child(2) { animation-delay: 0.2s; }
+.navbar__bouncing-text span:nth-child(3) { animation-delay: 0.4s; }
+.navbar__bouncing-text span:nth-child(4) { animation-delay: 0.6s; }
+
+@keyframes bounce-text {
+    0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+    40% { transform: translateY(-5px); }
+    60% { transform: translateY(-2px); }
+}
+
+/* Controls Section */
+.navbar__controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+/* Search Input */
+.navbar__search-input {
+    width: 200px;
+    padding: 0.5rem;
+    padding-left: 2rem;
+    border-radius: 10px;
+    border: 1px solid #000000;
+    transition: all 0.3s ease;
+}
+
+.navbar__search-input::placeholder {
+    color: rgb(37, 103, 156);
+    opacity: 1;
+}
+
+.navbar__search-icon {
+    position: absolute;
+    top: 50%;
+    left: 0.5rem;
+    transform: translateY(-50%);
+    color: #000000;
+}
+
+/* Order Button */
+.navbar__order-btn {
+    background: linear-gradient(to right, #007bff, #ff6200);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 25px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    position: relative;
+    white-space: nowrap;
+    border: none;
+    transition: all 0.3s ease;
+}
+
+.navbar__order-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Cart Icon Container */
+.cart-icon-container {
+    position: relative;
+    display: inline-block;
+}
+
+.navbar__cart-icon {
+    font-size: 1.25rem;
+}
+
+.cart-badge {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    background-color: black;
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Form Menu Container */
+.form-menu-container {
+    position: relative;
+    z-index: 100; /* Higher z-index to ensure dropdown appears above navbar__lower */
+}
+
+/* Action Buttons */
+.navbar__action-btn, .navbar__profile {
+    position: relative;
+    padding: 0.5rem 1rem;
+    background-color: #000000;
+    color: white;
+    border-radius: 15px;
+    cursor: pointer;
+    min-width: 100px;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border: none;
+    transition: all 0.3s ease;
+}
+
+.navbar__action-btn:hover, .navbar__profile:hover {
+    background-color: rgba(255, 0, 106, 0.1);
+    border: 3px solid rgb(0, 0, 0);
+    color: rgb(255, 255, 255);
+}
+
+/* Button Icons */
+.btn-icon {
+    display: none;
+    font-size: 1.2rem;
+}
+
+/* Profile Image */
+.navbar__profile-image {
+    width: 28px;
+    height: 24px;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+/* Lower Navbar */
+.navbar__lower {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    height: 50px;
+    color: black;
+    background-color: aliceblue;
+    z-index: 40; /* Lower z-index than form-menu */
+}
+
+/* Desktop Menu */
+.navbar__menu {
+    display: flex;
+    height: 100%;
+    align-items: center;
+}
+
+.navbar__menu-item {
+    padding: 0 1.5rem;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: color 0.2s ease;
+}
+
+.navbar__menu-item:hover {
+    color: #007bff;
+}
+
+.navbar__menu-item.active {
+    color: red;
+    font-weight: bold;
+}
+
+.navbar__menu-item .menu-icon {
+    display: none;
+    font-size: 1.2rem;
+}
+
+/* Form Menu */
+.form-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 4px 5px 8px rgba(0, 0, 0, 0.8);
+    padding: 10px;
+    width: 200px;
+    display: none;
+    margin-top: 5px;
+    border: 1px solid black;
+    z-index: 100; /* Same high z-index as its container */
+}
+
+.form-menu ul {
+    list-style: none;
+}
+
+.form-menu ul li {
+    display: flex;
+    align-items: center;
+    padding: 9px;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.form-menu ul li:hover {
+    color: #ff6200;
+}
+
+.form-menu ul li svg {
+    margin-right: 8px;
+}
+
+.form-menu.open {
+    display: block;
+}
+
+/* Mobile Menu Toggle */
+.mobile-menu-toggle {
+    display: none;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.5rem;
+}
+
+.hamburger {
+    width: 30px;
+    height: 20px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.hamburger span {
+    display: block;
+    height: 3px;
+    width: 100%;
+    background-color: #000;
+    border-radius: 3px;
+    transition: all 0.3s ease;
+}
+
+.hamburger.active span:nth-child(1) {
+    transform: translateY(8px) rotate(45deg);
+}
+
+.hamburger.active span:nth-child(2) {
+    opacity: 0;
+}
+
+.hamburger.active span:nth-child(3) {
+    transform: translateY(-8px) rotate(-45deg);
+}
+
+/* Mobile Menu Container */
+.mobile-menu-container {
+    display: block; /* none에서 block으로 변경 */
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    background-color: #fff;
+    border-top: 1px solid #eee;
+    z-index: 60; /* z-index 값을 더 높게 조정 (기존 45) */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0; /* 추가: 초기에는 투명하게 */
+    visibility: hidden; /* 추가: 초기에는 보이지 않게 */
+}
+
+.mobile-menu-container.open {
+    max-height: 500px; /* 충분한 높이로 조정 (기존 300px) */
+    opacity: 1; /* 추가: 나타날 때 투명도 조정 */
+    visibility: visible; /* 추가: 보이게 함 */
+}
+
+.mobile-menu {
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
+    overflow-y: auto; /* 내용이 많을 경우 스크롤 가능 */
+}
+
+.mobile-menu-item {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    gap: 1rem;
+    border-bottom: 1px solid #eee;
+    transition: background-color 0.2s;
+    white-space: nowrap; /* 텍스트가 줄바꿈되지 않도록 */
+}
+
+.mobile-menu-item:hover {
+    background-color: #f5f5f5;
+}
+
+.mobile-menu-item.active {
+    color: red;
+    font-weight: bold;
+    background-color: rgba(255, 0, 0, 0.1);
+}
+
+.mobile-menu-item .menu-icon {
+    font-size: 1.5rem;
+}
+
+/* ==== RESPONSIVE STYLES ==== */
+
+/* Large Desktop */
+@media (min-width: 1200px) {
+    .navbar__search-input {
+    width: 250px;
+    }
+}
+
+/* Standard Desktop */
+@media (min-width: 992px) and (max-width: 1199px) {
+    .navbar__search-input {
+    width: 220px;
+    }
+}
+
+/* Small Desktop and Tablets */
+@media (min-width: 769px) and (max-width: 991px) {
+    .navbar__upper {
+    height: 65px;
+    }
+    
+    .navbar__logo-img {
+    width: 50px;
+    }
+    
+    .navbar__search-input {
+    width: 180px;
+    }
+    
+    .navbar__controls {
+    gap: 0.7rem;
+    }
+    
+    .navbar__menu-item {
+    padding: 0 1rem;
+    }
+}
+
+/* Tablets */
+@media (max-width: 768px) {
+    .navbar__upper {
+    height: 60px;
+    }
+    
+    .navbar__logo-img {
+    width: 45px;
+    }
+    
+    .navbar__bouncing-text {
+    font-size: 1.7rem;
+    }
+    
+    .navbar__search-input {
+    width: 150px;
+    }
+    
+    .navbar__controls {
+    gap: 0.5rem;
+    }
+    
+    /* Switch to icon buttons */
+    .btn-text, .profile-text, .navbar__order-text {
+    display: none;
+    }
+    
+    .btn-icon {
+    display: block;
+    }
+    
+    .navbar__action-btn, .navbar__profile {
+    min-width: 40px;
+    padding: 0.5rem;
+    }
+    
+    /* Menu styling */
+    .navbar__lower {
+    height: 45px;
+    }
+    
+    .navbar__menu {
+    width: 100%;
+    justify-content: space-around;
+    }
+    
+    .navbar__menu-item {
+    padding: 0 0.5rem;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.2rem;
+    }
+    
+    .navbar__menu-item .menu-icon {
+    display: block;
+    font-size: 1.2rem;
+    }
+    
+    .navbar__menu-item .menu-text {
+    font-size: 0.7rem;
+    }
+    
+    .form-menu {
+    right: 0;
+    left: auto;
+    }
+}
+
+/* Mobile Devices */
+@media (max-width: 480px) {
+    .navbar__upper {
+    height: 50px;
+    padding: 0 0.5rem;
+    }
+    
+    .navbar__logo-img {
+    width: 30px;
+    margin-right: 0.3rem;
+    }
+    
+    .navbar__bouncing-text {
+    font-size: 1.5rem;
+    }
+    
+    /* Hide search on mobile */
+    .navbar__search-input {
+    display: none;
+    }
+    
+    .navbar__controls {
+    gap: 0.3rem;
+    }
+    
+    .navbar__action-btn, .navbar__profile {
+    min-width: 36px;
+    padding: 0.4rem;
+    }
+    
+    .btn-icon {
+    font-size: 1rem;
+    }
+    
+    /* Mobile menu */
+    .navbar__lower {
+    height: 40px;
+    }
+    
+    .navbar__menu.desktop-menu {
+    display: none;
+    }
+    
+    .mobile-menu-toggle {
+    display: block;
+    }
+    
+    .mobile-menu-container {
+    display: block;
+    }
+}
+
+/* Small Mobile Devices */
+@media (max-width: 360px) {
+    .navbar__upper {
+    height: 45px;
+    }
+    
+    .navbar__logo-img {
+    width: 25px;
+    }
+    
+    .navbar__bouncing-text {
+    font-size: 1.3rem;
+    }
+    
+    .navbar__lower {
+    height: 35px;
+    }
+    
+    .navbar__controls {
+    gap: 0.2rem;
+    }
+    
+    .navbar__action-btn, .navbar__profile, .navbar__order-btn {
+    min-width: 32px;
+    padding: 0.3rem;
+    }
+}

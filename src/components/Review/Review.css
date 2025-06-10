@@ -1,0 +1,192 @@
+/* 기본 컨테이너 스타일 */
+.review-container {
+    width: 100%;
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+.review-title {
+    font-size: 25px;
+    font-weight: bold;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+/* 테이블 스타일 (데스크톱) */
+.table-container {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.review-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.review-table tr {
+    border-top: 3px solid #000000;
+    border-bottom: 3px solid #000000;
+}
+
+.review-table th, .review-table td {
+    padding: 8px;
+    text-align: center;
+}
+
+.review-table th {
+    background-color: #d7c2ff;
+}
+
+.review-table-row {
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.review-table-row:hover {
+    background-color: #f9f9f9;
+}
+
+.review-product-image {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+.review-text {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px;
+}
+
+.reviewStar {
+    color: rgb(231, 231, 37);
+    font-size: 20px;
+}
+
+.delete-button {
+    padding: 4px 8px;
+    background-color: #fff2f2;
+    color: #ff4d4d;
+    border: 1px solid #ffcaca;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.delete-button:hover {
+    background-color: #ffe5e5;
+}
+
+/* 모바일 카드 스타일 */
+.mobile-cards-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.review-card {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 16px;
+    background-color: #ffffff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    cursor: pointer;
+}
+
+.review-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+}
+
+.review-card-product {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.review-card-image {
+    width: 48px;
+    height: 48px;
+    object-fit: cover;
+    border-radius: 6px;
+}
+
+.review-card-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.product-name {
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 150px;
+}
+
+.review-stars {
+    color: rgb(231, 231, 37);
+    font-size: 18px;
+}
+
+.review-date {
+    font-size: 12px;
+    color: #757575;
+}
+
+.review-card-text {
+    font-size: 14px;
+    line-height: 1.4;
+    margin-bottom: 12px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.review-card-actions {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.delete-button-mobile {
+    font-size: 12px;
+    padding: 4px 8px;
+    background-color: #fff2f2;
+    color: #ff4d4d;
+    border: 1px solid #ffcaca;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+/* 빈 상태 메시지 */
+.empty-reviews {
+    text-align: center;
+    padding: 32px 0;
+    color: #757575;
+    font-size: 16px;
+}
+
+/* 반응형 설정 */
+/* 기본값은 모바일 뷰 */
+.desktop-view {
+    display: none;
+}
+
+.mobile-view {
+    display: block;
+}
+
+/* 768px 이상일 때 데스크톱 뷰 표시 */
+@media (min-width: 768px) {
+    .desktop-view {
+        display: block;
+    }
+    
+    .mobile-view {
+        display: none;
+    }
+}

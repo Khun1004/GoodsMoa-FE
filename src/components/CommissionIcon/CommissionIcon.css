@@ -1,0 +1,58 @@
+/* Divider */
+.divider {
+    margin-top: 2rem;
+    border-color: #e5e7eb;
+}
+
+.category-container {
+    width: 100%;
+    background-color: white;
+    padding: 16px 0;
+    position: relative;
+    margin-left: 0;
+}
+
+.category-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+    width: 100%;
+    margin-left: 0;
+}
+
+.category-section {
+    position: relative;
+}
+
+.category-list {
+    display: flex;
+    gap: 5px;
+    overflow-x: auto;
+    max-width: 100%;
+    padding: 8px 0;
+    justify-content: flex-start;
+}
+
+.category-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    min-width: 80px;
+    flex-shrink: 0;
+}
+
+.category-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f0f0f1;
+    width: 4rem;
+    height: 4rem;
+    border-radius: 0.5rem;
+    transition: all 0.3s;
+}
+
+.category-icon:hover {
+    border: 1px solid #999;
+}

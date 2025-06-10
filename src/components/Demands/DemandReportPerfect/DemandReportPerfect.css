@@ -1,0 +1,95 @@
+.perfect-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 50px 20px;
+    background-color: #f9f9fc;
+    min-height: 100vh;
+}
+
+.perfect-box {
+    background-color: white;
+    border-radius: 20px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    padding: 40px;
+    max-width: 600px;
+    width: 100%;
+    text-align: center;
+}
+
+.perfect-title {
+    font-size: 28px;
+    color: #2c3e50;
+    margin-bottom: 10px;
+}
+
+.perfect-subtitle {
+    color: #7f8c8d;
+    margin-bottom: 30px;
+}
+
+.perfect-item {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 30px;
+    border: 1px solid #e1e4e8;
+    padding: 15px;
+    border-radius: 10px;
+    background-color: #fefefe;
+}
+
+.perfect-image {
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 10px;
+}
+
+.perfect-details {
+    text-align: left;
+}
+
+.perfect-details h3 {
+    margin: 0 0 10px;
+    font-size: 20px;
+    color: #34495e;
+}
+
+.perfect-details p {
+    margin: 5px 0;
+    color: #555;
+}
+
+.perfect-thankyou {
+    margin-top: 20px;
+    padding: 10px;
+    font-size: 16px;
+    color: #27ae60;
+    border: 1px solid black;
+    border-radius: 10px;
+}
+
+.perfect-extra-info {
+    margin-top: 20px;
+    font-size: 16px;
+    line-height: 1.5;
+    text-align: left; 
+}
+
+.perfect-home-button {
+    margin-top: 30px;
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s ease-in-out;
+}
+
+.perfect-home-button:hover {
+    background-color: #43a047;
+}
+

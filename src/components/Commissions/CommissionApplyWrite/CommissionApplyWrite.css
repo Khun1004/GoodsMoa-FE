@@ -1,0 +1,116 @@
+.apply-write-container {
+  width: 100%;
+  margin: 0 auto;
+  font-family: 'Arial', sans-serif;
+}
+
+.apply-section {
+  margin-bottom: 40px;
+}
+
+.applicant {
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+.applicantTitle {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.id {
+  padding: 10px;
+  border: 1px solid black;
+  border-radius: 10px;
+  color: #e0931e;
+}
+
+.apply-title {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.apply-description {
+  font-size: 0.9rem;
+  margin-bottom: 10px;
+  color: red;
+  font-weight: bold;
+}
+
+.editor-container {
+  border: 1px solid #ccc;
+  padding: 10px;
+  border-radius: 6px;
+  position: relative;
+}
+
+.editor-textarea {
+  border: 1px solid #ccc;
+  padding: 10px;
+  min-height: 150px;
+  outline: none;
+  background: white;
+  margin-bottom: 8px;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.toolbar button,
+.toolbarSelect {
+  padding: 4px 8px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.toolbarSelect {
+  width: 100px;
+  height: auto;
+}
+
+.toolbar button:hover {
+  background-color: #e0e0e0;
+}
+
+.ComApllyWriteBtnGroup {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+.applySumbitBtn,
+.applyCancelBtn,
+.applyChattingBtn {
+  flex: 1;
+  padding: 10px 20px;
+  font-weight: bold;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.applySumbitBtn {
+  color: white;
+  background-color: black;
+}
+
+.applySumbitBtn:hover,
+.applyCancelBtn:hover,
+.applyChattingBtn:hover {
+  background-color: rgb(114, 46, 1);
+}
+
+.applyCancelBtn {
+  background-color: #130057;
+  color: white;
+}
+
+.applyChattingBtn {
+  background-color: #4CAF50;
+  color: white;
+}

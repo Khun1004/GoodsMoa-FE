@@ -1,0 +1,147 @@
+.report-page-container {
+    width: 100%;
+}
+
+.report-container {
+    width: 80%;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+
+.report-title {
+    font-size: 24px;
+    font-weight: bold;
+    color: #d32f2f;
+}
+
+.report-description {
+    font-size: 14px;
+    color: #555;
+    margin-bottom: 15px;
+}
+.report-input {
+    width: 100%;
+    max-width: 1200px;
+    padding: 12px;
+    margin-top: 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+    outline: none;
+    transition: border-color 0.3s ease-in-out;
+}
+
+
+/* 신고할 상품 정보 */
+.reported-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 10px;
+    background-color: #f8f8f8;
+    margin-bottom: 20px;
+}
+
+.reported-item-image {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+.reported-item-details {
+    text-align: left;
+}
+
+.report-label {
+    font-size: 14px;
+    font-weight: bold;
+    margin-top: 15px;
+    display: block;
+    text-align: left;
+}
+
+.report-select, .report-textarea, .file-input {
+    width: 100%;
+    padding: 10px;
+    margin-top: 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+.report-textarea {
+    height: 80px;
+    resize: none;
+}
+
+/* 파일 첨부 */
+.file-upload {
+    margin-top: 10px;
+    text-align: left;
+}
+
+.file-info {
+    font-size: 12px;
+    color: gray;
+    margin-top: 5px;
+}
+
+.file-name {
+    font-size: 14px;
+    color: #333;
+    font-weight: bold;
+    margin-top: 5px;
+}
+
+/* 개인정보 수집 안내 */
+.privacy-policy {
+    margin-top: 15px;
+    text-align: left;
+}
+
+.privacy-text {
+    font-size: 12px;
+    color: gray;
+    margin-top: 5px;
+}
+
+.highlight {
+    color: #d32f2f;
+    font-weight: bold;
+}
+
+/* 개인정보 동의 체크박스 */
+.privacy-checkbox {
+    display: flex;
+    align-items: center;
+    margin-top: 5px;
+}
+
+.privacy-checkbox input {
+    margin-right: 5px;
+}
+
+.report-submit {
+    background-color: #d32f2f;
+    color: white;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    margin-top: 15px;
+    width: 100%;
+}
+
+.report-submit:hover {
+    background-color: #b71c1c;
+}

@@ -1,0 +1,102 @@
+/* Divider */
+.divider {
+    margin-top: 2rem;
+    border-color: #e5e7eb;
+}
+
+.categoryMain-section {
+    position: relative;
+    width: 100%;
+    margin-top: 20px;
+}
+
+.scroll-container {
+    position: relative;
+}
+
+.categoryMain-list {
+    display: flex;
+    gap: 25px;
+    overflow-x: auto;
+    justify-content: center;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.categoryMain-list::-webkit-scrollbar {
+    display: none;
+}
+
+.categoryMain-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    min-width: 80px;
+    flex-shrink: 0;
+}
+
+.categoryMain-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f0f0f1;
+    width: 6rem;
+    height: 5rem;
+    border-radius: 0.5rem;
+    transition: all 0.3s;
+}
+
+.categoryMain-icons {
+    font-size: 40px;
+}
+
+.categoryMain-icon:hover {
+    border: 1px solid #999;
+}
+
+.categoryMain-name {
+    font-size: 12px;
+    margin-top: 8px;
+    max-width: 80px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.scroll-button {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    z-index: 1;
+    padding: 0;
+}
+
+.scroll-button.left {
+    left: -10px;
+}
+
+.scroll-button.right {
+    right: -10px;
+}
+
+.arrow-circle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    background-color: white;
+    border-radius: 50%;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    color: #333;
+    transition: all 0.3s;
+}
+
+.arrow-circle:hover {
+    background-color: #f0f0f0;
+    transform: scale(1.1);
+}

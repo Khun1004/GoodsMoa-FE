@@ -1,0 +1,40 @@
+.recent-boards {
+    margin-bottom: 30px;
+}
+
+.recent-boards h3 {
+    font-size: 18px;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    color: #FFD700;
+    font-weight: bold;
+}
+
+.star-icon {
+    margin-right: 8px;
+}
+
+.recent-board-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.recent-board-card {
+    padding: 10px 18px;
+    background: #fff8dc;
+    border: 1px solid #ffd700;
+    border-radius: 16px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+    text-decoration: none;
+    box-shadow: 2px 2px 6px rgba(0,0,0,0.05);
+    transition: all 0.2s ease;
+}
+
+.recent-board-card:hover {
+    background: #fff2b2;
+    transform: translateY(-2px);
+}

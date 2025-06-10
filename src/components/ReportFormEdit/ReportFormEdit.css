@@ -1,0 +1,60 @@
+.report-form-container {
+    width: 100%;
+    margin: 20px auto;
+    height: 1000px;
+  }
+  
+  .report-formTitle {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    color: rgb(0, 61, 3);
+  }
+  
+  .report-form-group {
+    margin-bottom: 15px;
+  }
+  
+  .report-form-group > label {
+    display: block;
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 5px;
+  }
+  
+  .report-form-group > input, .report-form-group > textarea {
+    width: 100%;
+    padding: 10px;
+    border-radius: 10px;
+    border: none;
+    background-color: #dcdcdc;
+    font-size: 14px;
+  }
+  
+  .report-form-group > textarea {
+    height: 100px;
+    resize: none;
+  }
+
+  /* ReportForm.css에 추가 */
+.report-form-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+  
+.report-submit-btn, .report-cancel-btn{
+    background-color: #f8bcbc;
+    border: 1px solid black;
+    padding: 10px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 10px;
+    cursor: pointer;
+    width: 200px;
+}
+  
+.report-submit-btn:hover, .report-cancel-btn:hover {
+    background-color: #f5a5a5;
+}
+  

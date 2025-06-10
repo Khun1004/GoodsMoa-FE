@@ -1,0 +1,224 @@
+.trade-buy-container {
+  width: 100%;
+}
+
+.tradeBuy-title {
+  font-size: 25px;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+/* 전체 레이아웃: 이미지 슬라이더 + 정보 */
+.trade-buy-layout {
+  display: flex;
+  justify-content: space-between;
+  gap: 40px;
+  align-items: flex-start;
+  margin-top: 30px;
+}
+
+/* 왼쪽 슬라이더 */
+.trade-buy-slider {
+  flex: 1;
+  max-width: 50%;
+  height: 600px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background-color: #f5f5f5;
+  border-radius: 10px;
+}
+
+.trade-buy-slider img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 10px;
+  transition: opacity 0.8s ease-in-out;
+}
+
+/* 오른쪽 정보 */
+.trade-buy-info {
+  flex: 1;
+  max-width: 50%;
+  background-color: #FBFBFB;
+  padding: 20px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+/* 상품 요약 정보 */
+.trade-buy-summary {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 15px;
+  width: 100%;
+  max-width: 600px;
+  padding: 20px 0;
+  border-bottom: 1px solid #ddd;
+}
+
+.trade-buy-main-image {
+  width: 100px;
+  object-fit: contain;
+  border-radius: 10px;
+  background-color: white;
+  display: block;
+}
+
+.trade-buy-summary-details {
+  text-align: left;
+  flex: 1;
+  font-size: 14px;
+}
+
+.trade-buy-title {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.trade-buy-price {
+  font-size: 20px;
+  font-weight: bold;
+  color: #ff4500;
+}
+
+.trade-buy-condition,
+.trade-buy-location {
+  font-size: 14px;
+  color: #555;
+}
+
+/* 배송 정보 입력 */
+.trade-buy-form {
+  width: 100%;
+  max-width: 600px;
+  text-align: left;
+  margin-top: 20px;
+}
+
+.trade-buy-form label {
+  display: block;
+  font-weight: bold;
+  margin-top: 10px;
+}
+
+.trade-buy-form input,
+.trade-buy-form textarea,
+.trade-buy-form select {
+  width: 100%;
+  padding: 14px;
+  margin-top: 8px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 16px;
+}
+
+/* 주소 검색 */
+.trade-buy-address-container {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.trade-buy-address-input {
+  flex: 1;
+}
+
+.trade-buy-address-button {
+  background-color: #007BFF;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.trade-buy-address-button:hover {
+  background-color: #0056b3;
+}
+
+/* 상세 주소 입력 */
+.trade-buy-detail-address-input {
+  width: 100%;
+  padding: 10px;
+  margin-top: 5px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 16px;
+}
+
+/* 결제 금액 */
+.trade-buy-total-price {
+  font-size: 20px;
+  font-weight: bold;
+  color: #e74c3c;
+  text-align: center;
+  margin-top: 15px;
+}
+
+/* 버튼 영역 */
+.trade-buy-button-container {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  width: 100%;
+  margin-top: 20px;
+}
+
+.trade-buy-confirm-button,
+.trade-buy-cancel-button {
+  width: 45%;
+  max-width: 250px;
+  padding: 12px;
+  font-size: 16px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.3s;
+  text-align: center;
+}
+
+.trade-buy-confirm-button {
+  background-color: #28a745;
+  color: white;
+}
+
+.trade-buy-confirm-button:hover {
+  background-color: #218838;
+}
+
+.trade-buy-cancel-button {
+  background-color: #dc3545;
+  color: white;
+}
+
+.trade-buy-cancel-button:hover {
+  background-color: #c82333;
+}
+
+/* 반응형 */
+@media (max-width: 768px) {
+  .trade-buy-layout {
+    flex-direction: column;
+  }
+
+  .trade-buy-slider,
+  .trade-buy-info {
+    max-width: 100%;
+  }
+
+  .trade-buy-button-container {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .trade-buy-confirm-button,
+  .trade-buy-cancel-button {
+    width: 80%;
+  }
+}

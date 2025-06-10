@@ -1,0 +1,544 @@
+/* 기본 스타일 - 모든 기기에 적용 */
+.communityFormSection {
+    padding: 1rem;
+    border-radius: 20px;
+    width: 100%;
+    margin: 0 auto;
+    max-width: 1200px;
+}
+
+.communityFormSection-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+    text-align: center;
+    color: #333;
+}
+
+/* 카테고리 보드 스타일 */
+.communityFormSectionBoard-list {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: min-content;
+    gap: 10px;
+    overflow-x: auto;
+    padding-bottom: 0.5rem;
+    scrollbar-width: thin;
+    scrollbar-color: #ccc transparent;
+    -webkit-overflow-scrolling: touch;
+    
+    /* 중앙 정렬을 위한 속성 추가 */
+    justify-content: center;
+    margin: 0 auto;
+    width: fit-content;
+    max-width: 100%;
+}
+
+.communityFormSectionBoard-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 80px;
+    height: 80px;
+    padding: 0.75rem;
+    background-color: #f9f9f9;
+    border-radius: 12px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    cursor: pointer;
+    flex-shrink: 0;
+    border: 1px solid #eaeaea;
+}
+
+.communityFormSectionBoard-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.communityFormSectionBoard-item.active {
+    border: 2px solid #a16203;
+    background-color: #fef9e7;
+}
+
+.communityFormSectionBoard-icon {
+    font-size: 18px;
+    margin-bottom: 0.25rem;
+}
+
+.communityFormSectionBoard-name {
+    font-size: 12px;
+    font-weight: 500;
+    text-align: center;
+    color: #555;
+    word-break: keep-all; /* 한글 단어 잘림 방지 */
+}
+
+/* 카테고리 헤더 스타일 */
+.communityFormSectionCategorMain-header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 15px;
+    margin-bottom: 15px;
+}
+
+.communityFormSectionCategorMainName {
+    font-size: 16px;
+    font-weight: bold;
+    color: #a16203;
+}
+
+.communityFormSectionCategorMain-label {
+    font-size: 16px;
+    color: #333;
+    font-weight: bold;
+}
+
+.write-new-post-btn {
+    padding: 8px 12px;
+    color: rgb(250, 229, 161);
+    background-color: #a16203;
+    border-radius: 5px;
+    margin-left: 10px;
+    font-size: 14px;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.write-new-post-btn:hover {
+    background-color: #845001;
+}
+
+.line {
+    border-bottom: 1px solid #e0e0e0;
+    margin: 10px 0;
+}
+
+/* 게시글 목록 스타일 */
+.communityFormSectionPosts {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.communityFormSectionPost {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    padding: 15px;
+    background-color: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.communityFormSectionPost img, 
+.communityFormSectionPost video {
+    width: 100%;
+    height: auto;
+    max-height: 200px;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+.communityFormSectionPost-info {
+    width: 100%;
+    cursor: pointer;
+}
+
+.communityFormSectionPost-info h4 {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #333;
+}
+
+.post-author-info-small {
+    margin-bottom: 6px;
+}
+
+.post-author-name-small {
+    font-size: 14px;
+    color: #666;
+}
+
+.communityFormSectionPost-content {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 8px;
+    line-height: 1.4;
+}
+
+.post-meta-info {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 5px;
+    font-size: 12px;
+    color: #888;
+}
+
+.post-comment-count {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.communityFormSectionPost-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.comFormSecEditBtn, .comFormSecDeleteBtn {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 10px;
+    font-size: 13px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.comFormSecEditBtn {
+    background-color: #e6f4ff;
+    color: #0066cc;
+}
+
+.comFormSecEditBtn:hover {
+    background-color: #cce6ff;
+}
+
+.comFormSecDeleteBtn {
+    background-color: #ffebee;
+    color: #d32f2f;
+}
+
+.comFormSecDeleteBtn:hover {
+    background-color: #ffd6da;
+}
+
+.comFormSecEditBtn:disabled, .comFormSecDeleteBtn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* 게시글이 없는 경우 스타일 */
+.communityFormSectionNoPosts {
+    padding: 30px;
+    text-align: center;
+    background-color: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    color: #666;
+    font-size: 16px;
+}
+
+/* 게시글 상세 보기 스타일 */
+.post-detail-view {
+    padding: 15px;
+    background-color: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.back-to-list-btn {
+    padding: 6px 12px;
+    background-color: #f0f0f0;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    color: #555;
+    cursor: pointer;
+    margin-bottom: 15px;
+    transition: background-color 0.2s;
+}
+
+.back-to-list-btn:hover {
+    background-color: #e0e0e0;
+}
+
+.post-detail-header {
+    margin-bottom: 20px;
+}
+
+.post-detail-header h3 {
+    font-size: 22px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.post-author-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.post-author-profile {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+}
+
+.post-author-name {
+    font-size: 14px;
+    color: #666;
+}
+
+.post-meta {
+    display: flex;
+    gap: 15px;
+    font-size: 13px;
+    color: #888;
+}
+
+.post-detail-media {
+    width: 100%;
+    height: auto;
+    max-height: 200px;
+    object-fit: contain;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.post-detail-content {
+    font-size: 15px;
+    line-height: 1.6;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.post-detail-actions {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 25px;
+}
+
+.post-edit-btn, .post-delete-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border-radius: 4px;
+    font-size: 14px;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.post-edit-btn {
+    background-color: #e6f4ff;
+    color: #0066cc;
+}
+
+.post-edit-btn:hover {
+    background-color: #cce6ff;
+}
+
+.post-delete-btn {
+    background-color: #ffebee;
+    color: #d32f2f;
+}
+
+.post-delete-btn:hover {
+    background-color: #ffd6da;
+}
+
+.post-comments-section {
+    margin-top: 30px;
+}
+
+.post-comments-section h4 {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 15px;
+    color: #333;
+}
+
+.post-comments-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.post-comment-item {
+    padding: 12px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+}
+
+.post-comment-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+
+.post-comment-profile {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+}
+
+.post-comment-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.post-comment-author {
+    font-size: 14px;
+    font-weight: 500;
+    color: #444;
+}
+
+.post-comment-date {
+    font-size: 12px;
+    color: #888;
+}
+
+.post-comment-content {
+    padding-left: 32px;
+    font-size: 14px;
+    color: #555;
+    line-height: 1.4;
+}
+
+.post-replies-list {
+    margin-left: 20px;
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.post-reply-item {
+    padding: 10px;
+    background-color: #f0f0f0;
+    border-radius: 8px;
+}
+
+.post-no-comments {
+    padding: 15px;
+    text-align: center;
+    color: #888;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+}
+
+/* 태블릿 스타일 (768px 이상) */
+@media screen and (min-width: 768px) {
+    .communityFormSection {
+        padding: 1.5rem;
+    }
+    
+    .communityFormSection-title {
+        font-size: 1.6rem;
+    }
+    
+    .communityFormSectionBoard-item {
+        width: 90px;
+        height: 90px;
+    }
+    
+    .communityFormSectionBoard-name {
+        font-size: 13px;
+    }
+    
+    .communityFormSectionCategorMainName, 
+    .communityFormSectionCategorMain-label {
+        font-size: 18px;
+    }
+    
+    .communityFormSectionPost {
+        flex-direction: row;
+        align-items: flex-start;
+    }
+    
+    .communityFormSectionPost img, 
+    .communityFormSectionPost video {
+        width: 150px;
+        height: 100px;
+        flex-shrink: 0;
+    }
+    
+    .post-detail-view {
+        padding: 20px;
+    }
+    
+    .post-detail-media {
+        max-height: 300px;
+    }
+    
+    .post-replies-list {
+        margin-left: 30px;
+    }
+}
+
+/* 데스크탑 스타일 (1024px 이상) */
+@media screen and (min-width: 1024px) {
+    .communityFormSection {
+        padding: 2rem;
+    }
+    
+    .communityFormSection-title {
+        font-size: 1.8rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .communityFormSectionBoard-item {
+        width: 100px;
+        height: 100px;
+        padding: 1rem;
+    }
+    
+    .communityFormSectionBoard-icon {
+        font-size: 20px;
+        margin-bottom: 0.5rem;
+    }
+    
+    .communityFormSectionBoard-name {
+        font-size: 15px;
+    }
+    
+    .communityFormSectionCategorMainName, 
+    .communityFormSectionCategorMain-label {
+        font-size: 20px;
+    }
+    
+    .write-new-post-btn {
+        padding: 10px 16px;
+        font-size: 15px;
+    }
+    
+    .communityFormSectionPost {
+        padding: 20px;
+        gap: 20px;
+    }
+    
+    .communityFormSectionPost-info h4 {
+        font-size: 20px;
+    }
+    
+    .post-detail-media {
+        max-height: 400px;
+    }
+    
+    .post-detail-header h3 {
+        font-size: 24px;
+    }
+    
+    .post-replies-list {
+        margin-left: 40px;
+    }
+    
+    .post-detail-content {
+        font-size: 16px;
+    }
+}

@@ -1,0 +1,56 @@
+.inquiry-container {
+    width: 100%;
+    margin: auto;
+    padding: 20px;
+  }
+
+.customerServiceReplyTitle {
+  font-size: 30px;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+  
+.customerServiceRe-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.customerServiceRe-table tr {
+    border-top: 3px solid #000000;
+    border-bottom: 3px solid #000000;
+}
+
+.customerServiceRe-table th, .customerServiceRe-table td {
+    padding: 8px;
+    text-align: center;
+}
+
+.customerServiceRe-table th {
+    background-color: #d7c2ff;
+}
+  
+.reploy-status-btn {
+    border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-weight: bold;
+}
+  
+.completed {
+    background-color: #e40000;
+    color: white;
+}
+  
+.pending {
+    background-color: #ff00f2;
+    color: white;
+}
+
+.edit-reply-btn {
+    margin-left: 10px;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    background-color: rgb(13, 236, 13);
+}
+  

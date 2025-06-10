@@ -1,0 +1,352 @@
+.anime-container {
+    font-family: 'Noto Sans KR', sans-serif;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    color: #333;
+    background-color: #fffcfa;
+}
+
+/* 헤더 */
+.anime-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #bbdefb;
+}
+
+.anime-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: #1565c0;
+    margin: 0;
+}
+
+.anime-select-wrapper select {
+    padding: 8px 15px;
+    border: 1px solid #2196f3;
+    border-radius: 20px;
+    background-color: #e3f2fd;
+    color: #0d47a1;
+    font-weight: 500;
+    cursor: pointer;
+    outline: none;
+}
+
+/* 테이블 부분 */
+.anime-table {
+    margin-top: 20px;
+    width: 100%;
+    border-collapse: collapse;
+    background-color: white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 30px;
+}
+
+.anime-table th {
+    background-color: #90caf9;
+    color: #0d47a1;
+    padding: 12px;
+    text-align: center;
+    font-weight: 600;
+}
+
+.anime-table td {
+    padding: 12px;
+    border-bottom: 1px solid #f5f5f5;
+    text-align: center;
+}
+
+.anime-table tr:hover td {
+    background-color: #f9fbff;
+}
+
+.anime-link {
+    color: #333;
+    text-decoration: none;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.anime-link:hover {
+    color: #2196f3;
+    text-decoration: underline;
+}
+
+.anime-thumbnail {
+    width: 80px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 4px;
+    border: 1px solid #eee;
+    transition: transform 0.3s;
+}
+
+.anime-thumbnail:hover {
+    transform: scale(1.05);
+}
+
+/* 게시글 상세 */
+.anime-detail {
+    background-color: white;
+    border-radius: 10px;
+    padding: 25px;
+    margin-bottom: 30px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+}
+
+.anime-detail h3 {
+    font-size: 22px;
+    color: #1565c0;
+    margin-top: 0;
+    padding-bottom: 10px;
+    border-bottom: 1px dashed #bbdefb;
+}
+
+.anime-detail-img {
+    max-width: 100%;
+    height: 80px;
+    border-radius: 8px;
+    margin: 15px 0;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* 댓글 섹션 */
+.anime-comments {
+    background-color: white;
+    border-radius: 10px;
+    padding: 25px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+}
+
+.animeCommentsTitle {
+    font-size: 20px;
+    color: #1565c0;
+    margin-top: 0;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #90caf9;
+}
+
+/* 댓글 아이템 (상위) */
+.animeCommentsNote {
+    position: relative;
+    padding: 20px 20px 20px 60px;
+    border-bottom: 1px solid #f0f0f0;
+    margin-left: 0;
+}
+
+.animeCommentsNote:last-child {
+    border-bottom: none;
+}
+
+.comment-profile {
+    position: absolute;
+    left: -30px;
+    top: 10px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #64b5f6;
+    background-color: white;
+}
+
+.animeCommentsNote::before {
+    content: '';
+    position: absolute;
+    left: -12px;
+    top: 45px;
+    width: 2px;
+    height: calc(100% - 45px);
+    background-color: #90caf9;
+    z-index: 0;
+}
+
+.comment-bubble {
+    margin-left: -30px;
+    background-color: #f0f8ff;
+    border-radius: 16px;
+    padding: 14px 18px;
+    border: 1px solid #e0e0e0;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.comment-nickname {
+    font-weight: 600;
+    color: #1976d2;
+    margin-right: 8px;
+}
+
+.comment-timestamp {
+    font-size: 12px;
+    color: #999;
+}
+
+.comment-content {
+    margin-top: 8px;
+    line-height: 1.5;
+}
+
+/* 대댓글 아이템 스타일 */
+.communityAnimeReply-item {
+    position: relative;
+    margin: 15px 0 15px 10px;
+    padding: 10px 15px;
+    background-color: #fbfdff;
+    border-radius: 12px;
+    border: 1px solid #f0f0f0;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+}
+
+/* 대댓글 프로필 이미지 */
+.replyComment-profile {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid #64b5f6;
+    flex-shrink: 0;
+}
+
+/* 대댓글 내용 컨테이너 */
+.communityAnimeReply-item > div {
+    flex: 1;
+}
+
+/* 대댓글 닉네임 */
+.replyComment-nickname {
+    font-weight: 600;
+    color: #1976d2;
+    font-size: 14px;
+    margin-bottom: 4px;
+}
+
+/* 대댓글 타임스탬프 */
+.replyComment-timestamp {
+    font-size: 11px;
+    color: #999;
+    margin-left: 6px;
+}
+
+/* 대댓글 내용 */
+.replyComment-content {
+    font-size: 13px;
+    line-height: 1.4;
+    color: #333;
+    word-break: break-word;
+}
+
+/* 대댓글 가리키는 줄 (프로필 이미지 왼쪽) */
+.communityAnimeReply-item::before {
+    content: '';
+    position: absolute;
+    left: -83px;
+    top: 26px;
+    width: 80px;
+    height: 3px;
+    background-color: #90caf9;
+}
+
+.communityAnimeReply-item .comment-profile {
+    width: 30px;
+    height: 30px;
+    left: -60px;
+    top: 8px;
+    border: 1px solid #64b5f6;
+}
+
+/* 댓글 작성 폼 */
+.communityAnimeComment-form {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+.communityAnimeComment-form input {
+    flex: 1;
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+    border-radius: 25px;
+    outline: none;
+}
+
+.communityAnimeComment-form input:focus {
+    border-color: #2196f3;
+}
+
+.communityAnimeComment-form button {
+    padding: 0 20px;
+    background-color: #2196f3;
+    color: white;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.communityAnimeComment-form button:hover {
+    background-color: #1565c0;
+}
+
+/* 대댓글 작성 폼 */
+.communityAnimeReply-form {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+    margin-left: 10px;
+}
+
+.communityAnimeReply-form input {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 20px;
+    background-color: #f5f5f5;
+    outline: none;
+}
+
+.communityAnimeReply-form button {
+    padding: 0 15px;
+    background-color: #64b5f6;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.communityAnimeReply-form button:hover {
+    background-color: #2196f3;
+}
+
+/* 반응형 */
+@media (max-width: 768px) {
+    .anime-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+
+    .comment-profile {
+        left: -25px;
+        width: 32px;
+        height: 32px;
+    }
+
+    .animeCommentsNote {
+        padding-left: 50px;
+    }
+
+    .communityAnimeReply-item {
+        margin-left: 40px;
+    }
+
+    .communityAnimeReply-item .comment-profile {
+        left: -45px;
+    }
+}

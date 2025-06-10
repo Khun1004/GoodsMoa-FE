@@ -1,0 +1,411 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&display=swap');
+
+.modals-overlay {
+  padding: 60px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  top: 0;
+  left: 0;
+  right: 0;
+}
+
+.modal-container {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+  width: 500px;
+  height: 800px;
+  padding: 24px;
+  position: relative;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+@keyframes modal-appear {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Star animation keyframes */
+@keyframes fly-out {
+  0% {
+    transform: translate(0, 0) rotate(0deg) scale(0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+    transform: translate(0, 0) rotate(0deg) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(
+      calc(var(--target-x, 0) * 1px - var(--start-x, 0) * 1px),
+      calc(var(--target-y, 0) * 1px - var(--start-y, 0) * 1px)
+    ) rotate(360deg) scale(0.1);
+  }
+}
+
+@keyframes twinkle {
+  0% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.2); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+/* Button hover glow effect */
+@keyframes button-glow {
+  0% { box-shadow: 0 0 5px rgba(255, 255, 255, 0.5); }
+  50% { box-shadow: 0 0 15px rgba(255, 255, 255, 0.8); }
+  100% { box-shadow: 0 0 5px rgba(255, 255, 255, 0.5); }
+}
+
+.modal-header {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+  letter-spacing: -0.025em;
+  background: linear-gradient(135deg, #6366f1, #a855f7);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.modal-subheader {
+  color: #4b5563;
+  font-size: 1.25rem;
+  font-weight: bold;
+  margin-bottom: 16px;
+}
+
+.modal-text {
+  color: #4b5563;
+  margin-bottom: 16px;
+  font-size: 1.1rem;
+  line-height: 1.5;
+}
+
+.modal-image {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 12px auto 24px;
+  width: 85%;
+  height: 320px;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.modal-image img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: cover;
+  border-radius: 10px;
+  transition: transform 0.3s ease;
+}
+
+.modal-image img:hover {
+  transform: scale(1.03);
+}
+
+.login-buttons {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 0;
+  width: 100%;
+}
+
+.login-button {
+  width: 85%;
+  padding: 16px;
+  border-radius: 12px;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.login-button svg {
+  font-size: 1.5rem;
+  margin-right: 12px;
+  position: relative;
+  z-index: 2;
+}
+
+/* Ensure text is above sparkles */
+.login-button span.text {
+  position: relative;
+  z-index: 2;
+}
+
+/* Star styling */
+.star {
+  pointer-events: none;
+  position: fixed;
+  z-index: 1000;
+  will-change: transform, opacity;
+}
+
+.star-inner {
+  width: 100%;
+  height: 100%;
+  background-size: contain;
+  background-repeat: no-repeat;
+}
+
+/* Button specific styles with hover effects */
+.kakao-login {
+  background-color: #FEE500;
+  color: #3A1D1D;
+}
+
+.kakao-login:hover {
+  background-color: #F2D900;
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 4px 12px rgba(242, 217, 0, 0.3);
+}
+
+.google-login {
+  background-color: white;
+  color: #444;
+  border: 1px solid #ddd;
+}
+
+.google-login:hover {
+  background-color: #f8f8f8;
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 4px 12px rgba(66, 133, 244, 0.2);
+}
+
+.naver-login {
+  background-color: #03C75A;
+  color: white;
+}
+
+.naver-login:hover {
+  background-color: #02B350;
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 4px 12px rgba(3, 199, 90, 0.3);
+}
+
+/* Ripple effect */
+.login-button::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.8);
+  opacity: 0;
+  border-radius: 100%;
+  transform: scale(1, 1) translate(-50%);
+  transform-origin: 50% 50%;
+}
+
+.login-button:focus:not(:active)::after {
+  animation: ripple 1s ease-out;
+}
+
+@keyframes ripple {
+  0% {
+    transform: scale(0, 0);
+    opacity: 1;
+  }
+  20% {
+    transform: scale(25, 25);
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(40, 40);
+  }
+}
+
+.options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 24px;
+  font-size: 0.9rem;
+  color: #6b7280;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+}
+
+.checkbox-input {
+  margin-right: 8px;
+}
+
+.link {
+  text-decoration: underline;
+  cursor: pointer;
+  color: #4F46E5;
+  transition: color 0.2s;
+}
+
+.link:hover {
+  color: #4338CA;
+}
+
+@media (max-width: 768px) {
+  .modals-overlay {
+    padding: 10px;
+  }
+
+  .modal-container {
+    padding: 20px;
+    max-height: 85vh;
+  }
+
+  .modal-header {
+    font-size: 2rem;
+  }
+
+  .modal-text {
+    font-size: 1rem;
+  }
+
+  .login-button {
+    width: 90%;
+    padding: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .modal-container {
+    padding: 16px;
+    width: 95%;
+    max-height: 80vh;
+  }
+
+  .modal-header {
+    font-size: 1.8rem;
+    margin-top: 10px;
+  }
+
+  .modal-image {
+    width: 90%;
+    max-height: 250px;
+  }
+
+  .login-button {
+    width: 95%;
+    padding: 12px;
+  }
+
+  .login-button svg {
+    font-size: 1.3rem;
+  }
+
+  .button-text {
+    font-size: 0.95rem;
+  }
+}
+
+/* For very small screens */
+@media (max-width: 360px) {
+  .modal-header {
+    font-size: 1.5rem;
+  }
+
+  .modal-text {
+    font-size: 0.9rem;
+  }
+
+  .modal-image {
+    max-height: 200px;
+  }
+
+  .login-button {
+    padding: 10px;
+  }
+}
+
+/* For tablets in portrait mode */
+@media (min-width: 768px) and (max-width: 1024px) and (orientation: portrait) {
+  .modal-container {
+    max-width: 450px;
+  }
+}
+
+/* For landscape mobile phones */
+@media (max-height: 480px) and (orientation: landscape) {
+  .modal-container {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    align-items: center;
+    max-height: 95vh;
+    padding: 15px;
+  }
+
+  .modal-header {
+    width: 100%;
+    font-size: 1.8rem;
+    margin-bottom: 5px;
+  }
+
+  .modal-text {
+    width: 45%;
+    margin-bottom: 10px;
+    font-size: 0.9rem;
+  }
+
+  .modal-image {
+    width: 45%;
+    height: auto;
+    max-height: 180px;
+    margin: 0;
+  }
+
+  .login-buttons {
+    width: 100%;
+    flex-direction: row;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 10px 0;
+  }
+
+  .login-button {
+    width: 45%;
+    padding: 10px;
+    font-size: 0.9rem;
+  }
+}
+
+/* Better touch support for mobile devices */
+@media (hover: none) {
+  .modal-image img:hover {
+    transform: none;
+  }
+
+  .login-button:hover {
+    transform: none;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  }
+
+  .kakao-login:hover, .google-login:hover, .naver-login:hover {
+    transform: none;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  }
+
+  .login-button:active {
+    transform: scale(0.98);
+  }
+}

@@ -1,0 +1,267 @@
+.tradeManagement-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: 'Noto Sans KR', sans-serif;
+}
+
+.tradeManagement-title {
+    text-align: center;
+    margin-bottom: 30px;
+    color: #333;
+    font-weight: 700;
+}
+
+.tradeManagement-content {
+    display: flex;
+    gap: 30px;
+}
+
+.tradeManagementItem-list {
+    flex: 1;
+    min-width: 350px;
+    background: #f9f9f9;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.tradeManagementItem-list h2 {
+    margin-bottom: 20px;
+    color: #444;
+    font-size: 1.3rem;
+}
+
+.tradeManagementItemNo-items {
+    text-align: center;
+    color: #888;
+    padding: 20px;
+}
+
+.tradeManagementItem-card {
+    background: white;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1px solid #eee;
+}
+
+.tradeManagementItem-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.tradeManagementItem-card.selected {
+    border-left: 4px solid #4CAF50;
+    background-color: #f8fff8;
+}
+
+.tradeManagementItem-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.tradeManagementItem-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    color: #333;
+}
+
+.tradeManagementItem-status-badge {
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.tradeManagementItem-status-badge.active {
+    background-color: #e1f5fe;
+    color: #0288d1;
+}
+
+.tradeManagementItem-status-badge.sold {
+    background-color: #ffebee;
+    color: #d32f2f;
+}
+
+.tradeManagementItem-preview {
+    display: flex;
+    gap: 15px;
+}
+
+.tradeManagementItem-thumbnail {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+.tradeManagementItem-info {
+    flex: 1;
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.tradeManagementItem-info p {
+    margin: 5px 0;
+}
+
+.tradeFormManagItem-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.tradeFormManagEditBtn, .tradeFormManagDeleteBtn {
+    padding: 5px 12px;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.tradeFormManagEditBtn {
+    background-color: #2196F3;
+    color: white;
+}
+
+.tradeFormManagEditBtn:hover {
+    background-color: #0b7dda;
+}
+
+.tradeFormManagDeleteBtn {
+    background-color: #f44336;
+    color: white;
+}
+
+.tradeFormManagDeleteBtn:hover {
+    background-color: #d32f2f;
+}
+
+.item-detail {
+    flex: 2;
+    background: white;
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.item-detail h2 {
+    margin-bottom: 20px;
+    color: #444;
+    font-size: 1.5rem;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
+
+.detail-content {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.image-gallery {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.main-image img {
+    width: 100%;
+    max-height: 400px;
+    object-fit: contain;
+    border-radius: 8px;
+    border: 1px solid #eee;
+}
+
+.detail-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.detail-images img {
+    width: calc(33.333% - 7px);
+    height: 120px;
+    object-fit: cover;
+    border-radius: 4px;
+    border: 1px solid #eee;
+}
+
+.item-meta h3 {
+    font-size: 1.4rem;
+    margin: 0 0 10px 0;
+    color: #222;
+}
+
+.price {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #e53935;
+    margin-bottom: 20px;
+}
+
+.meta-section {
+    margin-bottom: 20px;
+}
+
+.meta-section h4 {
+    margin: 0 0 10px 0;
+    color: #555;
+    font-size: 1.1rem;
+}
+
+.meta-section p {
+    margin: 5px 0;
+    color: #666;
+}
+
+.tags {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.tag {
+    background-color: #e0f7fa;
+    color: #00838f;
+    padding: 4px 10px;
+    border-radius: 15px;
+    font-size: 0.8rem;
+}
+
+.description {
+    line-height: 1.6;
+    color: #444;
+}
+
+.description img {
+    max-width: 100%;
+    height: auto;
+}
+
+@media (max-width: 900px) {
+    .management-content {
+    flex-direction: column;
+    }
+    
+    .item-list {
+    min-width: auto;
+    }
+}
+
+@media (max-width: 600px) {
+    .item-preview {
+    flex-direction: column;
+    }
+    
+    .detail-images img {
+    width: calc(50% - 5px);
+    }
+}

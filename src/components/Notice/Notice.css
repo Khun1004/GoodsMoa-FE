@@ -1,0 +1,45 @@
+.notice-button {
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.notice-button:hover {
+    transform: translateY(-50%) scale(1.05);
+}
+
+.notice-panel {
+    animation: slideIn 0.3s ease forwards;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+.notice-item {
+    border-bottom: 1px solid #e5e7eb;
+    padding: 10px 0;
+    margin-bottom: 8px;
+}
+
+.notice-item:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-50%) translateX(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(-50%) translateX(0);
+    }
+}
+
+@media (max-width: 640px) {
+    .notice-panel {
+        right: 50%;
+        top: 50%;
+        transform: translate(50%, -50%);
+        width: 90%;
+        max-width: 320px;
+    }
+}
