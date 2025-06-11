@@ -248,17 +248,18 @@ const SaleForm = () => {
         }
     
         const thumbnailExtension = getImageExtension(image);
-    
-        const deleteProductImageIds = products
-            .filter(product => product.id && !String(product.id).startsWith('temp_') && !product.image)
-            .map(product => product.id);
+
+        // const deleteProductImageIds = products
+        //     .filter(product => product.id && !String(product.id).startsWith('temp_') && !product.image)
+        //     .map(product => product.id);
     
             const processedProducts = products.map((product, index) => {
                 const extension = getImageExtension(product.image);
                 return {
                     ...product,
                     id: product.id && !String(product.id).startsWith('temp_') && product.id !== null ? product.id : null, // Ensure new products have id: null
-                    image: product.image instanceof File ? null : product.image || null
+                    image: product.image instanceof File ? null : product.image || null,
+                    imageUpdated: !!product.imageUpdated
                 };
             });
     
@@ -333,7 +334,7 @@ const SaleForm = () => {
     
             const thumbnailUrl = response.thumbnailImage ||
                 `${API_BASE_URL}/productPost/thumbnail/${response.id}_1.${thumbnailExtension}`;
-    
+            console.log("🚀 실제 삭제할 상품 이미지 IDs:", deleteProductImageIds);
             navigate("/sale", {
                 state: {
                     formData: {
@@ -498,13 +499,13 @@ const SaleForm = () => {
                 price: Number(price),
                 quantity: Number(quantity),
                 maxQuantity: maxQuantityValue,
+                imageUpdated: true,
                 image: {
                     file: processedImage.file,
                     preview: imageUrl,
                     extension: extension,
                     uploadPath: 'productPost/product'
                 },
-                imageUpdated: true,
                 images: [imageUrl],
                 available: "판매중"
             };
@@ -541,18 +542,29 @@ const SaleForm = () => {
 
             const maxQuantityValue = Math.max(1, parseInt(maxQuantity) || 1);
 
+            const isImageChanged = (() => {
+                if (typeof processedImage === 'string') {
+                    return processedImage !== editProduct.image;
+                } else if (processedImage?.file) {
+                    return true;
+                }
+                return false;
+            })();
+
             const updatedProduct = {
                 id: editProduct.id,
                 name: productName,
                 price: Number(price),
                 quantity: Number(quantity),
                 maxQuantity: maxQuantityValue,
+                imageUpdated: isImageChanged,
                 image: typeof processedImage === 'string' ? processedImage : {
                     file: processedImage.file,
                     preview: URL.createObjectURL(processedImage.file),
                     extension: extension
                 },
-                available: "판매중"
+                available: "판매중",
+
             };
 
             setProducts(

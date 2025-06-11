@@ -2,14 +2,32 @@ const API_BASE_URL = 'http://localhost:8080';
 
 class ProductService {
     getUserId() {
-        const userId = localStorage.getItem('user_id');
-        if (!userId) {
-            console.error('사용자 인증 정보가 없습니다. 로그인 페이지로 이동합니다.');
+        const userInfoStr = localStorage.getItem('userInfo');
+
+        if (!userInfoStr) {
+            console.error('userInfo가 localStorage에 없습니다. 로그인 페이지로 이동합니다.');
             window.location.href = '/login';
-            throw new Error('사용자가 인증되지 않았습니다');
+            throw new Error('사용자 인증 정보가 없습니다');
         }
-        return userId;
+
+        try {
+            const userInfo = JSON.parse(userInfoStr);
+            const userId = userInfo?.id;
+
+            if (!userId) {
+                console.error('userInfo에 id가 없습니다. 로그인 페이지로 이동합니다.');
+                window.location.href = '/login';
+                throw new Error('사용자가 인증되지 않았습니다');
+            }
+
+            return userId;
+        } catch (err) {
+            console.error('userInfo 파싱 중 오류 발생:', err);
+            window.location.href = '/login';
+            throw new Error('사용자 정보가 손상되었습니다');
+        }
     }
+
 
     async request(endpoint, method, body = null, isMultipart = false) {
         const url = `${API_BASE_URL}${endpoint}`;
@@ -264,12 +282,8 @@ class ProductService {
                     formData.append('existingContentImageIndexes', index);
                 }
             });
-    
-            if (postData.deleteProductImageIds?.length > 0) {
-                postData.deleteProductImageIds.forEach(id => {
-    _pd.append('deleteProductImageIds', id);
-                });
-            }
+
+            formData.append("deleteProductImageIds", JSON.stringify(postData.deleteProductImageIds || []));
     
             const formattedData = this.formatPostData({
                 ...postData,
@@ -495,6 +509,7 @@ class ProductService {
                         )),
                         image: product.image,
                         available: '판매중',
+                            imageUpdated: !!product.imageUpdated
                     };
                 })
                 .filter(product => product !== null);
@@ -522,6 +537,9 @@ class ProductService {
             products: processProducts(),
             delivers: processDeliveries(),
             contentImages: data.contentImages || [],
+            deleteProductImageIds: Array.isArray(data.deleteProductImageIds)
+                ? data.deleteProductImageIds
+                : [],
         };
         if (!formatted.delivers || formatted.delivers.length === 0) {
             formatted.delivers = [{
@@ -529,6 +547,8 @@ class ProductService {
                 price: 3000,
             }];
         }
+        console.log("✅ 최종 formatted products:", formatted.products);
+        console.log("✅ 최종 formatted deleteProductImageIds :", formatted.deleteProductImageIds);
         return formatted;
     }
 

@@ -17,6 +17,9 @@ export default defineConfig({
     port: 5177,
     strictPort: true,
   },
+  define: {
+    global: 'globalThis',  // ✅ 여기가 정확한 위치입니다
+  },
 
   optimizeDeps: {
     include: ['@ckeditor/ckeditor5-build-classic']
