@@ -41,8 +41,52 @@
     margin-bottom: 10px;
 }
 
+.filters {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.category-button {
+    padding: 8px 16px;
+    background-color: #f0f0f0;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.category-button.selected {
+    background-color: #007bff;
+    color: white;
+}
+
 .demand-search-input {
-    width: 100%;
+    padding: 10px;
+    font-size: 14px;
+}
+
+
+
+
+.search-bar-and-filters {
+    display: flex;
+    align-items: center;
+}
+
+.filters {
+    display: flex;
+    gap: 10px;
+    margin-right: 20px;
+}
+
+.filters select, .filters input {
+    padding: 5px;
+    font-size: 14px;
+}
+
+
+.demand-search-input {
+    width: 80%;
     max-width: 500px;
     padding: 10px;
     border-radius: 5px;
@@ -114,19 +158,23 @@
     transition: opacity 0.3s ease-in-out;
 }
 
-.profile-info {
+.demand-profile-info {
     position: absolute;
-    top: 10px;
-    left: 50%;
-    transform: translateX(-50%);
+    bottom: 12px;      /* 사진 아래쪽에서 2px 띄움 */
+    left: 2px;        /* 사진 왼쪽에서 2px 띄움 */
+    transform: none;
     opacity: 0;
     visibility: hidden;
     display: flex;
     align-items: center;
     gap: 5px;
+    background-color: rgba(211, 213, 216, 0.7);
+    border-radius: 6px;
+    padding: 4px;
+    line-height: 1;
 }
 
-.demand-card:hover .profile-info {
+.demand-card:hover .demand-profile-info {
     opacity: 1;
     visibility: visible;
 }
