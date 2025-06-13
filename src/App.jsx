@@ -19,7 +19,7 @@ import Demand from "./components/Demands/Demand/Demand";
 import DemandBuy from "./components/Demands/DemandBuy/DemandBuy";
 import DemandBuyPerfect from "./components/Demands/DemandBuyPerfect/DemandBuyPerfect";
 import DemandDetail from "./components/Demands/DemandDetail/DemandDetail";
-import DemandForm from "./components/Demands/DemandForm/DemandForm";
+import DemandForm from "./components/Demands/DemandForm/DemandForm.jsx";
 import DemandReportPage from "./components/Demands/DemandReportPage/DemandReportPage";
 import DemandReportPerfect from "./components/Demands/DemandReportPerfect/DemandReportPerfect";
 import DemandWrite from "./components/Demands/DemandWrite/DemandWrite";
@@ -245,7 +245,7 @@ const AppContent = ({ handleOrderPopup, orderPopup, openModal,
 
         {/* DemandDetail Page */}
         <Route
-          path="/demandDetail"
+          path="/demandDetail/:id"
           element={
             <div className="pt-[130px]">
               <DemandDetail/>

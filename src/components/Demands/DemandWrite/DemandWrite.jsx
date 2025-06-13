@@ -1,175 +1,74 @@
-import React, { useEffect, useRef, useState } from "react";
-import { CiImageOn } from "react-icons/ci";
-import { FaAlignCenter, FaAlignJustify, FaAlignLeft, FaAlignRight, FaBold, FaCaretDown, FaItalic, FaPaintBrush, FaStrikethrough, FaUnderline } from "react-icons/fa";
-import { IoIosArrowBack } from "react-icons/io";
-import { LuRedo2, LuUndo2 } from "react-icons/lu";
-import { PiListBulletsBold } from "react-icons/pi";
-import { RiFontSize } from "react-icons/ri";
-import { useLocation, useNavigate } from "react-router-dom";
-import "./DemandWrite.css";
+import React, { useRef, useState, useEffect } from "react";
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const DemandWrite = () => {
+    const quillRef = useRef();
     const navigate = useNavigate();
     const location = useLocation();
-    const editorRef = useRef(null);
-    const [content, setContent] = useState("");
-    const [color, setColor] = useState("#000000");
 
+    // location.state에서 값 있으면 초기화
+    const [content, setContent] = useState(location.state?.description ?? "");
+    const [descriptionImages, setDescriptionImages] = useState(location.state?.descriptionImages ?? []);
+
+    // location.state가 바뀌면 항상 동기화 (뒤로가기 등 대응)
     useEffect(() => {
-        if (editorRef.current && location.state?.description) {
-            editorRef.current.innerHTML = location.state.description;
+        if (location.state?.description !== undefined) {
             setContent(location.state.description);
         }
-    }, [location.state?.description]);
-
-    const handleCommand = (command, value = null) => {
-        document.execCommand(command, false, value);
-    };
-
-    const handleImageUpload = (event) => {
-        const file = event.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const image = `<img src="${e.target.result}" alt="Uploaded Image" />`;
-                const editor = editorRef.current;
-                editor.focus();
-                document.execCommand("insertHTML", false, image);
-                setContent(editor.innerHTML);
-            };
-            reader.readAsDataURL(file);
+        if (location.state?.descriptionImages !== undefined) {
+            setDescriptionImages(location.state.descriptionImages);
         }
-    };
+    }, [location.state]);
 
-    const handleColorChange = (event) => {
-        const selectedColor = event.target.value;
-        setColor(selectedColor);
-        document.execCommand("foreColor", false, selectedColor);
-    };
-
-    useEffect(() => {
-        if (editorRef.current && location.state?.description) {
-            editorRef.current.innerHTML = location.state.description;
-            setContent(location.state.description);
-        }
-    }, [location.state?.description]);
-
+    // 저장 시 상세설명, 이미지 배열을 DemandFormInput으로 같이 넘김
     const handleSave = () => {
-        const description = editorRef.current.innerHTML;
-    
-        // 기존 location.state에서 모든 값을 받아 다시 넘김
         navigate("/demandForm", {
             state: {
                 ...location.state,
-                description,
-            }
+                description: content,
+                descriptionImages,
+            },
         });
-    };    
+    };
+
+    // 파일 첨부 핸들러
+    const handleImageUpload = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        setDescriptionImages(prev => [...prev, file]);
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const quill = quillRef.current.getEditor();
+            const range = quill.getSelection(true);
+            quill.insertEmbed(range ? range.index : 0, "image", event.target.result);
+        };
+        reader.readAsDataURL(file);
+    };
 
     return (
-        <div className="container">
-            <div className="sale-write-container">
-                <header className="sale-write-header">
-                    <button 
-                        type="button"
-                        className="back-button" 
-                        onClick={() => navigate(-1)}
-                    >
-                        <IoIosArrowBack />
-                    </button>
-                    <h2 className="title">본문</h2>
-                    <button 
-                        type="button"
-                        className="save-button" 
-                        onClick={handleSave}
-                    >
-                        저장
-                    </button>
-                </header>
-
-                {/* 상단 툴바 */}
-                <div className="toolbar">
-                    <button onClick={() => alert("추가 기능 준비 중!")}>+</button>
-                    
-                    <label htmlFor="imageUpload" 
-                        className="CiImageOn"
-                        style={{ cursor: "pointer" }}>
-                        <CiImageOn />
-                    </label>
-                    <input 
-                        type="file" 
-                        id="imageUpload" 
-                        accept="image/*" 
-                        style={{ display: "none" }} 
-                        onChange={handleImageUpload} 
-                    />
-
-                    <button onClick={() => handleCommand("undo")}>
-                        <LuUndo2 />
-                    </button>
-                    <button onClick={() => handleCommand("redo")}>
-                        <LuRedo2 />
-                    </button>
-                </div>
-
-                {/* 텍스트 편집 툴바 */}
-                <div className="editor-toolbar">
-                    <button onClick={() => handleCommand("bold")}>
-                        <b><FaBold /></b>
-                    </button>
-                    <button onClick={() => handleCommand("italic")}>
-                        <i><FaItalic /></i>
-                    </button>
-                    <button onClick={() => handleCommand("underline")}>
-                        <FaUnderline />
-                    </button>
-                    <button onClick={() => handleCommand("strikeThrough")}>
-                        <FaStrikethrough />
-                    </button>
-                    <button onClick={() => handleCommand("justify")}>
-                        <FaAlignJustify />
-                    </button>
-                    <button onClick={() => handleCommand("justifyLeft")}>
-                        <FaAlignLeft />
-                    </button>
-                    <button onClick={() => handleCommand("justifyCenter")}>
-                        <FaAlignCenter />
-                    </button>
-                    <button onClick={() => handleCommand("justifyRight")}>
-                        <FaAlignRight />
-                    </button>
-                    <button onClick={() => handleCommand("fontSize", "5")}>
-                        <RiFontSize />
-                    </button>
-                    <button onClick={() => handleCommand("fontSize", "2")}>
-                        <p>fontsize</p>
-                        <FaCaretDown />
-                    </button>
-                    <button onClick={() => handleCommand("insertUnorderedList")}>
-                        <PiListBulletsBold />
-                    </button>
-                    
-                    {/* 색상 선택 버튼 */}
-                    <button>
-                        <FaPaintBrush />
-                        <input
-                            type="color"
-                            value={color}
-                            onChange={handleColorChange}
-                            style={{ width: '30px', height: '30px', marginLeft: '10px', border: 'none', padding: 0 }}
-                        />
-                    </button>
-                </div>
-
-                {/* 본문 에디터 */}
-                <div
-                    ref={editorRef}
-                    className="editor"
-                    contentEditable
-                    suppressContentEditableWarning
-                    onInput={(e) => setContent(e.currentTarget.innerHTML)}
-                >
-                </div>
+        <div style={{ maxWidth: 700, margin: "0 auto", padding: 24 }}>
+            <h2>상세설명 작성</h2>
+            <ReactQuill
+                ref={quillRef}
+                value={content}
+                onChange={setContent}
+                style={{ height: 320, marginBottom: 32 }}
+                placeholder="상세설명을 입력하세요..."
+            />
+            <div style={{ marginBottom: 24 }}>
+                <label>이미지 넣기: </label>
+                <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                />
+            </div>
+            <div style={{ display: "flex", gap: 12 }}>
+                <button type="button" onClick={handleSave}>저장</button>
+                <button type="button" onClick={() => navigate(-1)}>취소</button>
             </div>
         </div>
     );
