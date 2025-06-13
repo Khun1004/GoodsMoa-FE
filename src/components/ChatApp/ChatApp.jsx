@@ -1,386 +1,352 @@
+import React, { useEffect, useRef, useState, useContext ,useCallback} from "react";
+import { LoginContext } from "../../contexts/LoginContext";
 import EmojiPicker from 'emoji-picker-react';
-import React, { useEffect, useRef, useState } from "react";
 import { FaCamera, FaFileAlt, FaGift, FaImage, FaMapMarkerAlt, FaMicrophone, FaMusic, FaPlus, FaSmile } from "react-icons/fa";
 import { ImCross } from "react-icons/im";
 import { IoMdDownload } from "react-icons/io";
-import { useNavigate } from "react-router-dom";
-import FelixImg from '../../assets/chatting/felix.png';
-import RoseImg from '../../assets/chatting/Rosé.png';
+import SockJS from 'sockjs-client';
+import { Client } from '@stomp/stompjs';
 import "./ChatApp.css";
+import MessageItem from '../MessageItem/MessageItem';
 
-const ChatApp = () => {
+export default function ChatApp() {
+  const [currentRoomId, setCurrentRoomId] = useState(null);
+  const [chatRooms, setChatRooms] = useState([]);
+  const [newRoomTitle, setNewRoomTitle] = useState("");
+  const { isLoading, isLogin, userInfo } = useContext(LoginContext);
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
-  const messagesEndRef = useRef(null);
-  const navigate = useNavigate();
-  const [file, setFile] = useState(null);
+  
   const [menuOpen, setMenuOpen] = useState(false);
   const [emojiPickerOpen, setEmojiPickerOpen] = useState(false);
-  const fileInputRef = useRef(null);
-  const emojiPickerRef = useRef(null);
   const [contextMenu, setContextMenu] = useState({
-    visible: false,
-    x: 0,
-    y: 0,
-    messageId: null
+    visible: false, x: 0, y: 0, messageId: null
   });
 
-  // 이모지 피커 외부 클릭 감지
+  const messagesEndRef = useRef(null);
+  const roomStompClient = useRef(null);
+  const fileInputRef = useRef(null);
+  const emojiPickerRef = useRef(null);
+  const stompClient = useRef(null);
+  const myUserId = userInfo?.id;
+
+  // ===== 채팅방 리스트 불러오기 =====
+  const fetchChatRooms = useCallback(() => {
+    if (!myUserId) return;
+    fetch("/chatroom/rooms/list", { credentials: "include" })
+      .then(res => {
+        if (!res.ok) throw new Error("채팅방 목록 API 실패");
+        return res.json();
+      })
+      .then(data => setChatRooms(Array.isArray(data) ? data : []))
+      .catch(err => {
+        console.error("채팅방 목록 불러오기 실패", err);
+        setChatRooms([]);
+      });
+  }, [myUserId]);
+
+  // ===== 최초 렌더링 시 채팅방 목록 불러오기 =====
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (emojiPickerRef.current && !emojiPickerRef.current.contains(event.target)) {
-        setEmojiPickerOpen(false);
-      }
-      
-      // 컨텍스트 메뉴 외부 클릭 감지
-      if (!event.target.closest('.context-menu') && !event.target.closest('.react-button')) {
-        setContextMenu(prev => ({ ...prev, visible: false }));
-      }
-    };
-    
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
+    if (myUserId) {
+        fetchChatRooms();
+    }
+  }, [myUserId, fetchChatRooms]);
 
-  const getCurrentTime = () => {
-    const now = new Date();
-    const hours = now.getHours();
-    const minutes = now.getMinutes().toString().padStart(2, '0');
-    const ampm = hours >= 12 ? 'PM' : 'AM';
-    const displayHours = hours % 12 || 12;
-    return `${displayHours}:${minutes} ${ampm}`;
-  };
 
+  // ===== [추가] 채팅방 목록 실시간 업데이트용 WebSocket =====
   useEffect(() => {
-    const storedMessages = JSON.parse(localStorage.getItem("chatMessages")) || [];
-    setMessages(storedMessages);
+    if (!myUserId) return;
 
-    const handleStorageChange = () => {
-      const updatedMessages = JSON.parse(localStorage.getItem("chatMessages")) || [];
-      setMessages(updatedMessages);
-    };
-
-    window.addEventListener("storage", handleStorageChange);
-
-    return () => {
-      window.removeEventListener("storage", handleStorageChange);
-    };
-  }, []);
-
-  useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
-    }
-  }, [messages]);
-
-  const sendMessage = () => {
-    if (message.trim()) {
-      const newMessage = { 
-        text: message, 
-        sender: "me", 
-        time: getCurrentTime(),
-        id: Date.now() // 고유 ID 추가
-      };
-      const updatedMessages = [...messages, newMessage];
-      setMessages(updatedMessages);
-      localStorage.setItem("chatMessages", JSON.stringify(updatedMessages));
-      setMessage("");
-      setEmojiPickerOpen(false);
-    }
-  };
-
-  const sendFile = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    
-    if (file.type.startsWith('image/')) {
-      // 이미지 파일 처리
-      reader.onload = (event) => {
-        const newMessage = {
-          file: {
-            type: 'image',
-            url: event.target.result,
-            name: file.name,
-            size: formatFileSize(file.size)
-          },
-          sender: "me",
-          time: getCurrentTime(),
-          id: Date.now() // 고유 ID 추가
-        };
-        updateMessages(newMessage);
-      };
-      reader.readAsDataURL(file);
-    } else {
-      // 일반 파일 처리
-      const newMessage = {
-        file: {
-          type: 'file',
-          name: file.name,
-          size: formatFileSize(file.size),
-          url: URL.createObjectURL(file)
-        },
-        sender: "me",
-        time: getCurrentTime(),
-        id: Date.now() // 고유 ID 추가
-      };
-      updateMessages(newMessage);
-    }
-  };
-
-  const formatFileSize = (bytes) => {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-  };
-
-  const updateMessages = (newMessage) => {
-    const updatedMessages = [...messages, newMessage];
-    setMessages(updatedMessages);
-    localStorage.setItem("chatMessages", JSON.stringify(updatedMessages));
-  };
-
-  const openChatOther = () => {
-    const chatWindow = window.open("/chat-other", "_blank", "width=600,height=800");
-    if (chatWindow) {
-      chatWindow.focus();
-    }
-  };
-
-  const handleKeyDown = (e) => {
-    if (e.key === "Enter") {
-      sendMessage();
-    }
-  };
-
-  const shouldShowProfile = (index) => {
-    if (index === 0) return true;
-    return messages[index].sender !== messages[index - 1].sender;
-  };
-
-  const shouldShowTime = (index) => {
-    if (index === messages.length - 1) return true;
-    if (messages[index].time !== messages[index + 1].time) return true;
-    if (messages[index].sender !== messages[index + 1].sender) return true;
-    return false;
-  };
-
-  // 이모지 선택 핸들러
-  const onEmojiClick = (emojiData) => {
-    setMessage(prev => prev + emojiData.emoji);
-  };
-
-  // 컨텍스트 메뉴 핸들러
-  const handleContextMenu = (e, messageId) => {
-    e.preventDefault();
-    setContextMenu({
-      visible: true,
-      x: e.clientX,
-      y: e.clientY,
-      messageId: messageId
+    const userUpdateClient = new Client({
+      webSocketFactory: () => new SockJS("http://localhost:8080/ws"),
+      debug: (str) => console.log(new Date(), `[User WS] ${str}`),
+      reconnectDelay: 10000,
     });
-  };
 
-  // 메뉴 아이템 클릭 핸들러
-  const handleMenuAction = (action) => {
-    switch(action) {
-      case 'reply':
-        alert('답장 기능이 준비 중입니다.');
-        break;
-      case 'share':
-        alert('공유 기능이 준비 중입니다.');
-        break;
-      case 'my-chatroom':
-        alert('내 채팅방 기능이 준비 중입니다.');
-        break;
-      case 'announce':
-        alert('공지 기능이 준비 중입니다.');
-        break;
-      case 'add-bookmark':
-        alert('북마크 추가 기능이 준비 중입니다.');
-        break;
-      case 'capture':
-        alert('캡처 기능이 준비 중입니다.');
-        break;
-      case 'delete':
-        const updatedMessages = messages.filter(msg => msg.id !== contextMenu.messageId);
-        setMessages(updatedMessages);
-        localStorage.setItem("chatMessages", JSON.stringify(updatedMessages));
-        break;
-      default:
-        break;
+    userUpdateClient.onConnect = () => {
+      console.log(`✅ [User WS] 개인 알림 채널 연결 성공. 구독 주소: /queue/user/${myUserId}/update`);
+      userUpdateClient.subscribe(`/queue/user/${myUserId}/update`, (message) => {
+        const notification = JSON.parse(message.body);
+        console.log('🔥 [User WS] 새 업데이트 수신!', notification);
+          // 새 메시지 알림을 받으면 채팅방 목록을 새로고침
+        fetchChatRooms();
+        
+      });
+    };
+
+    userUpdateClient.activate();
+
+    // 컴포넌트 언마운트 시 연결 해제
+    return () => {
+      if (userUpdateClient.active) {
+        userUpdateClient.deactivate();
+        console.log("ℹ️ [User WS] 개인 알림 채널 연결 종료");
+      }
+    };
+  }, [myUserId, fetchChatRooms]);
+
+
+  // ===== 채팅방 생성 =====
+  const handleCreateRoom = async () => {
+    if (!userInfo?.id) {
+      alert("로그인이 필요합니다.");
+      return;
     }
-    setContextMenu({ ...contextMenu, visible: false });
-  };
-
-  const menuItems = [
-    { icon: <FaImage />, label: "앨범", action: () => fileInputRef.current.click() },
-    { icon: <FaCamera />, label: "카메라", action: () => alert("카메라 기능 준비 중") },
-    { icon: <FaFileAlt />, label: "파일", action: () => fileInputRef.current.click() },
-    { icon: <FaMapMarkerAlt />, label: "위치", action: () => alert("위치 공유 기능 준비 중") },
-    { icon: <FaMicrophone />, label: "음성 메모", action: () => alert("음성 메모 기능 준비 중") },
-    { icon: <FaMusic />, label: "음악", action: () => alert("음악 공유 기능 준비 중") },
-    { icon: <FaGift />, label: "선물", action: () => alert("선물 보내기 기능 준비 중") },
-  ];
-
-  const toggleMenu = () => {
-    setMenuOpen(!menuOpen);
-    setEmojiPickerOpen(false);
-  };
-
-  const toggleEmojiPicker = () => {
-    setEmojiPickerOpen(!emojiPickerOpen);
-    setMenuOpen(false);
-  };
-
-  const renderFileMessage = (file) => {
-    if (file.type === 'image') {
-      return <img src={file.url} alt={file.name} className="message-image" />;
+    const senderId = userInfo.id;
+    const receiverId = prompt("상대방 userId를 입력하세요:");
+    if (!receiverId) {
+      alert("상대방 userId가 필요합니다.");
+      return;
+    }
+    const res = await fetch("http://localhost:8080/chatroom/room/create", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        senderId,
+        receiverId,
+        title: newRoomTitle,
+      }),
+    });
+    if (res.ok) {
+      setNewRoomTitle("");
+      // 목록 다시 불러오기
     } else {
-      return (
-        <div className="file-message">
-          <div className="file-icon">
-            <FaFileAlt size={24} />
-          </div>
-          <div className="file-info">
-            <div className="file-name">{file.name}</div>
-            <div className="file-size">{file.size}</div>
-          </div>
-          <a href={file.url} download={file.name} className="file-download">
-            <IoMdDownload size={20} />
-          </a>
-        </div>
-      );
+      alert("채팅방 생성 실패");
     }
   };
+
+  // ... (이하 다른 함수들은 그대로 유지) ...
+  
+    // ===== 채팅방 참여 =====
+    const handleJoinRoom = async (roomId) => {
+        if (!userInfo?.nickname) {
+            alert("로그인이 필요합니다.");
+            return;
+        }
+        setCurrentRoomId(roomId);
+    };
+
+    // WebSocket 연결 로직 등 ...
+    useEffect(() => {
+        if (!currentRoomId || !myUserId) {
+            setMessages([]);
+            return;
+        }
+
+        fetch(`http://localhost:8080/chatroom/room/${currentRoomId}/messages`, { credentials: "include" })
+        .then(res => res.ok ? res.json() : [])
+        .then(setMessages)
+
+        const client = new Client({
+          webSocketFactory: () => new SockJS("http://localhost:8080/ws"),
+          
+          debug: (str) => console.log(new Date(), str),
+          reconnectDelay: 5000,
+          onConnect: () => {
+              console.log("✅ STOMP: 연결 성공");
+    
+              // --- 2-1. 새 메시지 구독 ---
+              client.subscribe(`/queue/chat/${currentRoomId}`, (message) => {
+                const newMessage = JSON.parse(message.body);
+                console.log("🔥 [새 메시지 수신] 서버로부터 받은 객체:", newMessage);
+                setMessages(prev => [...prev, newMessage]);
+    
+                // 내가 보낸 메시지가 아니라면 즉시 읽음 처리 요청
+                // 이 부분은 이미 있지만, 위치를 다시 확인합니다.
+                if (newMessage.senderId !== myUserId) {
+                  // 이 요청은 기다릴 필요 없이 바로 보냅니다.
+                  fetch("http://localhost:8080/chat/read", {
+                    method: "POST",
+                    credentials: "include",
+                    headers: {
+                      "Content-Type": "application/json",
+                      
+                    },
+                    body: JSON.stringify({ chatRoomId: currentRoomId })
+                  })
+                  .catch(err => console.error("❌ 실시간 읽음 처리 요청 에러:", err));
+                }
+              });
+                // --- 2-2. 읽음 처리 알림 구독 ---
+                client.subscribe(`/queue/chat/${currentRoomId}/read`, (message) => {
+                  const readMessageIds = JSON.parse(message.body);
+    
+                  if (readMessageIds.length > 0) {
+                      console.log("✅ [실시간 읽음 처리] 수신된 ID 목록:", readMessageIds, `타입: ${typeof readMessageIds[0]}`);
+                  }
+    
+                  const readIdSet = new Set(readMessageIds.map(id => String(id)));
+    
+                  setMessages(prevMessages => {
+                      if (prevMessages.length > 0) {
+                          console.log("📝 [업데이트 전] 현재 메시지 상태 ID:", prevMessages[0].id, `타입: ${typeof prevMessages[0].id}`);
+                      }
+    
+                      return prevMessages.map(msg =>
+                          readIdSet.has(String(msg.id))
+                              ? { ...msg, isRead: true }
+                              : msg
+                      );
+                  });
+                  fetch("/chatroom/rooms/list", { credentials: "include" })
+                    .then(res => res.json())
+                    .then(data => setChatRooms(Array.isArray(data) ? data : []));
+              });
+              // --- 3. 채팅방 입장 후, 안 읽은 메시지 읽음 처리 요청 ---
+              fetch("http://localhost:8080/chat/read", {
+                method: "POST",
+                credentials: "include",
+                headers: {
+                    "Content-Type": "application/json",
+                    
+                },
+                body: JSON.stringify({ chatRoomId: currentRoomId })
+            })
+            .then(res => {
+                if (!res.ok) console.error("읽음 처리 API 호출 실패", res.statusText);
+                else console.log(`✅ 채팅방 ${currentRoomId} 입장, 읽음 처리 요청 완료.`);
+            })
+            .catch(err => console.error("❌ 읽음 처리 요청 에러:", err));
+      },
+      onStompError: (frame) => console.error("❌ STOMP 에러", frame),
+    });
+    
+      // --- 4. 연결 활성화 ---
+      client.activate();
+      stompClient.current = client;
+    
+      // --- 5. 컴포넌트 언마운트 시 연결 해제 ---
+      return () => {
+          if (stompClient.current && stompClient.current.active) {
+              stompClient.current.deactivate();
+              console.log("ℹ️ STOMP: 연결 종료");
+          }
+      };
+    }, [currentRoomId, myUserId]); // ✅ 의존성 배열에 myUserId도 추가
+
+  
+    const sendMessage = () => {
+      if (message.trim() === '' || !stompClient.current?.connected) return;
+      stompClient.current.publish({
+          destination: `/pub/chat`,
+          body: JSON.stringify({
+              chatRoomId: currentRoomId,
+              content: message,
+              type: "CHAT"
+          })
+      });
+      setMessage("");
+      fetch("/chatroom/rooms/list", { credentials: "include" })
+          .then(res => res.json())
+          .then(data => setChatRooms(Array.isArray(data) ? data : []));
+  };
+
+    const handleKeyDown = (e) => {
+        if (e.nativeEvent.isComposing) return; 
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+        }
+    };
+
+    const shouldShowSenderInfo = (index) => {
+        if (index === 0) return true;
+        const currentMessage = messages[index];
+        const previousMessage = messages[index - 1];
+        return currentMessage.senderId !== previousMessage.senderId;
+    };
+
+    useEffect(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, [messages]);
+
+    function formatTime(timeString) {
+      if (!timeString) return "";
+      const date = new Date(timeString);
+      return date.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', hour12: false });
+    }
+  // ... (이하 렌더링 로직은 그대로 유지) ...
+  if (isLoading) return <div>로딩 중...</div>;
 
   return (
-    <div className="chat-container">
-      <div className="chat-header">
-        <div className="header-content">
-          <img src={FelixImg} alt="Felix" className="felix-profile-image" />
-          <h2><span className="felixName">Felix</span> 채팅방</h2>
-        </div>
+    <div className="chat-layout">
+      {/* 왼쪽: 채팅방 리스트 */}
+      <div className="chatroom-list-container">
+        <h2>채팅방 목록</h2>
+        <ul className="chatroom-list">
+          {(chatRooms || []).map(room => (
+            <li
+              key={room.id}
+              className={`chatroom-list-item${room.id === currentRoomId ? " selected" : ""}`}
+              onClick={() => setCurrentRoomId(room.id)}
+            >
+              <img
+                src={room.sellerProfileImage || "/profile.jpg"}
+                className="chatroom-avatar"
+              />
+              <div className="chatroom-info">
+                <div className="chatroom-title-row">
+                  <span className="chatroom-nickname">{room.sellerNickname}</span>
+                  
+                </div>
+                <div className="chatroom-last-message">
+                  {room.lastMessageContent || "대화를 시작해보세요!"}
+                </div>
+              </div>
+              <div className="chatroom-meta">
+                  <span className="chatroom-time">{formatTime(room.lastMessageTime)}</span>
+                  {room.unreadCount > 0 && (
+                    <span className="chatroom-unread-badge">{room.unreadCount}</span>
+                )}
+              </div>
+            </li>
+          ))}
+        </ul>
       </div>
 
-      <div className="chat-messages">
-        {messages.map((msg, index) => (
-          <div 
-            key={index} 
-            className={`message-container ${msg.sender}`}
-            onContextMenu={(e) => handleContextMenu(e, msg.id)}
-          >
-            {msg.sender === "other" && (
-              <div className="sender-info">
-                {shouldShowProfile(index) && (
-                  <>
-                    <img src={RoseImg} alt="Rosé" className="other-profile-image" />
-                    <span className="rose-name">Rosé</span>
-                  </>
-                )}
-              </div>
-            )}
-            <div className={`message ${msg.sender}`}>
-              <div className="message-content">
-                {msg.file ? (
-                  renderFileMessage(msg.file)
-                ) : msg.image ? (
-                  <img src={msg.image} alt="전송된 이미지" className="message-image" />
-                ) : (
-                  <span>{msg.text}</span>
-                )}
-                {shouldShowTime(index) && <span className="message-time">{msg.time}</span>}
-              </div>
+      {/* 오른쪽: 채팅창 (선택된 방만 표시) */}
+      <div className="chat-container">
+        {currentRoomId ? (
+          <>
+            <div className="chat-header">
+              <h3>
+                {(() => {
+                  const room = chatRooms.find(r => r.id === currentRoomId);
+                  if (!room) return `채팅방 ${currentRoomId}`;1
+                  return room.sellerNickname
+                    ? `${room.sellerNickname}님의 채팅방`
+                    : `채팅방 ${currentRoomId}`;
+                })()}
+              </h3>
             </div>
-            {msg.sender === "me" && (
-              <div className="sender-info">
-                {shouldShowProfile(index) && <img src={FelixImg} alt="Me" className="me-profile-image" />}
-              </div>
-            )}
-          </div>
-        ))}
-        <div ref={messagesEndRef} />
-      </div>
-      
-      <div className="input-container">
-        <button className="menu-toggle-button" onClick={toggleMenu}>
-          {menuOpen ? <ImCross /> : <FaPlus />}
-        </button>
-        
-        <button className="emoji-button" onClick={toggleEmojiPicker}>
-          <FaSmile />
-        </button>
-        
-        <input
-          type="text"
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder="메시지를 입력하세요"
-        />
-        
-        <button onClick={sendMessage} className="send-button">
-          전송
-        </button>
-        <button onClick={openChatOther} className="other-button">
-          다른 채팅방
-        </button>
-        
-        <input
-          type="file"
-          ref={fileInputRef}
-          onChange={sendFile}
-          style={{ display: 'none' }}
-        />
-      </div>
-
-      {emojiPickerOpen && (
-        <div className="emoji-picker-container" ref={emojiPickerRef}>
-          <EmojiPicker onEmojiClick={onEmojiClick} width={300} height={400} />
-        </div>
-      )}
-
-      {menuOpen && (
-        <div className="chat-menu">
-          <div className="menu-grid">
-            {menuItems.map((item, index) => (
-              <button key={index} onClick={item.action} className="menu-item">
-                <div className="menu-icon">{item.icon}</div>
-                <span className="menu-label">{item.label}</span>
+            <div className="chat-messages">
+              {messages.map((msg, index) => (
+                <MessageItem
+                  key={msg.id || index}
+                  msg={msg}
+                  myUserId={myUserId}
+                  showSenderInfo={shouldShowSenderInfo(index)}
+                />
+              ))}
+              <div ref={messagesEndRef} />
+            </div>
+            <div className="input-container">
+              <input
+                type="text"
+                value={message}
+                onChange={e => setMessage(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder="메시지를 입력하세요"
+              />
+              <button onClick={sendMessage} className="send-button">
+                전송
               </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {contextMenu.visible && (
-        <div 
-          className="context-menu"
-          style={{
-            position: 'fixed',
-            left: `${contextMenu.x}px`,
-            top: `${contextMenu.y}px`,
-            zIndex: 1000
-          }}
-        >
-          <ul>
-            <li onClick={() => handleMenuAction('reply')}>Reply</li>
-            <li onClick={() => handleMenuAction('share')}>Share</li>
-            <li onClick={() => handleMenuAction('my-chatroom')}>My chatroom</li>
-            <li onClick={() => handleMenuAction('announce')}>Announce</li>
-            <li onClick={() => handleMenuAction('add-bookmark')}>Add Bookmark</li>
-            <li onClick={() => handleMenuAction('capture')}>Capture</li>
-            <li onClick={() => handleMenuAction('delete')}>Delete</li>
-          </ul>
-        </div>
-      )}
+            </div>
+          </>
+        ) : (
+          <div className="empty-chat">채팅방을 선택하세요</div>
+        )}
+      </div>
     </div>
   );
-};
-
-export default ChatApp;
+}

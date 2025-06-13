@@ -3,7 +3,7 @@ import { BsChatDotsFill } from "react-icons/bs";
 
 const Chatting = () => {
     const openChatApp = () => {
-    const chatWindow = window.open("/chat-app", "_blank", "width=600,height=800");
+    const chatWindow = window.open("/chat-app", "_blank", "width=1000,height=800");
     if (chatWindow) {
         chatWindow.focus();
     }

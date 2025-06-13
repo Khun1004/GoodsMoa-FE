@@ -1,461 +1,300 @@
-.chat-container {
-  padding: 16px;
-  background-color: #f5f5f5;
-  height: 100vh;
+/* ===== 기본 및 전체 레이아웃 ===== */
+/* .chat-container {
   display: flex;
   flex-direction: column;
+  height: 100vh;
+  background-color: #f0f2f5;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+} */
+
+.chat-layout {
+  display: flex;
+  flex-direction: row; 
+  height: 100vh;
+  width: 100vw;
+}
+.chatroom-list-container {
+  width: 240px;
+  min-width: 140px;
+  max-width: 300px;
+  background: #f5f6fa;
+  border-right: 1px solid #e0e0e0;
+  overflow-y: auto;
+  padding: 16px;
 }
 
-.chat-header {
-  padding: 10px;
-  background-color: black;
-  color: white;
-  text-align: center;
-  border-radius: 10px 10px 0 0;
-  margin-bottom: 10px;
+.chatroom-list-container ul {
+  padding: 0;
+  margin: 0;
+  list-style: none;
 }
 
-.felixName {
-  color: white;
+.chatroom-list-container li {
+  margin-bottom: 12px;
 }
 
-.header-content {
+.chatroom-list-container .selected-room {
+  font-weight: bold;
+  background: #fee500;
+  border-radius: 8px;
+}
+.chatroom-list {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.chatroom-list-item {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 10px;
+  padding: 12px 10px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.2s;
+  position: relative;
 }
 
-.felix-profile-image {
+.chatroom-list-item:hover {
+  background: #f0e9ff;
+}
+
+.chatroom-list-item.selected {
+  background: #fee500;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+.chatroom-avatar {
   width: 40px;
   height: 40px;
   border-radius: 50%;
   object-fit: cover;
-  border: 2px solid white;
+  margin-right: 12px;
+  border: 1.5px solid #e0e0e0;
+  background: #fff;
+}
+
+.chatroom-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.chatroom-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.chatroom-nickname {
+  font-weight: bold;
+  font-size: 1.1rem;
+  color: #1a1a1a;
+}
+.chatroom-meta {
+  display: flex;
+  flex-direction: column; /* 아이템을 세로로 쌓음 */
+  align-items: flex-end; /* 아이템을 오른쪽으로 정렬 */
+  justify-content: center;
+  gap: 4px; /* 시간과 뱃지 사이의 간격 */
+}
+
+
+.chatroom-time {
+  font-size: 0.75rem; /* 약간 작게 조정 */
+  color: #999;
+  margin-left: 8px;
+}
+
+.chatroom-last-message {
+  font-size: 0.95rem;
+  color: #666;
+  margin-top: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chatroom-unread-badge {
+  background: #ff3b30;
+  color: #fff;
+  font-size: 0.75rem; /* 크기 통일 */
+  border-radius: 10px;
+  padding: 1px 6px;
+  font-weight: bold;
+  line-height: 1.4;
+  
+  /* position: absolute 관련 속성 모두 제거! */
+}
+
+
+.chat-container {
+  flex: 1;
+  min-width: 0; 
+  display: flex;
+  flex-direction: column;
+  background: #f0f2f5;
+  
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+
+.chat-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background-color: #ffffff;
+  color: #000;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.back-button {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 5px;
 }
 
 .chat-messages {
   flex: 1;
   overflow-y: auto;
-  padding: 10px;
-  background-color: #fff;
-  border-radius: 0 0 10px 10px;
-}
-
-.message-container {
-  display: flex;
-  margin: 8px 0;
-}
-
-.message-container.me {
-  justify-content: flex-end;
-}
-
-.message-container.other {
-  justify-content: flex-start;
-}
-
-.sender-info {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin: 0 5px;
-  min-width: 50px;
-}
-
-.other-profile-image, 
-.me-profile-image {
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 1px solid #ddd;
-}
-
-.felix-name {
-  font-size: 12px;
-  font-weight: bold;
-  color: black;
-  margin-top: 2px;
-}
-
-.message {
-  max-width: 70%;
-  display: flex;
-  flex-direction: column;
-}
-
-.message-content {
-  display: flex;
-  align-items: flex-end;
-}
-
-.message.me .message-content {
-  flex-direction: row-reverse;
-}
-
-.message.other .message-content {
-  flex-direction: row;
-}
-
-.message span:first-child {
-  padding: 10px 15px;
-  border-radius: 18px;
-  word-break: break-word;
-  max-width: 100%;
-}
-
-.message.me span:first-child {
-  background-color: #fee500;
-  color: #000;
-  border-top-right-radius: 0;
-}
-
-.message.other span:first-child {
-  background-color: #e5e5ea;
-  color: #000;
-  border-top-left-radius: 0;
-}
-
-.message-time {
-  font-size: 10px;
-  color: #888;
-  margin: 0 5px;
-  padding-bottom: 2px;
+  padding: 0 16px;
 }
 
 .input-container {
   display: flex;
-  padding: 10px 0;
-  margin-top: 10px;
+  align-items: center;
+  padding: 10px 16px;
+  background-color: #ffffff;
+  border-top: 1px solid #e0e0e0;
 }
 
 .input-container input {
   flex: 1;
-  padding: 12px;
-  border: 1px solid #ddd;
+  padding: 12px 16px;
+  border: none;
+  background-color: #f0f2f5;
   border-radius: 20px;
   outline: none;
-}
-
-.input-container button {
-  margin-left: 8px;
-  padding: 12px 15px;
-  border-radius: 20px;
-  border: none;
-  cursor: pointer;
-  font-weight: bold;
+  font-size: 1rem;
 }
 
 .send-button {
+  margin-left: 8px;
   background-color: #fee500;
   color: #3a1d1d;
-}
-
-.other-button {
-  background-color: #3a1d1d;
-  color: #fee500;
-}
-
-.rose-name {
-  font-size: 12px;
+  border: none;
+  border-radius: 20px;
+  padding: 12px 15px;
   font-weight: bold;
-  color: black;
-  margin-top: 2px;
-}
-
-.chat-menu {
-  position: absolute;
-  bottom: 80px;
-  left: 20px;
-  right: 20px;
-  background-color: white;
-  border-radius: 15px;
-  padding: 15px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  z-index: 100;
-}
-
-.menu-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
-}
-
-.menu-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 10px;
-  border: none;
-  background: none;
   cursor: pointer;
-  border-radius: 10px;
-  transition: background-color 0.2s;
 }
 
-.menu-item:hover {
-  background-color: #f5f5f5;
-}
-
-.menu-icon {
-  font-size: 24px;
-  margin-bottom: 5px;
-  color: #333;
-}
-
-.menu-label {
-  font-size: 12px;
-  color: #333;
-}
-
-.message-image {
-  max-width: 200px;
-  max-height: 200px;
-  border-radius: 10px;
-  margin-bottom: 5px;
-}
-
-.menu-toggle-button {
-  background: none;
-  border: none;
-  color: #555;
-  cursor: pointer;
-  font-size: 18px;
-  padding: 0 12px;
+/* ===== 메시지 아이템 ===== */
+.message-wrapper {
+  /* 기존 스타일 */
   display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: transform 0.2s, color 0.2s;
+  align-items: flex-start;
+  padding: 2px 0;
+
+  /* ✨ [최종 수정] 레이아웃 강제 초기화 */
+  width: 100%;
+  box-sizing: border-box;
 }
 
-.menu-toggle-button:hover {
-  color: #333;
-  /* transform: scale(1.1); */
+.message-wrapper:not(.consecutive) {
+  margin-top: 16px;
 }
 
-/* 기존 CSS에 추가할 내용 */
-.emoji-button {
-  background: none;
-  border: none;
-  color: #555;
-  cursor: pointer;
-  font-size: 18px;
-  padding: 0 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: transform 0.2s, color 0.2s;
-}
-
-.emoji-button:hover {
-  color: #333;
-  /* transform: scale(1.1); */
-}
-
-.emoji-picker-container {
-  position: absolute;
-  bottom: 80px;
-  left: 20px;
-  z-index: 1000;
-}
-
-/* 반응 관련 스타일 */
-.message-reactions {
-  display: flex;
-  gap: 4px;
-  margin-top: 4px;
+.message-wrapper.me {
   justify-content: flex-end;
 }
 
-.reaction {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 20px;
-  height: 20px;
+/* ===== 프로필 이미지 & 닉네임 (디스코드 스타일) ===== */
+.profile-image-container {
+  width: 40px;
+  height: 40px;
+  margin-right: 12px;
+  flex-shrink: 0;
+}
+.message-wrapper.me .profile-image-container {
+  order: 2;
+  margin-right: 0;
+  margin-left: 12px;
+}
+
+.profile-image {
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
-  background-color: rgba(255, 255, 255, 0.8);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-  font-size: 10px;
-}
-
-.reaction-like {
-  color: #1877f2;
-}
-
-.reaction-heart {
-  color: #ff2d55;
-}
-
-.reaction-smile {
-  color: #ffcc00;
-}
-
-.reaction-laugh {
-  color: #ff9500;
-}
-
-.reaction-sad {
-  color: #5856d6;
-}
-
-.react-button {
-  position: absolute;
-  right: -10px;
-  bottom: -5px;
-  background: white;
-  border: 1px solid #ddd;
-  border-radius: 50%;
-  width: 20px;
-  height: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
-  transition: opacity 0.2s;
+  object-fit: cover;
   cursor: pointer;
 }
 
-.message:hover .react-button {
-  opacity: 1;
-}
-
-.reaction-picker {
-  position: absolute;
-  bottom: 100%;
-  right: 0;
-  background: white;
-  border-radius: 20px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-  padding: 5px;
+.message-box {
   display: flex;
-  gap: 5px;
-  z-index: 10;
+  flex-direction: column;
+  max-width: 70%;
 }
 
-.reaction-picker button {
-  background: none;
-  border: none;
-  font-size: 16px;
-  cursor: pointer;
-  padding: 5px;
-  border-radius: 50%;
+.message-wrapper.me .message-box {
+  align-items: flex-end;
 }
 
-.reaction-picker button:hover {
-  background: #f0f0f0;
+.sender-nickname {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #1d1d1f;
+  margin-bottom: 4px;
 }
 
-.message {
+/* ===== 메시지 말풍선 & 컨텐츠 ===== */
+.message-content-wrapper {
+  display: flex;
+  align-items: flex-end;
   position: relative;
 }
 
-.context-menu {
-  background-color: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-  padding: 8px 0;
-  min-width: 150px;
+.message-wrapper.me .message-content-wrapper {
+  flex-direction: row-reverse;
 }
 
-.context-menu ul {
-  list-style: none;
+.message-text {
+  padding: 10px 15px;
+  border-radius: 18px;
+  word-break: break-word;
+  line-height: 1.4;
   margin: 0;
-  padding: 0;
+  background-color: #ffffff;
+  color: #000;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
 }
 
-.context-menu li {
-  padding: 8px 16px;
-  cursor: pointer;
-  font-size: 14px;
+.message-wrapper.me .message-text {
+  background-color: #fee500;
 }
 
-.context-menu li:hover {
-  background-color: #f5f5f5;
-}
-
-/* Message selection styles */
-.message-container.selected,
-.other-message-container.selected {
-  background-color: rgba(0, 0, 0, 0.05);
-}
-
-.message-checkbox {
-  width: 20px;
-  height: 20px;
-  border: 2px solid #ccc;
-  border-radius: 50%;
-  margin-right: 10px;
+/* ===== 시간 및 읽음 상태 ===== */
+.message-meta {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  flex-shrink: 0;
+  align-items: flex-end;
+  margin: 0 6px;
+  font-size: 0.7rem;
+  color: #8e8e93;
+  white-space: nowrap;
+  padding-bottom: 2px;
 }
 
-.message-checkbox svg {
-  color: #4CAF50;
-  font-size: 12px;
+.read-status {
+  color: #ffeb3b;
+  font-weight: bold;
+  margin-right: 4px;
 }
 
-.delete-selected-button {
-  background-color: #ff4444;
-  color: white;
-  border: none;
-  padding: 5px 10px;
-  border-radius: 4px;
-  margin-left: auto;
-  cursor: pointer;
+.message-wrapper.me .read-status {
+  margin-right: 0;
+  margin-left: 4px;
 }
 
-/* Delete options modal */
-.delete-options-modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
+/* ===== ✨ 일자 정렬을 위한 핵심 코드 ✨ ===== */
 
-.delete-options-content {
-  background-color: white;
-  padding: 20px;
-  border-radius: 8px;
-  width: 300px;
-  text-align: center;
-}
-
-.delete-options-content h3 {
-  margin-top: 0;
-  margin-bottom: 20px;
-}
-
-.delete-options-content button {
-  display: block;
-  width: 100%;
-  padding: 10px;
-  margin-bottom: 10px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.delete-options-content button:first-of-type {
-  background-color: #ff4444;
-  color: white;
-}
-
-.delete-options-content button:nth-of-type(2) {
-  background-color: #f0f0f0;
-}
-
-.delete-options-content button:last-of-type {
-  background-color: #ddd;
-}

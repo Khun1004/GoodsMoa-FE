@@ -16,6 +16,15 @@ export default defineConfig({
     // host: '127.0.0.1',
     port: 5177,
     strictPort: true,
+    proxy: {
+      '/chatroom': 'http://localhost:8080',
+      '/users': 'http://localhost:8080',
+      '/ws': {
+        target: 'http://localhost:8080',
+        ws: true,
+        changeOrigin: true,
+      },
+    },
   },
   define: {
     global: 'globalThis',  // ✅ 여기가 정확한 위치입니다
