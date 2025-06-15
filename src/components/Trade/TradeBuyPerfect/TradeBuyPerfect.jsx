@@ -9,6 +9,11 @@ const TradeBuyPerfect = () => {
 
     const fullAddress = `${deliveryAddress}, ${detailAddress}`.trim();
 
+    const getImageUrl = (path) => {
+        if (!path || typeof path !== "string") return "/default-image.jpg";
+        return path.startsWith("http") ? path : `http://localhost:8080/${path.replace(/^\/?/, "")}`;
+    };
+
     return (
         <div className="trade-buy-perfect-container">
         <div className="trade-buy-perfect-card">
@@ -27,7 +32,7 @@ const TradeBuyPerfect = () => {
 
             <div className="perfect-product-info">
             <img
-                src={item?.representativeImage || "/default-image.jpg"}
+                src={getImageUrl(item?.representativeImage)}
                 alt="상품 이미지"
                 className="perfect-product-image"
             />

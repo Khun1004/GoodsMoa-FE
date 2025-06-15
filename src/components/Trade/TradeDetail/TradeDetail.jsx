@@ -204,7 +204,7 @@ const handleLikeToggle = async () => {
             quantity: 1,
             image: tradePost.thumbnailImage,
             representativeImage: tradePost.thumbnailImage,
-            detailImages: detailImages.map(img => img.image_path),
+           detailImages: detailImages.map(img => ({ imagePath: img.imagePath })), 
             category: tradePost.categoryName || "미정",
             shippingMethods: tradePost.delivery_price || (isDirectTrade ? "없음" : "3500원"),
             tradeLabel: "중고거래",
@@ -220,10 +220,25 @@ const handleLikeToggle = async () => {
   };
 
   const handleReportClick = () => {
-    navigate("/reportpage", {
-      state: { item: tradePost, representativeImage: allImages[selectedIndex] },
-    });
+  const item = {
+    id: tradePost.id,
+    title: tradePost.title,
+    price: tradePost.productPrice ?? null,
+    condition: tradePost.condition_status ?? null,
   };
+
+  navigate("/demandReport", {
+    state: {
+      item,
+      representativeImage: allImages[selectedIndex],
+    },
+  });
+};
+const handleChatClick = () => {
+  window.open("/chat-app", "_blank", "width=500,height=700,resizable=yes");
+};
+
+
 
   return (
     <div className="container">
@@ -268,7 +283,10 @@ const handleLikeToggle = async () => {
 
             <div className="tradeRCBtn">
               <button className="tradeDetailReportBtn" onClick={handleReportClick}>🚨 신고하기</button>
-              <button className="tradeDetailChatBtn">💬 채팅하기</button>
+             <button className="tradeDetailChatBtn" onClick={handleChatClick}>
+  💬 채팅하기
+</button>
+
               <button
   className={`detail-like-button ${liked ? 'liked' : ''}`}
   onClick={handleLikeToggle}

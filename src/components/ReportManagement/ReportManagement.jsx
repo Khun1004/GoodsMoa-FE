@@ -15,7 +15,8 @@ const ReportManagement = () => {
         } else {
             // 더미 데이터 사용 및 저장
             setReports(dummyReports);
-            localStorage.setItem("reports", JSON.stringify(dummyReports));
+            localStorage.set
+            Item("reports", JSON.stringify(dummyReports));
         }
     }, []);
 

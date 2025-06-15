@@ -52,6 +52,7 @@ import TradeDetail from "./components/Trade/TradeDetail/TradeDetail";
 import TradeForm from "./components/Trade/TradeForm/TradeForm";
 import TradeWrite from "./components/Trade/TradeWrite/TradeWrite";
 import SalePurchasePerfect from "./components/Sales/SalePurchasePerfect/SalePurchasePerfect";
+import { TradeProvider } from "./contexts/TradeContext";
 
 const AppContent = ({ handleOrderPopup, orderPopup, openModal, 
   closeModal, isLoggedIn, setIsLoggedIn, setUser }) => {
@@ -60,6 +61,9 @@ const AppContent = ({ handleOrderPopup, orderPopup, openModal,
   // Check if the current page is the ChatApp page
   const isChatPage = location.pathname === "/chat-app" || location.pathname === "/chat-other";
   return (
+     <TradeProvider>
+
+    
     
     <div className="bg-white dark:bg-gray-900 dark:text-white duration-200">
       {/* Navbar will be hidden on /chat-app */}
@@ -164,14 +168,14 @@ const AppContent = ({ handleOrderPopup, orderPopup, openModal,
         />
 
         {/* TradeDetail Page */}
-        <Route
-          path="/tradeDetail"
-          element={
-            <div className="pt-[130px]">
-              <TradeDetail />
-            </div>
-          }
-        />
+       <Route
+  path="/tradeDetail/:id"
+  element={
+    <div className="pt-[130px]">
+      <TradeDetail />
+    </div>
+  }
+/>
 
         {/* Trade Page */}
         <Route
@@ -476,6 +480,7 @@ const AppContent = ({ handleOrderPopup, orderPopup, openModal,
       {/* Footer will be hidden on /chat-app */}
       {!isChatPage && <Footer />}
     </div>
+     </TradeProvider>
   );
 };
 

@@ -91,6 +91,8 @@ const ChatApp = () => {
     }
   };
 
+  
+
   const sendFile = (e) => {
     const file = e.target.files[0];
     if (!file) return;
