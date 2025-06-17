@@ -455,6 +455,7 @@ console.log(
 console.log("description 길이 (바이트):", new Blob([formTradeData.description]).size);
 console.log("✅ 로그인 상태:", isLogin);
 console.log("👤 로그인된 사용자 정보:", userInfo);
+console.log("✅ shipping 원본 값:", formTradeData.shipping);
 
 
   return (

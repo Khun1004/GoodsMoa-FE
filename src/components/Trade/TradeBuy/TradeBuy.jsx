@@ -1,20 +1,17 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { loadTossPayments } from "@tosspayments/payment-sdk";
 import "./TradeBuy.css";
 
 const TradeBuy = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
+  const { wantedProducts = [], saleLabel = "중고거래" } = location.state || {};
+  const item = wantedProducts[0];
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  const {
-    wantedProducts = [],
-    saleLabel = "중고거래",
-    isDirectTrade = false,
-  } = location.state || {};
-
-  const item = wantedProducts[0];
+  const isDirectTrade = item?.delivery === false;
 
   const [deliveryAddress, setDeliveryAddress] = useState(
     isDirectTrade ? item?.directTradeLocation || "" : ""
@@ -26,19 +23,20 @@ const TradeBuy = () => {
   const totalPrice = item ? item.price : 0;
 
   const getImageUrl = (path) => {
-  if (!path || typeof path !== "string") return "/default-image.jpg";
-  return path.startsWith("http") ? path : `http://localhost:8080/${path.replace(/^\/?/, "")}`;
-};
+    if (!path || typeof path !== "string") return "/default-image.jpg";
+    return path.startsWith("http")
+      ? path
+      : `http://localhost:8080/${path.replace(/^\/?/, "")}`;
+  };
 
-  // 대표 이미지 처리
   const representativeImage = getImageUrl(item?.representativeImage || item?.image);
 
-  // 상세 이미지들 처리
-  const images = Array.isArray(item?.detailImages) && item.detailImages.length > 0
-  ? item.detailImages
-      .filter((img) => img?.imagePath && typeof img.imagePath === "string")
-      .map((img) => getImageUrl(img.imagePath))
-  : [getImageUrl(item?.representativeImage || item?.image)];
+  const images =
+    Array.isArray(item?.detailImages) && item.detailImages.length > 0
+      ? item.detailImages
+          .filter((img) => img?.imagePath && typeof img.imagePath === "string")
+          .map((img) => getImageUrl(img.imagePath))
+      : [representativeImage];
 
   useEffect(() => {
     if (images.length > 1) {
@@ -70,34 +68,80 @@ const TradeBuy = () => {
       alert("배송지를 입력해 주세요.");
       return;
     }
-
-    const addressInfo = isDirectTrade
-      ? `직접 거래 장소: ${item?.directTradeLocation}`
-      : `배송지: ${deliveryAddress} ${detailAddress}`;
-
-    alert(`구매가 완료되었습니다!\n${addressInfo}`);
-
-    navigate("/tradeBuyPerfect", {
-      state: {
-        item,
-        deliveryAddress: isDirectTrade ? item?.directTradeLocation : deliveryAddress,
-        detailAddress: isDirectTrade ? "" : detailAddress,
-        deliveryNote,
-        paymentMethod,
-        isDirectTrade,
-      },
-    });
+     const requestBody = {
+    tradePostId: item.id,
+    deliveryId: isDirectTrade ? 1 : 2,
+    recipientName: "홍길동",
+    phoneNumber: "010-1234-5678",
+    zipCode: "12345",
+    mainAddress: deliveryAddress,
+    postMemo: deliveryNote,
+    products: [{ productId: item.id, quantity: 1 }],
   };
-  console.log("대표 이미지:", representativeImage);
-console.log("상세 이미지 목록:", images);
+
+      console.log("📦 주문 생성 요청 body:", requestBody); // ✅ 디버깅 로그
+    try {
+      // 1. 주문 생성 요청
+      const orderResponse = await fetch("http://localhost:8080/order/trade/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          tradePostId: item.id,
+          deliveryId: isDirectTrade ? 1 : 2,
+          recipientName: "홍길동",
+          phoneNumber: "010-1234-5678",
+          zipCode: "12345",
+          mainAddress: deliveryAddress,
+        
+          postMemo: deliveryNote,
+          products: [{ productId: item.id, quantity: 1 }],
+        }),
+      });
+
+      if (!orderResponse.ok) throw new Error("주문 생성 실패");
+
+      const { orderId, orderCode } = await orderResponse.json(); // ✅ orderCode: UUID
+
+      // 2. 결제 수단 TossPay 선택 시
+      if (paymentMethod === "tossPay") {
+        const tossPayments = await loadTossPayments("test_ck_AQ92ymxN342Zya29jK2KrajRKXvd");
+
+        await tossPayments.requestPayment("카드", {
+          amount: totalPrice,
+          orderId: orderCode, // ✅ Toss에는 UUID 기반 orderCode 전달
+          orderName: item?.name || "중고 상품",
+          customerName: "사용자",
+          successUrl: `${window.location.origin}/payment/success?orderCode=${orderCode}&amount=${totalPrice}`,
+          failUrl: `${window.location.origin}/payment/fail`,
+        });
+
+        return;
+      }
+
+      // 3. 기타 결제 수단 (Toss 외) 처리
+      alert("구매가 완료되었습니다!");
+      navigate("/tradeBuyPerfect", {
+        state: {
+          item,
+          deliveryAddress,
+          detailAddress,
+          deliveryNote,
+          paymentMethod,
+          isDirectTrade,
+        },
+      });
+    } catch (err) {
+      console.error("구매 확정 오류:", err);
+      alert("문제가 발생했습니다. 다시 시도해주세요.");
+    }
+  };
 
   return (
     <div className="container">
       <div className="trade-buy-container">
         <h1 className="tradeBuy-title">구매하기</h1>
-
         <div className="trade-buy-layout">
-          {/* 왼쪽: 이미지 슬라이드 */}
           <div className="trade-buy-slider">
             <img
               src={images[currentIndex]}
@@ -105,8 +149,6 @@ console.log("상세 이미지 목록:", images);
               className="trade-buy-slider-image"
             />
           </div>
-
-          {/* 오른쪽: 상품 정보 및 구매 입력 */}
           <div className="trade-buy-info">
             <div className="trade-buy-summary">
               <img
@@ -161,37 +203,37 @@ console.log("상세 이미지 목록:", images);
                   />
                 </>
               )}
+
               {!isDirectTrade && (
-  <>
-    <label>배송 메모:</label>
-    <textarea
-      placeholder="요청 사항을 입력하세요."
-      value={deliveryNote}
-      onChange={(e) => setDeliveryNote(e.target.value)}
-      className="trade-buy-textarea"
-    ></textarea>
+                <>
+                  <label>배송 메모:</label>
+                  <textarea
+                    placeholder="요청 사항을 입력하세요."
+                    value={deliveryNote}
+                    onChange={(e) => setDeliveryNote(e.target.value)}
+                    className="trade-buy-textarea"
+                  ></textarea>
 
-    <label>결제 수단 선택:</label>
-    <select
-      value={paymentMethod}
-      onChange={(e) => setPaymentMethod(e.target.value)}
-      className="trade-buy-select"
-    >
-      <option value="creditCard">신용카드</option>
-      <option value="bankTransfer">계좌이체</option>
-      <option value="kakaoPay">카카오페이</option>
-      <option value="naverPay">네이버페이</option>
-      <option value="tossPay">토스페이</option>
-    </select>
+                  <label>결제 수단 선택:</label>
+                  <select
+                    value={paymentMethod}
+                    onChange={(e) => setPaymentMethod(e.target.value)}
+                    className="trade-buy-select"
+                  >
+                    <option value="creditCard">신용카드</option>
+                    <option value="bankTransfer">계좌이체</option>
+                    <option value="kakaoPay">카카오페이</option>
+                    <option value="naverPay">네이버페이</option>
+                    <option value="tossPay">토스페이</option>
+                  </select>
 
-    {paymentMethod === "bankTransfer" && (
-      <p className="trade-buy-bank-info">
-        해당 계좌번호로 입금해주세요: 123-456-7890 (OO은행)
-      </p>
-    )}
-  </>
-)}
-
+                  {paymentMethod === "bankTransfer" && (
+                    <p className="trade-buy-bank-info">
+                      해당 계좌번호로 입금해주세요: 123-456-7890 (OO은행)
+                    </p>
+                  )}
+                </>
+              )}
 
               <h3 className="trade-buy-total-price">
                 총 결제 금액: {totalPrice}원
@@ -199,10 +241,16 @@ console.log("상세 이미지 목록:", images);
             </div>
 
             <div className="trade-buy-button-container">
-              <button className="trade-buy-confirm-button" onClick={handleConfirmPurchase}>
+              <button
+                className="trade-buy-confirm-button"
+                onClick={handleConfirmPurchase}
+              >
                 구매 확정
               </button>
-              <button className="trade-buy-cancel-button" onClick={() => navigate("/trade")}>
+              <button
+                className="trade-buy-cancel-button"
+                onClick={() => navigate("/trade")}
+              >
                 취소
               </button>
             </div>

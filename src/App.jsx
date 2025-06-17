@@ -53,6 +53,7 @@ import TradeForm from "./components/Trade/TradeForm/TradeForm";
 import TradeWrite from "./components/Trade/TradeWrite/TradeWrite";
 import SalePurchasePerfect from "./components/Sales/SalePurchasePerfect/SalePurchasePerfect";
 import { TradeProvider } from "./contexts/TradeContext";
+import TossRedirectHandler from "./components/Trade/TossRedirectHandler";
 
 const AppContent = ({ handleOrderPopup, orderPopup, openModal, 
   closeModal, isLoggedIn, setIsLoggedIn, setUser }) => {
@@ -196,6 +197,9 @@ const AppContent = ({ handleOrderPopup, orderPopup, openModal,
             </div>
           }
         />
+        <Route path="/tradeBuy/success" element={<TossRedirectHandler />} />
+<Route path="/payment/success" element={<TossRedirectHandler />} />
+
 
         {/* TradeBuy Page */}
         <Route
@@ -206,6 +210,7 @@ const AppContent = ({ handleOrderPopup, orderPopup, openModal,
             </div>
           }
         />
+         <Route path="/tradeBuy" element={<TradeBuy />} />
 
         {/* TradeBuyPerfect Page */}
         <Route
