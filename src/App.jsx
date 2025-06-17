@@ -1,7 +1,8 @@
 import AOS from "aos";
 import "aos/dist/aos.css";
-import React from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Route, Routes, useLocation } from "react-router-dom";
+import { LoginContext } from "./contexts/LoginContext";
 
 import Category from "./components/Category/Category";
 import ChatApp from "./components/ChatApp/ChatApp";
@@ -41,8 +42,10 @@ import ReportForm from "./components/ReportForm/ReportForm";
 import Sale from "./components/Sales/Sale/Sale";
 import SaleDetail from "./components/Sales/SaleDetail/SaleDetail";
 import SaleForm from "./components/Sales/SaleForm/SaleForm";
+import PaymentSuccess from "./components/Sales/SalePurchaseCheck/PaymentSuccess";
 import SalePurchaseCheck from "./components/Sales/SalePurchaseCheck/SalePurchaseCheck";
 import SalePurchaseModal from "./components/Sales/SalePurchaseModal/SalePurchaseModal";
+import SalePurchasePerfect from "./components/Sales/SalePurchasePerfect/SalePurchasePerfect";
 import SaleWrite from "./components/Sales/SaleWrite/SaleWrite";
 import Search from "./components/Search/Search";
 import Trade from "./components/Trade/Trade/Trade";
@@ -51,32 +54,34 @@ import TradeBuyPerfect from "./components/Trade/TradeBuyPerfect/TradeBuyPerfect"
 import TradeDetail from "./components/Trade/TradeDetail/TradeDetail";
 import TradeForm from "./components/Trade/TradeForm/TradeForm";
 import TradeWrite from "./components/Trade/TradeWrite/TradeWrite";
-import SalePurchasePerfect from "./components/Sales/SalePurchasePerfect/SalePurchasePerfect";
 
-const AppContent = ({ handleOrderPopup, orderPopup, openModal, 
-  closeModal, isLoggedIn, setIsLoggedIn, setUser }) => {
-  const location = useLocation();
+// Loading 컴포넌트 import
+import Loading from "./components/Loading/Loading";
 
-  // Check if the current page is the ChatApp page
-  const isChatPage = location.pathname === "/chat-app" || location.pathname === "/chat-other";
-  return (
-    
-    <div className="bg-white dark:bg-gray-900 dark:text-white duration-200">
-      {/* Navbar will be hidden on /chat-app */}
-      {!isChatPage && location.pathname !== "/Search" && (
-        <Navbar 
-          handleOrderPopup={handleOrderPopup} 
-          openModal={openModal} 
-          isLoggedIn={isLoggedIn}
-          setIsLoggedIn={setIsLoggedIn} 
-        />
-      )}
+const AppContent = ({
+                        handleOrderPopup,
+                        orderPopup,
+                        openModal,
+                        closeModal,
+                        isLoggedIn,
+                    }) => {
+    const location = useLocation();
+    const isChatPage =
+        location.pathname === "/chat-app" || location.pathname === "/chat-other";
+    const { isLogin, isLoading } = useContext(LoginContext);
+    if (isLoading) return <Loading />; // ✅ 렌더링 지연 처리
 
-      {/* Chatting Component */}
-      {!isChatPage && <Chatting />}
-      {/* Notice Component */}
-      {!isChatPage && <Notice />}
-
+    return (
+        <div className="bg-white dark:bg-gray-900 dark:text-white duration-200">
+            {!isChatPage && location.pathname !== "/Search" && (
+                <Navbar
+                    handleOrderPopup={handleOrderPopup}
+                    openModal={openModal}
+                    isLoggedIn={isLogin}
+                />
+            )}
+            {!isChatPage && <Chatting />}
+            {!isChatPage && <Notice />}
       {/* Routes */}
       <Routes>
         {/* Main Page */}
@@ -324,7 +329,7 @@ const AppContent = ({ handleOrderPopup, orderPopup, openModal,
         />
 
         {/* SalePurchaseModal Page */}
-        <Route path="/purchase" 
+        <Route path="/purchase"
           element={
             <div className="pt-[130px]">
               <SalePurchaseModal />
@@ -343,7 +348,7 @@ const AppContent = ({ handleOrderPopup, orderPopup, openModal,
         />
 
         {/* SaleDetail Page */}
-        <Route path="/person" 
+        <Route path="/person"
           element={
             <div className="pt-[130px]">
               <SaleDetail />
@@ -352,7 +357,7 @@ const AppContent = ({ handleOrderPopup, orderPopup, openModal,
         />
 
         {/* SalePurchaseCheck Page */}
-        <Route path="/salePurchaseCheck" 
+        <Route path="/salePurchaseCheck"
           element={
             <div className="pt-[130px]">
               <SalePurchaseCheck />
@@ -360,8 +365,18 @@ const AppContent = ({ handleOrderPopup, orderPopup, openModal,
           }
         />
 
+      {/* SalePurchaseSuccess (결제 성공 후 Toss 리디렉션) */}
+      <Route
+          path="/payment/success"
+          element={
+              <div className="pt-[130px]">
+                  <PaymentSuccess />
+              </div>
+          }
+      />
+
         {/* SalePurchaseCheck Page */}
-        <Route path="/salePurchasePerfect" 
+        <Route path="/salePurchasePerfect"
           element={
             <div className="pt-[130px]">
               <SalePurchasePerfect />
@@ -370,7 +385,7 @@ const AppContent = ({ handleOrderPopup, orderPopup, openModal,
         />
 
         {/* Community Page */}
-        <Route path="/community" 
+        <Route path="/community"
           element={
             <div className="pt-[130px]">
               <Community />
@@ -379,7 +394,7 @@ const AppContent = ({ handleOrderPopup, orderPopup, openModal,
         />
 
         {/* CommunityForm Page */}
-        <Route path="/communityForm" 
+        <Route path="/communityForm"
           element={
             <div className="pt-[130px]">
               <CommunityForm />
@@ -400,14 +415,14 @@ const AppContent = ({ handleOrderPopup, orderPopup, openModal,
       <Route path="/oauth/kakao" element={<OAuthRedirect />} />
 
         {/* Login Page */}
-        <Route
-          path="/Login"
-          element={
-            <div className="pt-[80px]">
-              <Modal setUser={setUser} setIsLoggedIn={setIsLoggedIn} />
-            </div>
-          }
-        />
+          <Route
+              path="/Login"
+              element={
+                  <div className="pt-[80px]">
+                      <Modal /> {/* 더 이상 setUser, setIsLoggedIn 필요 없음 */}
+                  </div>
+              }
+          />
 
         {/* Search Page */}
         <Route
@@ -465,7 +480,7 @@ const AppContent = ({ handleOrderPopup, orderPopup, openModal,
         <Route path="/order" element={
           <div className="pt-[130px]">
             <OrderPage />
-          </div>} 
+          </div>}
         />
 
         {/* ChatApp Page */}
@@ -480,43 +495,42 @@ const AppContent = ({ handleOrderPopup, orderPopup, openModal,
 };
 
 const App = () => {
-  const [orderPopup, setOrderPopup] = React.useState(false);
-  const [isLoggedIn, setIsLoggedIn] = React.useState(false);
-  const [user, setUser] = React.useState(null);
+    const { isLogin: isLoggedIn, isLoading } = useContext(LoginContext);
+    const [orderPopup, setOrderPopup] = useState(false);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [modalContent, setModalContent] = useState("");
 
-  React.useEffect(() => {
-    AOS.init({
-      offset: 100,
-      duration: 800,
-      easing: "ease-in-sine",
-      delay: 100,
-    });
-    AOS.refresh();
-  }, []);
+    useEffect(() => {
+        AOS.init({
+            offset: 100,
+            duration: 800,
+            easing: "ease-in-sine",
+            delay: 100,
+        });
+        AOS.refresh();
+    }, []);
 
-  const handleOrderPopup = () => setOrderPopup(!orderPopup);
+    const handleOrderPopup = () => setOrderPopup(!orderPopup);
+    const openModal = (content) => {
+        setModalContent(content);
+        setIsModalOpen(true);
+    };
+    const closeModal = () => {
+        setIsModalOpen(false);
+        setModalContent("");
+    };
 
-  const openModal = (content) => {
-    setModalContent(content);
-    setIsModalOpen(true);
-  };
+    if (isLoading) return <Loading />;;
 
-  const closeModal = () => {
-    setIsModalOpen(false);
-    setModalContent("");
-  };
-
-  return (
-    <AppContent
-      handleOrderPopup={handleOrderPopup}
-      orderPopup={orderPopup}
-      openModal={openModal}
-      closeModal={closeModal}
-      isLoggedIn={isLoggedIn}
-      setIsLoggedIn={setIsLoggedIn}
-      setUser={setUser}
-    />
-  );
+    return (
+        <AppContent
+            handleOrderPopup={handleOrderPopup}
+            orderPopup={orderPopup}
+            openModal={openModal}
+            closeModal={closeModal}
+            isLoggedIn={isLoggedIn}
+        />
+    );
 };
 
 export default App;

@@ -4,20 +4,14 @@ import { useNavigate } from "react-router-dom";
 import CancelOrder from "../CancelOrders/CancelOrder/CancelOrder";
 import DeliveryTracking from "../DeliveryTracking/DeliveryTracking";
 import PurchaseConfirmation from "../PurchaseConfirmation/PurchaseConfirmation";
+import PurchaseHistoryDetail from "../PurchaseHistoryDetail/PurchaseHistoryDetail";
 import ReviewForm from "../ReviewForm/ReviewForm";
 import "./PurchaseHistory.css";
 
 const PurchaseHistory = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const totalPages = 10;
-    const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
-    const [showTypeDropdown, setShowTypeDropdown] = useState(false);
     const [purchaseHistory, setPurchaseHistory] = useState([]);
-    const [filteredPurchases, setFilteredPurchases] = useState([]);
-    const [startDate, setStartDate] = useState('');
-    const [endDate, setEndDate] = useState('');
-    const [selectedCategory, setSelectedCategory] = useState('종류');
-    const [selectedType, setSelectedType] = useState('카테고리');
     const [selectedStatus, setSelectedStatus] = useState('전체');
     const [searchQuery, setSearchQuery] = useState('');
     const navigate = useNavigate();
@@ -27,9 +21,16 @@ const PurchaseHistory = () => {
     const [isCancelOrder, setIsCancelOrder] = useState(false);
     const [isReviewForm, setIsReviewForm] = useState(false);
     const [isPurchaseConfirmation, setIsPurchaseConfirmation] = useState(false);
+    const [showDetail, setShowDetail] = useState(false);
 
-    const handleDeliveryTracking = () => {
+    const handleDeliveryTracking = (purchase) => {
+        setSelectedPurchase(purchase);
         setIsDeliveryTracking(true);
+    };
+
+    const handleImageClick = (purchase) => {
+        setSelectedPurchase(purchase);
+        setShowDetail(true);
     };
     
     const handleCancelOrder = (purchase) => {
@@ -59,7 +60,6 @@ const PurchaseHistory = () => {
     useEffect(() => {
         const storedPurchases = JSON.parse(localStorage.getItem("purchaseHistory")) || [];
         setPurchaseHistory(storedPurchases);
-        setFilteredPurchases(storedPurchases);
     }, [isCancelOrder, isReviewForm, isPurchaseConfirmation]);
 
     const handlePrevPage = () => {
@@ -74,90 +74,48 @@ const PurchaseHistory = () => {
         }
     };
 
-    const handleCategorySelect = (category) => {
-        setSelectedCategory(category);
-        setShowCategoryDropdown(false);
-    };
-
-    const handleTypeSelect = (type) => {
-        setSelectedType(type);
-        setShowTypeDropdown(false);
-    };
-
     const handleStatusSelect = (status) => {
         setSelectedStatus(status);
         setCurrentPage(1);
     };
 
-    // 상태별로 필터링된 구매 내역
-    const filteredPurchasesList = purchaseHistory.filter(purchase => {
-        if (selectedStatus === '전체') return true;
-        return purchase.status === selectedStatus;
-    });
-
-    useEffect(() => {
-        setFilteredPurchases(filteredPurchasesList);
-    }, [selectedStatus, startDate, endDate, selectedCategory, selectedType]);
-
-    const handleSearch = () => {
-        let filtered = purchaseHistory;
-
-        // 카테고리 필터링
-        if (selectedCategory !== '종류') {
-            filtered = filtered.filter(purchase => purchase.saleLabel === selectedCategory);
-        }
-
-        // 타입 필터링
-        if (selectedType !== '카테고리') {
-            filtered = filtered.filter(purchase => purchase.category === selectedType);
-        }
-
-        // 날짜 필터링
-        if (startDate) {
-            filtered = filtered.filter(purchase => new Date(purchase.paymentDate) >= new Date(startDate));
-        }
-        if (endDate) {
-            filtered = filtered.filter(purchase => new Date(purchase.paymentDate) <= new Date(endDate));
-        }
-
-        setFilteredPurchases(filtered);
+    const handleSearch = (e) => {
+        e.preventDefault();
+        setCurrentPage(1);
     };
+
+    // 필터링된 구매 내역 계산
+    const filteredPurchasesList = purchaseHistory.filter(purchase => {
+        // 상태 필터링 ('전체' 선택 시 모든 상태 포함)
+        if (selectedStatus !== '전체' && purchase.status !== selectedStatus) {
+            return false;
+        }
+
+        // 검색어가 없으면 모든 항목 반환
+        if (!searchQuery.trim()) return true;
+
+        // 검색어로 필터링 (상품명, 카테고리, 종류)
+        const query = searchQuery.toLowerCase();
+        return (
+            purchase.products.some(product => 
+                product.name.toLowerCase().includes(query)
+            ) ||
+            (purchase.category && purchase.category.toLowerCase().includes(query)) ||
+            (purchase.saleLabel && purchase.saleLabel.toLowerCase().includes(query))
+        );
+    });
 
     const getStatusCount = (status) => {
         return purchaseHistory.filter(purchase => purchase.status === status).length;
     };
 
-    const CategoryDropdown = () => (
-        <div className="categoryDropdown-box">
-            <div className="dropdown-item" onClick={() => handleCategorySelect('종류')}>종류</div>
-            <div className="dropdown-item" onClick={() => handleCategorySelect('상품')}>상품</div>
-            <div className="dropdown-item" onClick={() => handleCategorySelect('판매')}>판매</div>
-            <div className="dropdown-item" onClick={() => handleCategorySelect('중고거래')}>중고거래</div>
-            <div className="dropdown-item" onClick={() => handleCategorySelect('커미션')}>커미션</div>
-            <div className="dropdown-item" onClick={() => handleCategorySelect('수요조사')}>수요조사</div>
-        </div>
-    );
-
-    const TypeDropdown = () => (
-        <div className="typeDropdown-box">
-            <div className="dropdown-item" onClick={() => handleTypeSelect('카테고리')}>카테고리</div>
-            <div className="dropdown-item" onClick={() => handleTypeSelect('아이돌')}>아이돌</div>
-            <div className="dropdown-item" onClick={() => handleTypeSelect('영화')}>영화</div>
-            <div className="dropdown-item" onClick={() => handleTypeSelect('게임')}>게임</div>
-            <div className="dropdown-item" onClick={() => handleTypeSelect('드라마')}>드라마</div>
-            <div className="dropdown-item" onClick={() => handleTypeSelect('애니메이션')}>애니메이션</div>
-            <div className="dropdown-item" onClick={() => handleTypeSelect('음악')}>음악</div>
-            <div className="dropdown-item" onClick={() => handleTypeSelect('웹소설')}>웹소설</div>
-            <div className="dropdown-item" onClick={() => handleTypeSelect('웹툰')}>웹툰</div>
-            <div className="dropdown-item" onClick={() => handleTypeSelect('그림')}>그림</div>
-            <div className="dropdown-item" onClick={() => handleTypeSelect('기타')}>기타</div>
-        </div>
-    );
-
     return (
         <div className="purchaseHistory_container">
             {isDeliveryTracking ? (
-                <DeliveryTracking setDeliveryTracking={setIsDeliveryTracking} />
+                <DeliveryTracking 
+                    setDeliveryTracking={setIsDeliveryTracking}
+                    selectedPurchase={selectedPurchase}
+                />
             ) : isCancelOrder ? (
                 <CancelOrder 
                     selectedPurchase={selectedPurchase} 
@@ -170,53 +128,30 @@ const PurchaseHistory = () => {
                 <PurchaseConfirmation 
                     selectedPurchase={selectedPurchase}
                     onClose={() => setIsPurchaseConfirmation(false)} />
+            ) : showDetail ? (
+                <PurchaseHistoryDetail 
+                    purchase={selectedPurchase} 
+                    onClose={() => setShowDetail(false)} 
+                />
             ) : (
                 <div>
                     <h2 className="pur-title">구매 내역</h2>
-                    <p className="notice">* 일반 판매, 커미션 중 선택</p>
 
-                    <div className="filters">
-                        {/* 카테고리 드롭다운 */}
-                        <div className="categoryDropdown-group">
-                            <button className="categorybtn" onClick={() => setShowCategoryDropdown(!showCategoryDropdown)}>
-                                {selectedCategory}
-                            </button>
-                            {showCategoryDropdown && <CategoryDropdown />}
-                        </div>
-
-                        {/* 타입 드롭다운 */}
-                        <div className="typeDropdown-group">
-                            <button className="typebtn" onClick={() => setShowTypeDropdown(!showTypeDropdown)}>
-                                {selectedType}
-                            </button>
-                            {showTypeDropdown && <TypeDropdown />}
-                        </div>
-
-                        {/* 날짜 입력 */}
-                        <div className="input-date">
-                            <input 
-                                type="date" 
-                                className="start-date" 
-                                value={startDate} 
-                                onChange={(e) => setStartDate(e.target.value)} 
-                                placeholder="시작일"
+                    {/* 검색 기능 추가 */}
+                    <form className="pur-search-form" onSubmit={handleSearch}>
+                        <div className="pur-search-container">
+                            <input
+                                type="text"
+                                placeholder="상품명, 카테고리, 종류로 검색"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="pur-search-input"
                             />
-                            <span className="iconDate"> ~ </span>
-                            <input 
-                                type="date" 
-                                className="end-date" 
-                                value={endDate} 
-                                onChange={(e) => setEndDate(e.target.value)} 
-                                placeholder="종료일"
-                                min={startDate}
-                            />
+                            <button type="submit" className="pur-search-button">
+                                <FiSearch />
+                            </button>
                         </div>
-
-                        {/* 검색 버튼 */}
-                        <button className="searchbtn" onClick={handleSearch}>
-                            상세 검색 <FiSearch />
-                        </button>
-                    </div>
+                    </form>
 
                     <div className="status-buttons">
                         <div className="btnClr" style={{ "--clr": "#78fd61", "--clr-glow": "#4003e6" }} onClick={() => handleStatusSelect('전체')}>
@@ -251,13 +186,25 @@ const PurchaseHistory = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {filteredPurchases.length > 0 ? (
-                                filteredPurchases.map((purchase) => (
+                            {filteredPurchasesList.length > 0 ? (
+                                filteredPurchasesList.map((purchase) => (
                                     <tr key={purchase.id}>
                                         <td>
+                                            <span 
+                                                className="order-detail-link"
+                                                onClick={() => handleImageClick(purchase)}
+                                            >
+                                                주문 상세
+                                            </span>
                                             {purchase.products.map((product) => (
                                                 <div key={product.name}>
-                                                    <img src={product.image} alt={product.name} className="product-img" />
+                                                    <img 
+                                                        src={product.image} 
+                                                        alt={product.name} 
+                                                        className="ph-product-img" 
+                                                        onClick={() => handleImageClick(purchase)}
+                                                        style={{cursor: 'pointer'}}
+                                                    />
                                                     {product.name}
                                                 </div>
                                             ))}
@@ -280,7 +227,8 @@ const PurchaseHistory = () => {
                                                         취소 신청
                                                     </button>
                                                     <button className="btn" onClick={() => handleReviewClick(purchase)}>
-                                                    리뷰 쓰기</button>
+                                                        리뷰 쓰기
+                                                    </button>
                                                     </>
                                                 )}
                                                 {purchase.status === '배송 완료' && (
@@ -294,7 +242,7 @@ const PurchaseHistory = () => {
                                                     </>
                                                 )}
                                                 {purchase.status === "배송 중" && (
-                                                    <button className="btn" onClick={handleDeliveryTracking}>
+                                                    <button className="btn" onClick={() => handleDeliveryTracking(purchase)}>
                                                         배송 조회
                                                     </button>
                                                 )}

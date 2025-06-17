@@ -35,12 +35,12 @@ const SaleWrite = () => {
         const files = Array.from(e.target.files);
         if (files.length === 0) return;
     
-        // 파일 크기 제한 검사 (5MB로 가정)
+        // File size limit check (5MB)
         const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
         const oversizedFiles = files.filter(file => file.size > MAX_FILE_SIZE);
         
         if (oversizedFiles.length > 0) {
-            setError(`일부 파일이 너무 큽니다. 최대 ${MAX_FILE_SIZE/1024/1024}MB까지 업로드 가능합니다.`);
+            setError(`Some files are too large. Maximum size is ${MAX_FILE_SIZE / 1024 / 1024}MB.`);
             return;
         }
     
@@ -50,7 +50,7 @@ const SaleWrite = () => {
                 ? postId
                 : `temp_${Date.now()}`;
     
-            // 기존 이미지 중 가장 높은 인덱스 찾기
+            // Find the highest index among existing images
             const maxIndex = images.reduce((max, img) => {
                 const match = img.url.match(/_(\d+)\./);
                 return match ? Math.max(max, parseInt(match[1], 10)) : max;
@@ -59,7 +59,7 @@ const SaleWrite = () => {
             const validExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'];
             const uploadPromises = [];
     
-            // 이미지를 3개씩 나누어 업로드 (한 번에 너무 많은 이미지 업로드 방지)
+            // Upload images in batches of 3
             const batchSize = 3;
             for (let i = 0; i < files.length; i += batchSize) {
                 const batch = files.slice(i, i + batchSize);
@@ -84,7 +84,7 @@ const SaleWrite = () => {
                                 isTemporary: String(currentPostId).startsWith('temp_'),
                             };
                         } catch (err) {
-                            console.error(`이미지 ${file.name} 처리 실패:`, err);
+                            console.error(`Failed to process image ${file.name}:`, err);
                             return null;
                         }
                     })
@@ -104,7 +104,7 @@ const SaleWrite = () => {
                 setContent(quill.root.innerHTML);
             }
         } catch (err) {
-            setError(`이미지 업로드 실패: ${err.message}`);
+            setError(`Image upload failed: ${err.message}`);
         } finally {
             setLoading(false);
         }
@@ -126,13 +126,27 @@ const SaleWrite = () => {
 
     const modules = {
         toolbar: [
-            [{ header: [1, 2, 3, false] }],
-            ["bold", "italic", "underline", "strike"],
-            [{ list: "ordered" }, { list: "bullet" }],
-            ["link", "image"],
-            ["clean"],
+            [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+            [{ 'font': [] }],
+            [{ 'size': ['small', false, 'large', 'huge'] }],
+            ['bold', 'italic', 'underline', 'strike'],
+            [{ 'color': [] }, { 'background': [] }],
+            [{ 'align': [] }],
+            [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+            [{ 'indent': '-1' }, { 'indent': '+1' }],
+            ['link', 'image', 'video'],
+            ['clean']
         ],
     };
+
+    const formats = [
+        'header', 'font', 'size',
+        'bold', 'italic', 'underline', 'strike',
+        'color', 'background',
+        'align',
+        'list', 'bullet', 'indent',
+        'link', 'image', 'video'
+    ];
 
     return (
         <div className="sale-write-wrapper">
@@ -142,7 +156,7 @@ const SaleWrite = () => {
                 {loading && (
                     <div className="sale-write-loading">
                         <div className="spinner"></div>
-                        <span>이미지 업로드 중...</span>
+                        <span>Uploading images...</span>
                     </div>
                 )}
                 
@@ -159,6 +173,7 @@ const SaleWrite = () => {
                         value={content}
                         onChange={setContent}
                         modules={modules}
+                        formats={formats}
                         placeholder="상품에 대한 상세한 설명을 입력해주세요..."
                         className="sale-write-editor"
                     />
@@ -193,7 +208,7 @@ const SaleWrite = () => {
                                         setImages(images.filter((_, i) => i !== index));
                                         setContent(content.replace(img.url, ''));
                                     }}
-                                    aria-label="이미지 삭제"
+                                    aria-label="Delete image"
                                 >
                                     ×
                                 </button>

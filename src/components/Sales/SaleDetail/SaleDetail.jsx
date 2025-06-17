@@ -1,18 +1,47 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { AiFillAlert } from "react-icons/ai";
 import { CgProfile } from "react-icons/cg";
 import { FaStar } from "react-icons/fa";
 import { useLocation, useNavigate } from 'react-router-dom';
+import { LoginContext } from "../../../contexts/LoginContext";
 import "./SaleDetail.css";
 
 const API_BASE_URL = 'http://localhost:8080';
 
 const SaleDetail = () => {
-    // Get user name from localStorage
-    const [userName, setUserName] = useState(() => localStorage.getItem('userName') || "사용자 이름");
-    const [profileImage, setProfileImage] = useState(null);
     const navigate = useNavigate();
     const location = useLocation();
+    const { profileImage: contextProfileImage, userInfo } = useContext(LoginContext);
+    const [profileImage, setProfileImage] = useState(
+        contextProfileImage || 
+        location.state?.userProfileImage || 
+        location.state?.profileImage || 
+        null
+    );
+    
+    // 사용자 이름 상태 - userInfo.nickname을 우선적으로 사용
+    const [userName, setUserName] = useState(
+        userInfo?.nickname || 
+        location.state?.userName || 
+        localStorage.getItem('userName') || 
+        "사용자 이름"
+    );    
+
+    useEffect(() => {
+        if (contextProfileImage) {
+            setProfileImage(contextProfileImage);
+        }
+    }, [contextProfileImage]);
+
+    // LoginContext의 사용자 정보가 변경될 때 동기화
+    useEffect(() => {
+        if (userInfo?.nickname) {
+            setUserName(userInfo.nickname);
+        }
+        if (userInfo?.profileImage) {
+            setProfileImage(userInfo.profileImage);
+        }
+    }, [userInfo]);
     
     // Extract all possible data from location state with defaults
     const { 
@@ -20,7 +49,7 @@ const SaleDetail = () => {
         products = [], 
         selectedImage: initialSelectedImage = null,
         shippingMethods = [], 
-        productReviews = [], 
+        productReviews: initialProductReviews = [], 
         start_time = null, 
         end_time = null, 
         saleLabel = "판매",
@@ -37,17 +66,86 @@ const SaleDetail = () => {
     const [wantedProducts, setWantedProducts] = useState([]);
     const [hashtag, setHashtag] = useState(hashtags || product.hashtag || []);
     const [category, setCategory] = useState(location.state?.category || product?.category || "미정");
-    
+    const [productReviews, setProductReviews] = useState(initialProductReviews);
+
+    // Fetch reviews from localStorage when component mounts or product changes
+    useEffect(() => {
+        const storedReviews = JSON.parse(localStorage.getItem("reviews")) || [];
+        // Filter reviews to match the current product's ID
+        const filteredReviews = storedReviews.filter(review => 
+            review.productId === product.id || 
+            review.purchase?.products?.some(p => p.id === product.id)
+        );
+        setProductReviews(filteredReviews);
+    }, [product.id]);
+
+    // 리뷰 데이터 처리 로직 개선
+    useEffect(() => {
+        // location.state에서 전달된 리뷰 데이터가 있으면 사용
+        if (location.state?.productReviews) {
+            setProductReviews(location.state.productReviews);
+            return;
+        }
+
+        // 없으면 localStorage에서 필터링
+        const storedReviews = JSON.parse(localStorage.getItem("reviews")) || [];
+        
+        const filteredReviews = storedReviews.filter(review => {
+            // 명시적 productId 매칭
+            if (review.productId === product.id) return true;
+            
+            // 구매 데이터 내 상품 매칭
+            if (review.purchase?.products) {
+                return review.purchase.products.some(p => p.id === product.id);
+            }
+            
+            return false;
+        });
+        
+        setProductReviews(filteredReviews);
+    }, [product.id, location.state?.productReviews]);
+
+    // 스토리지 변경 감지 로직 추가
+    useEffect(() => {
+        const handleStorageChange = () => {
+            const storedReviews = JSON.parse(localStorage.getItem("reviews")) || [];
+            const filteredReviews = storedReviews.filter(review => 
+                review.productId === product.id || 
+                review.purchase?.products?.some(p => p.id === product.id)
+            );
+            setProductReviews(filteredReviews);
+        };
+
+        window.addEventListener("storage", handleStorageChange);
+        return () => window.removeEventListener("storage", handleStorageChange);
+    }, [product.id]);
+
     // Calculate reviews summary
-    const reviews = productReviews || [];
-    const averageRating = reviews.length > 0 
-        ? (reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length).toFixed(1)
+    const averageRating = productReviews.length > 0 
+        ? (productReviews.reduce((sum, review) => sum + review.rating, 0) / productReviews.length).toFixed(1)
         : 0;
     
     // Format price function for consistent display
     const formatPrice = (price) => {
         if (!price) return "가격 미정";
         return typeof price === 'number' ? price.toLocaleString() : Number(price).toLocaleString();
+    };
+    
+    // Check if selected image is a valid product image
+    const isValidProductImage = () => {
+        if (!selectedImage) return false;
+        
+        // Check if the selected image exists in the products array
+        if (Array.isArray(products) && products.length > 0) {
+            return products.some(prod => {
+                const prodImage = prod.image || prod.preview || prod.src;
+                return prodImage === selectedImage;
+            });
+        }
+        
+        // If no products array, check if it matches the main product image
+        const mainProductImage = product.image || product.src;
+        return mainProductImage === selectedImage;
     };
     
     useEffect(() => {
@@ -68,6 +166,27 @@ const SaleDetail = () => {
     const handleReportClick = () => {
         navigate('/report', { state: { selectedProduct } });
     };
+
+    const handleChatClick = () => {
+        // 채팅할 상품 정보와 판매자 정보를 함께 전달
+        const chatWindow = window.open('/chat-app', '_blank', 'width=600,height=800');
+        
+        if (chatWindow) {
+            // 새 창이 열린 후 상태 전달
+            chatWindow.onload = () => {
+                chatWindow.postMessage({
+                    type: 'CHAT_INIT_DATA',
+                    data: {
+                        product: selectedProduct || product,
+                        sellerName: userName,
+                        sellerImage: profileImage,
+                        productImage: selectedImage || product.image || product.src
+                    }
+                }, '*');
+            };
+            chatWindow.focus();
+        }
+    };
     
     const onImageClick = (image) => {
         setSelectedImage(image);
@@ -84,17 +203,6 @@ const SaleDetail = () => {
         if (selected) {
             setSelectedProduct(selected);
         }
-    };    
-
-    const handleImageChange = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setProfileImage(reader.result);
-            };
-            reader.readAsDataURL(file);
-        }
     };
 
     const [activeTab, setActiveTab] = useState('상세 설명');
@@ -104,6 +212,12 @@ const SaleDetail = () => {
     };
 
     const handleWantClick = () => {
+        // Check if the current image is a valid product image
+        if (!isValidProductImage()) {
+            alert("상품 이미지를 선택해주세요.");
+            return;
+        }
+        
         if (wantedProducts.some(p => p.id === selectedProduct.id)) {
             alert("이미 추가된 상품입니다.");
             return;
@@ -117,7 +231,7 @@ const SaleDetail = () => {
             category: selectedProduct.category || category || "미정",
             price: selectedProduct.price || product.price || 0,
             quantity: 1,
-            postId: product.id // Add this line to include the postId
+            postId: product.id
         };
     
         setWantedProducts([...wantedProducts, productWithCategory]);
@@ -196,22 +310,23 @@ const SaleDetail = () => {
                     {/* Person Left */}
                     <div className="person-left">
                         <div className="person-profile">
-                            <label className="person-user-profile" onClick={() => document.getElementById('profileImage').click()}>
+                            <label className="person-user-profile">
                                 {profileImage ? (
-                                    <img src={profileImage} alt="Profile" />
+                                    <img 
+                                        src={profileImage} 
+                                        alt="Profile" 
+                                        onError={(e) => { 
+                                            e.target.onerror = null; 
+                                            e.target.src = placeholderImage; 
+                                        }}
+                                    />
                                 ) : (
                                     <CgProfile className="personProfile-icon" />
                                 )}
                             </label>
-                            <input
-                                id="profileImage"
-                                type="file"
-                                accept="image/*"
-                                onChange={handleImageChange}
-                                className="file-input"
-                                style={{ display: 'none' }}
-                            />
-                            <span className="person-username">{userName}</span>
+                            <span className="person-username">
+                                {userName}
+                            </span>
                         </div>
 
                         {/* Clicked Image Rendering */}
@@ -219,7 +334,7 @@ const SaleDetail = () => {
                             {selectedImage ? (
                                 <img 
                                     src={selectedImage} 
-                                    alt={selectedProduct.name || product.title || "상품 이미지"} 
+                                    alt={selectedProduct.name || product.title || "식네임 이미지"} 
                                     className="person-image" 
                                     onError={(e) => {
                                         e.target.onerror = null;
@@ -227,10 +342,16 @@ const SaleDetail = () => {
                                     }}
                                 />
                             ) : (
-                                <img src={placeholderImage} alt="이미지 없음" className="person-image" />
+                                <img src={placeholderImage} alt="식네임 이미지 없음" className="person-image" />
                             )}
                         </div>
-                        <button className='needORlike' onClick={handleWantClick}>원합니다</button>
+                        <button 
+                            className={`needORlike ${!isValidProductImage() ? 'disabled' : ''}`}
+                            onClick={handleWantClick}
+                            disabled={!isValidProductImage()}
+                        >
+                            원합니다
+                        </button>
                     </div>
 
                     {/* Person Right */}
@@ -278,7 +399,7 @@ const SaleDetail = () => {
                             <span className='person-report' onClick={handleReportClick}>
                                 <AiFillAlert className='report-icon' /> 신고하기
                             </span>
-                            <button className="person-chatting">채팅하기</button>
+                            <button className="person-chatting" onClick={handleChatClick}>채팅하기</button>
                         </div>
 
                         {/* Thumbnail Image List */}
@@ -332,8 +453,8 @@ const SaleDetail = () => {
                             <div className="image-container">
                                 <img src={product.image || placeholderImage} alt={product.name} className="wanted-image" />
                                 <div className="sale-labelProduct">
-                                    {saleLabel} <span className="separator"> &gt; </span> {product.name} 
-                                    <span className="separator"> &gt; </span> {category || product.category || "미정"}
+                                    {saleLabel} <span className="separator">  </span> {product.name} 
+                                    <span className="separator">  </span> {category || product.category || "미정"}
                                 </div>
                             </div>
                             <div className="wanted-info">
@@ -355,7 +476,7 @@ const SaleDetail = () => {
                     ))
                 ) : (
                     <div className='wanted-product-empty'>
-                        <p>원한 상품이 없습니다. "원합니다"를 눌러 주십시오.</p>
+                        <p>원한 상품이 없습니다. "원합니다"를 눌러 주세요.</p>
                     </div>
                 )}
             </div>
@@ -405,7 +526,7 @@ const SaleDetail = () => {
                         className={activeTab === '리뷰' ? 'active' : ''}
                         onClick={() => handleTabClick('리뷰')}
                     >
-                        리뷰 ({reviews.length})
+                        리뷰 ({productReviews.length})
                     </li>
                 </ul>
             </div>
@@ -417,7 +538,7 @@ const SaleDetail = () => {
                         <p dangerouslySetInnerHTML={{ __html: description || product.content || product.description || "상품 설명이 없습니다." }} />
                     </div>
                 ) : (
-                    reviews.length > 0 ? (
+                    productReviews.length > 0 ? (
                         <>
                             <div className="reviews-summary">
                                 <div className="average-rating">
@@ -426,12 +547,12 @@ const SaleDetail = () => {
                                         <FaStar className="big-star-icon" />
                                         <span className='starAverageRating'>{averageRating}</span>
                                     </div>
-                                    <span className='starTotalRating'>총 {reviews.length}개의 리뷰</span>
+                                    <span className='starTotalRating'>총 {productReviews.length}개의 리뷰</span>
                                 </div>
                                 <div className="rating-breakdown">
                                     {[5, 4, 3, 2, 1].map((stars) => {
-                                        const count = reviews.filter(review => review.rating === stars).length;
-                                        const percentage = reviews.length > 0 ? Math.round((count / reviews.length) * 100) : 0;
+                                        const count = productReviews.filter(review => review.rating === stars).length;
+                                        const percentage = productReviews.length > 0 ? Math.round((count / productReviews.length) * 100) : 0;
                                         
                                         return (
                                             <div key={stars} className="rating-bar">
@@ -447,7 +568,7 @@ const SaleDetail = () => {
                             </div>
                             
                             <div className="person-review">
-                                {reviews.map((review, index) => (
+                                {productReviews.map((review, index) => (
                                     <div key={index} className="person-review-item">
                                         <div className="person-review-header">
                                             <div className="person-review-profile">

@@ -1,16 +1,19 @@
 const API_BASE_URL = 'http://localhost:8080';
 
 class OrderPayment {
+    // 생성자: 사용자 정보와 배송 방법 배열을 초기화
     constructor(userInfo = null, shippingMethods = []) {
         this.userInfo = userInfo || JSON.parse(localStorage.getItem('userInfo')) || {};
-        this.shippingMethods = shippingMethods; // shippingMethods를 클래스 프로퍼티로 저장
-        
+        this.shippingMethods = shippingMethods;
+
+        // 사용자 ID가 없으면 예외 처리
         if (!this.userInfo?.id) {
             console.error('User ID is missing:', this.userInfo);
             throw new Error('User ID is required. Please log in again.');
         }
     }
-    
+
+    // 사용자 ID 추출 및 유효성 검사
     getUserId() {
         if (!this.userInfo?.id) {
             console.error('Missing user ID in userInfo:', this.userInfo);
@@ -23,6 +26,7 @@ class OrderPayment {
         return userId;
     }
 
+    // 공통 API 요청 함수
     async request(endpoint, method, body = null) {
         console.log(`Making ${method} request to ${endpoint}`, {
             body,
@@ -34,14 +38,15 @@ class OrderPayment {
                 method,
                 headers: {
                     'Content-Type': 'application/json',
-                    ...(this.userInfo?.token && { 
-                        'Authorization': `Bearer ${this.userInfo.token}` 
+                    ...(this.userInfo?.token && {
+                        'Authorization': `Bearer ${this.userInfo.token}`
                     })
                 },
                 credentials: 'include',
                 body: body ? JSON.stringify(body) : null
             });
 
+            // 인증 실패 시 로그인 페이지로 리디렉션
             if (response.status === 401) {
                 console.error('Unauthorized request. Redirecting to login.');
                 window.location.href = '/login?expired=true';
@@ -60,15 +65,17 @@ class OrderPayment {
         }
     }
 
+    // 주문 생성 요청 함수
     async createOrder(orderData) {
         try {
+            // 필수 값 체크
             if (!orderData.userId) {
                 throw new Error(`Missing userId in order data: ${JSON.stringify(orderData)}`);
             }
             if (!orderData.postId) {
                 throw new Error(`Missing postId in order data: ${JSON.stringify(orderData)}`);
             }
-            
+
             const response = await this.request('/order/create', 'POST', orderData);
             return response;
         } catch (error) {
@@ -88,6 +95,7 @@ class OrderPayment {
         }
     }
 
+    // 토스 결제 요청
     async requestTossPayment(paymentData) {
         try {
             console.log('Requesting Toss payment with data:', paymentData);
@@ -98,38 +106,41 @@ class OrderPayment {
         }
     }
 
+    // 주문 데이터 구성 함수
     prepareOrderData(products, formData, selectedDeliveryName, totalAmount, refundBank, refundAccount) {
         if (!products?.length) {
             throw new Error('No products to order.');
         }
-    
+
         const userId = this.getUserId();
-        
+
+        // 제품 정보 유효성 검사
         const invalidProducts = products.filter(p => !p.id || !p.postId);
         if (invalidProducts.length > 0) {
             console.error('Invalid products:', invalidProducts);
             throw new Error(`${invalidProducts.length} product(s) have missing IDs`);
         }
-    
+
         const postId = products[0].postId;
         if (!postId) {
             throw new Error('Primary product missing postId');
         }
-    
-        // Find the selected delivery method by name
+
+        // 선택된 배송 방법 찾기
         const selectedMethod = this.shippingMethods.find(m => m.name === selectedDeliveryName);
-    
+
         if (!selectedMethod) {
             throw new Error('Selected delivery method not found');
         }
-    
+
+        // 최종 주문 객체 반환
         return {
             userId: userId,
             postId: postId,
             deliveryId: selectedMethod.id,
             deliveryName: selectedMethod.name,
             deliveryPrice: selectedMethod.price,
-            recipient_name: formData.recipient_name,
+            recipientName: formData.recipient_name,
             phoneNumber: formData.phone_number,
             zipCode: formData.zipCode,
             mainAddress: formData.mainAddress,
@@ -145,50 +156,47 @@ class OrderPayment {
         };
     }
 
+    // 결제 프로세스 전체 처리 함수
     async processPayment(products, formData, selectedDelivery, refundBank, refundAccount, totalAmount) {
         try {
-            // Validate inputs
             if (!products || products.length === 0) {
                 throw new Error('구매할 상품이 없습니다.');
             }
-    
-            // Get user ID early to fail fast
+
             const userId = this.getUserId();
             console.log('Processing payment for user:', userId);
-    
-            // Prepare order data with validation
+
             const orderData = this.prepareOrderData(
-                products, 
-                formData, 
-                selectedDelivery, 
+                products,
+                formData,
+                selectedDelivery,
                 totalAmount,
                 refundBank,
                 refundAccount
             );
-            
+
             console.log('Order data prepared:', JSON.stringify(orderData, null, 2));
-    
-            // Create the order
+
+            // 주문 생성( 서버에서 받은 response 값)
             const orderResponse = await this.createOrder(orderData);
-            
+            console.log('주문 생성 응답:', orderResponse); // 👈 반드시 확인 필요
             if (!orderResponse?.orderId) {
                 throw new Error('주문 생성 후 orderId를 받지 못했습니다.');
             }
-    
-            // Prepare payment data for Toss
+
+            // 결제 요청 데이터 구성
             const paymentData = {
                 orderId: orderResponse.orderId,
-                amount: totalAmount,
-                orderName: `${products[0].name} 외 ${products.length - 1}건`,
-                customerName: formData.ordererName,
-                customerEmail: formData.ordererEmail,
-                deliveryName: orderData.deliveryName, // 택배사 이름 추가
-                deliveryPrice: orderData.deliveryPrice // 택배비 추가
+                postName: orderResponse.postName, // ✅ 필요 시 같이 받아야 함
+                postThumbnail: orderResponse.postThumbnail,
+                productsPrice: orderResponse.productsPrice,
+                deliveryPrice: orderResponse.deliveryPrice,
+                totalPrice: totalAmount
             };
-    
-            // Request Toss payment
+            console.log("📨 결제 요청 데이터:", paymentData);
+            // 토스 결제 요청
             const tossResponse = await this.requestTossPayment(paymentData);
-            
+
             return {
                 success: true,
                 orderId: orderResponse.orderId,
@@ -196,8 +204,8 @@ class OrderPayment {
             };
         } catch (error) {
             console.error('Payment processing failed:', error);
-            
-            // More specific error handling
+
+            // 사용자 관련 에러 처리
             if (error.message.includes('User') || error.message.includes('user')) {
                 return {
                     success: false,
@@ -205,7 +213,8 @@ class OrderPayment {
                     userError: true
                 };
             }
-            
+
+            // 상품 관련 에러 처리
             if (error.message.includes('postId') || error.message.includes('productId')) {
                 return {
                     success: false,
@@ -213,7 +222,7 @@ class OrderPayment {
                     productError: true
                 };
             }
-    
+
             return {
                 success: false,
                 error: error.message || '결제 처리 중 오류가 발생했습니다.'

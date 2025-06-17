@@ -2,14 +2,25 @@ const API_BASE_URL = 'http://localhost:8080';
 
 class OrderSaleDetail {
     getUserId() {
-        const userId = localStorage.getItem('user_id');
-        if (!userId) {
+        const userInfo = localStorage.getItem('userInfo');
+        if (!userInfo) {
             console.error('사용자 인증 정보가 없습니다. 로그인 페이지로 이동합니다.');
             window.location.href = '/login';
             throw new Error('사용자가 인증되지 않았습니다');
         }
+
+        const parsedUser = JSON.parse(userInfo);
+        const userId = parsedUser?.id;
+
+        if (!userId) {
+            console.error('userInfo에 id가 존재하지 않습니다.');
+            window.location.href = '/login';
+            throw new Error('사용자 ID가 존재하지 않습니다.');
+        }
+
         return userId;
     }
+
 
     async request(endpoint, method, body = null, isMultipart = false) {
         const url = `${API_BASE_URL}${endpoint}`;
@@ -41,6 +52,7 @@ class OrderSaleDetail {
                 }
             }
             const contentType = response.headers.get('content-type');
+
             if (contentType && contentType.includes('application/json')) {
                 return await response.json();
             }
@@ -50,7 +62,25 @@ class OrderSaleDetail {
             throw new Error(error.message || 'Network request failed');
         }
     }
-    
+
+    async requestTossPayment(orderData) {
+        try {
+            const response = await this.request('/payment/toss', 'POST', orderData);
+            console.log('/payment/toss 후에 나온 값 :::',response);
+            return response;
+        } catch (error) {
+            console.error('결제 요청 실패:', error);
+            throw error;
+        }
+    }
+
+    async confirmTossPayment(paymentKey, orderCode, amount) {
+        return this.request(`/payment/success?paymentKey=${paymentKey}&orderCode=${orderCode}&amount=${amount}`, 'GET');
+    }
+
+    async handleFailedPayment(errorCode, errorMessage, orderId) {
+        return this.request(`/payment/fail?code=${errorCode}&message=${errorMessage}&orderId=${orderId}`, 'GET');
+    }
 }
 
 export default new OrderSaleDetail();

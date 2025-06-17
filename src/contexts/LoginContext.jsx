@@ -7,22 +7,50 @@ const LoginContextProvider = ({ children }) => {
   const [isLogin, setIsLogin] = useState(false);
   const [userInfo, setUserInfo] = useState(null);
   const [error, setError] = useState(null);
+  const [profileImage, setProfileImage] = useState(null);
+  const [isVerified, setIsVerified] = useState(false);
 
   const updateUserState = (userData) => {
     if (!userData?.id) {
-        console.error('User data missing ID:', userData);
-        throw new Error('Invalid user data - missing ID');
+      console.error('User data missing ID:', userData);
+      throw new Error('Invalid user data - missing ID');
     }
     
     const userWithToken = {
-        ...userData,
-        id: String(userData.id), // Ensure consistent format
-        token: userData.token
+      ...userData,
+      id: String(userData.id),
+      token: userData.token
     };
     setUserInfo(userWithToken);
     localStorage.setItem("userInfo", JSON.stringify(userWithToken));
     setIsLogin(true);
-}
+    
+    // 프로필 이미지가 있으면 로드
+    if (userData.profileImage) {
+      setProfileImage(userData.profileImage);
+    }
+  }
+
+  const updateProfileImage = (image) => {
+    setProfileImage(image);
+    if (image) {
+      localStorage.setItem('profileImage', image);
+    } else {
+      localStorage.removeItem('profileImage');
+    }
+  };
+  
+  // 초기 상태 로드 시 localStorage에서 프로필 이미지 가져오기
+  useEffect(() => {
+    const storedProfileImage = localStorage.getItem('profileImage');
+    if (storedProfileImage) {
+      setProfileImage(storedProfileImage);
+    }
+  }, []);
+
+  const verifyUser = (verified) => {
+      setIsVerified(verified);
+  };
 
   const clearUserState = () => {
     setIsLogin(false);
@@ -75,7 +103,11 @@ const LoginContextProvider = ({ children }) => {
         isLoading,
         isLogin,
         userInfo,
+        profileImage,
+        isVerified,
         updateUserState,
+        updateProfileImage,
+        verifyUser,
         logout,
         error,
       }}

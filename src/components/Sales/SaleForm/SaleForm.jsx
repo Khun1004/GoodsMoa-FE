@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import ProductService from "../../../api/ProductService";
+import { LoginContext } from "../../../contexts/LoginContext";
 import "./SaleForm.css";
 
 const API_BASE_URL = 'http://localhost:8080';
@@ -43,6 +44,8 @@ const SaleForm = () => {
     const [isPermanent, setIsPermanent] = useState(false);
     const [contentImages, setContentImages] = useState(location.state?.contentImages || []);
     const [deleteProductImageIds, setDeleteProductImageIds] = useState([]);
+    const [deleteDeliveryIds, setDeleteDeliveryIds] = useState([]);
+    const { profileImage, userInfo } = useContext(LoginContext);
 
     // Utility function to extract extension from a file or image object
     const getImageExtension = (fileOrImage) => {
@@ -119,6 +122,12 @@ const SaleForm = () => {
         loadData();
     }, [location.state]);
 
+    // useEffect(() => {
+    //     if (isEditMode && postId && !String(postId).startsWith('temp_')) {
+    //         fetchPostDetails(postId); // ✅ 이것만이 populateFormWithPostData를 실행시킴
+    //     }
+    // }, [postId, isEditMode]);
+
     const fetchPostDetails = async (id) => {
         if (!id || String(id).startsWith('temp_') || isNaN(id)) {
             console.warn('Invalid or temporary postId, skipping fetch:', id);
@@ -129,6 +138,8 @@ const SaleForm = () => {
             setLoading(true);
             const postData = await ProductService.getPostDetail(id);
             populateFormWithPostData(postData);
+
+            console.log(postData);
         } catch (err) {
             console.error('Failed to fetch post details:', err);
             setError(`게시물 정보를 불러오는데 실패했습니다: ${err.message}`);
@@ -139,7 +150,6 @@ const SaleForm = () => {
 
     const populateFormWithPostData = (postData) => {
         if (!postData) return;
-
         setTitle(postData.title || "");
         setDescription(postData.content || "");
         setImage(postData.thumbnailImage || null);
@@ -166,10 +176,13 @@ const SaleForm = () => {
         }
 
         if (postData.delivers && Array.isArray(postData.delivers)) {
-            setShippingMethods(postData.delivers.map(del => ({
-                name: del.name || "",
-                price: del.price?.toString() || "0"
-            })));
+            setShippingMethods(postData.delivers.map(del => {
+                return {
+                    id: typeof del.id === 'number' ? del.id : null, // ✅ 숫자일 때만 id 유지
+                    name: del.name || "",
+                    price: del.price?.toString() || "0"
+                };
+            }));
         }
 
         if (postData.hashtag) {
@@ -201,7 +214,7 @@ const SaleForm = () => {
             alert("필수 필드를 모두 채워주세요! (제목, 카테고리, 이미지는 필수입니다)");
             return;
         }
-    
+
         if (products.length === 0) {
             alert("최소 한 개 이상의 상품을 등록해주세요!");
             return;
@@ -221,16 +234,22 @@ const SaleForm = () => {
                 return;
             }
         }
-    
+
+        // delivers를 서비스로?? 보내는 단계
         const validShippingMethods = shippingMethods
             .map(method => {
                 if (typeof method === 'string') {
-                    return { name: method, price: 0 };
+                    return { id : null, name: method, price: 0 }; // 신규 항목
                 }
-                return method;
+                return {
+                    id: method.id ?? null,     // ✅ 꼭 유지!
+                    name: method.name,
+                    price: method.price
+                };
             })
             .filter(method => method.name && method.name.trim() !== "");
-    
+
+        console.log("🔥 validShippingMethods:", validShippingMethods);
         if (validShippingMethods.length === 0) {
             alert("배송 방법을 하나 이상 설정해주세요!");
             return;
@@ -279,11 +298,13 @@ const SaleForm = () => {
             category: { name: category },
             user: {
                 id: userId,
-                name: localStorage.getItem('userName') || '판매자'
+                name: userInfo?.nickname || "판매자",
+                profileImage: userInfo?.profileImage || profileImage || null  
             },
             products: processedProducts,
             contentImages: contentImages.map(img => typeof img === 'object' && img.file ? img : img.url || img),
             deleteProductImageIds: deleteProductImageIds.length > 0 ? deleteProductImageIds : undefined,
+            deleteDeliveryIds:deleteDeliveryIds.length > 0 ? deleteDeliveryIds : undefined,
         };
     
         try {
@@ -293,6 +314,7 @@ const SaleForm = () => {
             console.log('Submitting with postId:', postId, 'isEditMode:', isEditMode);
             console.log('Products:', postData.products);
             console.log('DeleteProductImageIds:', deleteProductImageIds);
+            console.log('DeleteDeliveryIds : ', deleteDeliveryIds);
     
             const isTempPost = String(postId || '').startsWith('temp_');
             const isValidPostId = postId && !isNaN(postId) && !isTempPost;
@@ -302,7 +324,12 @@ const SaleForm = () => {
             } else {
                 response = await ProductService.createPost(postData);
             }
-    
+
+            const updatedDelivers = response.delivers?.map(del => ({
+                id: del.id,
+                name: del.name,
+                price: del.price
+            }));
             setPostId(response.id);
     
             const updatedProducts = response.products?.map((product, index) => {
@@ -351,7 +378,7 @@ const SaleForm = () => {
                         password: privateCode,
                         startTime: start_time,
                         endTime: end_time,
-                        delivers: validShippingMethods,
+                        delivers: updatedDelivers,
                         contentImages: updatedContentImages,
                     },
                     apiResponse: response,
@@ -381,11 +408,42 @@ const SaleForm = () => {
         }
     };
 
+    // 배달 방식 수정하기
+    const handleSaveShippingEdit = () => {
+        if (!editingMethod) return;
+    
+        // Ensure shippingCost is treated as a string
+        const newName = newMethod ? String(newMethod).trim() : '';
+        const newPrice = shippingCost !== undefined && shippingCost !== null 
+            ? String(shippingCost).trim() 
+            : '0';
+    
+        if (newName && newPrice) {
+            const updatedMethod = {
+                id: editingMethod.id ?? null, // ✅ 기존 id 유지
+                name: newName,
+                price: newPrice === "0" ? "0" : newPrice
+            };
+    
+            setShippingMethods(
+                shippingMethods.map(method =>
+                    method.name === editingMethod.name ? updatedMethod : method
+                )
+            );
+    
+            setNewMethod("");
+            setShippingCost("");
+            setEditMode(false);
+            setEditingMethod(null);
+        }
+    };
+
+    // 새로운 배달방식 추가하기
     const handleAddMethod = () => {
         if (newMethod.trim() && shippingCost.trim()) {
             const method = {
                 name: newMethod.trim(),
-                price: shippingCost.trim() === "0" ? "0" : shippingCost.trim() || "3000"
+                price: shippingCost.trim() === "0" ? "0" : shippingCost.trim()
             };
 
             if (editMode) {
@@ -408,11 +466,24 @@ const SaleForm = () => {
         }
     };
 
+    //  배달 방식 삭제 메서드
     const handleDeleteMethod = (methodName) => {
+        const methodToDelete = shippingMethods.find(m => m.name === methodName);
+
+        // 기존 배송 방식이면 삭제 목록에 추가 (id가 숫자인 경우만)
+        if (methodToDelete && typeof methodToDelete.id === 'number') {
+            setDeleteDeliveryIds(prev => [...prev, methodToDelete.id]);
+        }
+
+        // UI 목록에서 제거
+        setShippingMethods(
+            shippingMethods.filter(m => m.name !== methodName)
+        );
+
+        // 택배 체크 해제
         if (methodName === '택배') {
             setDefaultShippingChecked(false);
         }
-        setShippingMethods(shippingMethods.filter(m => m.name !== methodName));
     };
 
     useEffect(() => {
@@ -428,6 +499,7 @@ const SaleForm = () => {
         setEditMode(true);
     };
 
+    // 상품 삭제 메서드
     const handleDeleteProduct = (id) => {
         // 기존 상품이면서 이미지가 있는 경우 삭제 목록에 추가
         const productToDelete = products.find(p => p.id === id);
@@ -436,10 +508,11 @@ const SaleForm = () => {
         if (isExistingProduct && productToDelete.image) {
             setDeleteProductImageIds(prev => [...prev, id]);
         }
-        
+
         setProducts(products.filter((product) => product.id !== id));
     };
 
+    // 상품 추가 메서드
     const handleAddProduct = async () => {
         if (!productName || !productName.trim()) {
             alert("상품 이름을 입력해주세요!");
@@ -517,6 +590,7 @@ const SaleForm = () => {
         }
     };
 
+    // 상품 수정 메서드
     const handleSaveEdit = async () => {
         if (!productName || !price || !quantity || !productImage) {
             alert("상품 정보를 모두 입력해주세요!");
@@ -911,9 +985,15 @@ const SaleForm = () => {
                             type="text"
                             placeholder="배송비 (예: 0)"
                             value={shippingCost}
-                            onChange={(e) => setShippingCost(e.target.value)}
+                            onChange={(e) => {
+                                const value = e.target.value.replace(/[^0-9]/g, '');
+                                setShippingCost(value);
+                            }}
                         />
-                        <button className="ship-submit-button" onClick={handleAddMethod}>
+                        <button
+                            className="ship-submit-button"
+                            onClick={editMode ? handleSaveShippingEdit : handleAddMethod}
+                        >
                             {editMode ? "수정 완료" : "배송방법 추가"}
                         </button>
                     </div>

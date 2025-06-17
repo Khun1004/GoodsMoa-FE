@@ -28,7 +28,6 @@ class ProductService {
         }
     }
 
-
     async request(endpoint, method, body = null, isMultipart = false) {
         const url = `${API_BASE_URL}${endpoint}`;
         const token = localStorage.getItem('auth_token');
@@ -107,7 +106,7 @@ class ProductService {
             const thumbnailImageResult = await this.processImageForUpload(postData.thumbnailImage);
             const thumbnailImageFile = thumbnailImageResult.file;
             const thumbnailExtension = thumbnailImageResult.extension || 'jpg';
-    
+
             if (thumbnailImageFile instanceof File) {
                 formData.append('thumbnailImage', thumbnailImageFile);
                 formData.append('thumbnailExtension', thumbnailExtension);
@@ -116,7 +115,7 @@ class ProductService {
             } else {
                 throw new Error('Thumbnail image is required');
             }
-    
+
             const productImagesInfo = await Promise.all(
                 postData.products.map(async (product, index) => {
                     const result = await this.processImageForUpload(product.image);
@@ -128,14 +127,14 @@ class ProductService {
                     };
                 })
             );
-    
+
             productImagesInfo.forEach(({ file, index }) => {
                 if (file instanceof File) {
                     formData.append('productImages', file);
                     formData.append('productImageIndexes', index);
                 }
             });
-    
+
             const contentImageFiles = await Promise.all(
                 (postData.contentImages || []).map(async (img, index) => {
                     const result = await this.processImageForUpload(img);
@@ -144,12 +143,12 @@ class ProductService {
                         : null;
                 })
             );
-    
+
             contentImageFiles.filter(item => item !== null).forEach(({ file, index }) => {
                 formData.append('contentImages', file);
                 formData.append('contentImageIndexes', index);
             });
-    
+
             const formattedData = this.formatPostData({
                 ...postData,
                 userId: userId.toString(),
@@ -162,14 +161,14 @@ class ProductService {
                 })),
                 contentImages: null,
             });
-    
+
             const postBlob = new Blob([JSON.stringify(formattedData)], {
                 type: 'application/json',
             });
             formData.append('postRequest', postBlob);
-    
+
             const response = await this.request('/product/post-create', 'POST', formData, true);
-    
+
             if (response && response.id) {
                 const updatedContentImages = (postData.contentImages || []).map((img, index) => {
                     const contentImage = contentImageFiles[index];
@@ -179,7 +178,7 @@ class ProductService {
                         url: `${API_BASE_URL}/productPost/content/${response.id}_${index + 1}.${ext}`,
                     };
                 });
-    
+
                 let updatedContent = postData.content || '';
                 (postData.contentImages || []).forEach((img, index) => {
                     const oldUrl = img.url || img;
@@ -188,28 +187,28 @@ class ProductService {
                     const newUrl = `${API_BASE_URL}/productPost/content/${response.id}_${index + 1}.${ext}`;
                     updatedContent = updatedContent.replace(oldUrl, newUrl);
                 });
-    
+
                 response.contentImages = updatedContentImages;
                 response.content = updatedContent;
-    
+
                 if (!response.thumbnailImage) {
                     response.thumbnailImage = `${API_BASE_URL}/productPost/thumbnail/${response.id}_1.${thumbnailExtension}`;
                 }
-    
+
                 if (response.products) {
                     response.products = response.products.map((product, idx) => {
                         const productImage = productImagesInfo[idx];
                         const ext = productImage?.extension || 'png';
                         return {
                             ...product,
-                            image: product.image || 
+                            image: product.image ||
                                 `${API_BASE_URL}/productPost/product/${response.id}_${productImage.index}.${ext}`,
                             images: product.image ? [product.image] : []
                         };
                     });
                 }
             }
-    
+
             return response;
         } catch (error) {
             console.error('Create post error:', error);
@@ -220,17 +219,17 @@ class ProductService {
     async updatePost(postId, postData) {
         try {
             const formData = new FormData();
-            
+
             const thumbnailImageResult = await this.processImageForUpload(postData.thumbnailImage);
             const thumbnailImageFile = thumbnailImageResult.file;
             const thumbnailExtension = thumbnailImageResult.extension || 'jpg';
-    
+
             if (thumbnailImageFile instanceof File) {
                 formData.append('newThumbnailImage', thumbnailImageFile);
             } else if (typeof postData.thumbnailImage === 'string') {
                 formData.append('existingThumbnailUrl', postData.thumbnailImage);
             }
-    
+
             const productImagesInfo = await Promise.all(
                 postData.products.map(async (product, index) => {
                     const result = await this.processImageForUpload(product.image);
@@ -244,7 +243,7 @@ class ProductService {
                     };
                 })
             );
-    
+
             productImagesInfo.forEach(({ file, productId, index, existingUrl }) => {
                 if (file) {
                     formData.append('newProductImages', file);
@@ -260,7 +259,7 @@ class ProductService {
                     }
                 }
             });
-    
+
             const contentImagesInfo = await Promise.all(
                 (postData.contentImages || []).map(async (img, index) => {
                     const result = await this.processImageForUpload(img);
@@ -272,7 +271,7 @@ class ProductService {
                     };
                 })
             );
-    
+
             contentImagesInfo.forEach(({ file, index, existingUrl }) => {
                 if (file) {
                     formData.append('newContentImages', file);
@@ -284,7 +283,7 @@ class ProductService {
             });
 
             formData.append("deleteProductImageIds", JSON.stringify(postData.deleteProductImageIds || []));
-    
+            formData.append("deleteDeliveryIds", JSON.stringify(postData.deleteDeliveryIds || []));
             const formattedData = this.formatPostData({
                 ...postData,
                 thumbnailImage: null,
@@ -294,21 +293,21 @@ class ProductService {
                 })),
                 contentImages: null
             });
-    
+
             const postBlob = new Blob([JSON.stringify(formattedData)], {
                 type: 'application/json'
             });
             formData.append('postRequest', postBlob);
-    
+
             const response = await this.request(`/product/post-update/${postId}`, 'POST', formData, true);
-    
+
             if (response && response.id) {
                 if (!response.thumbnailImage) {
                     response.thumbnailImage = thumbnailImageFile instanceof File
                         ? `${API_BASE_URL}/productPost/thumbnail/${response.id}_1.${thumbnailExtension}`
                         : postData.thumbnailImage;
                 }
-    
+
                 if (response.products) {
                     response.products = response.products.map((product, index) => {
                         const productImage = productImagesInfo[index];
@@ -316,10 +315,10 @@ class ProductService {
                             console.warn(`No image info for product at index ${index}`);
                             return product;
                         }
-                
+
                         const ext = productImage.extension || 'png';
                         let imageUrl = product.image;
-                
+
                         if (productImage.file) {
                             // 변경: postId와 productId를 조합한 파일명 사용
                             imageUrl = `${API_BASE_URL}/productPost/product/${response.id}_${product.id}.${ext}`;
@@ -327,7 +326,7 @@ class ProductService {
                         } else if (productImage.existingUrl) {
                             imageUrl = productImage.existingUrl;
                         }
-                
+
                         return {
                             ...product,
                             image: imageUrl,
@@ -335,11 +334,11 @@ class ProductService {
                         };
                     });
                 }
-    
+
                 const updatedContentImages = (postData.contentImages || []).map((img, index) => {
                     const contentImage = contentImagesInfo[index];
                     if (!contentImage) return img;
-    
+
                     const ext = contentImage.extension || 'jpg';
                     if (contentImage.file) {
                         return {
@@ -352,9 +351,9 @@ class ProductService {
                         url: contentImage.existingUrl || img.url
                     };
                 });
-    
+
                 response.contentImages = updatedContentImages;
-    
+
                 if (response.content && postData.contentImages) {
                     let updatedContent = response.content;
                     (postData.contentImages || []).forEach((img, index) => {
@@ -368,7 +367,7 @@ class ProductService {
                     response.content = updatedContent;
                 }
             }
-    
+
             return response;
         } catch (error) {
             console.error('게시물 수정 오류:', error);
@@ -540,6 +539,9 @@ class ProductService {
             deleteProductImageIds: Array.isArray(data.deleteProductImageIds)
                 ? data.deleteProductImageIds
                 : [],
+            deleteDeliveryIds: Array.isArray(data.deleteDeliveryIds)
+                ? data.deleteDeliveryIds
+                : [],
         };
         if (!formatted.delivers || formatted.delivers.length === 0) {
             formatted.delivers = [{
@@ -548,7 +550,9 @@ class ProductService {
             }];
         }
         console.log("✅ 최종 formatted products:", formatted.products);
+        console.log("✅ 최종 formatted delivery:", formatted.delivers);
         console.log("✅ 최종 formatted deleteProductImageIds :", formatted.deleteProductImageIds);
+        console.log("✅ 최종 formatted deleteDeliveryIds :", formatted.deleteDeliveryIds);
         return formatted;
     }
 

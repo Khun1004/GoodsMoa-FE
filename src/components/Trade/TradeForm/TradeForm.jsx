@@ -1,7 +1,7 @@
-import React, { useEffect, useState, useContext } from "react";  // useContext 추가
+import React, { useContext, useEffect, useState } from "react"; // useContext 추가
 import { useLocation, useNavigate } from "react-router-dom";
-import "./TradeForm.css";
 import { LoginContext } from "../../../contexts/LoginContext"; // 경로 수정
+import "./TradeForm.css";
 
 const TradeForm = () => {
   const { userInfo, isLogin } = useContext(LoginContext);  // useContext로 로그인 정보 가져오기

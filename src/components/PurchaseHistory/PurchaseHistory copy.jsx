@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { FiSearch } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
+import CancelOrder from "../CancelOrders/CancelOrder/CancelOrder";
 import DeliveryTracking from "../DeliveryTracking/DeliveryTracking";
+import PurchaseConfirmation from "../PurchaseConfirmation/PurchaseConfirmation";
+import ReviewForm from "../ReviewForm/ReviewForm";
 import "./PurchaseHistory.css";
 
 const PurchaseHistory = () => {
@@ -18,18 +21,46 @@ const PurchaseHistory = () => {
     const [selectedStatus, setSelectedStatus] = useState('전체');
     const [searchQuery, setSearchQuery] = useState('');
     const navigate = useNavigate();
+    const [selectedPurchase, setSelectedPurchase] = useState(null);
 
     const [isDeliveryTracking, setIsDeliveryTracking] = useState(false);
+    const [isCancelOrder, setIsCancelOrder] = useState(false);
+    const [isReviewForm, setIsReviewForm] = useState(false);
+    const [isPurchaseConfirmation, setIsPurchaseConfirmation] = useState(false);
 
     const handleDeliveryTracking = () => {
         setIsDeliveryTracking(true);
     };
+    
+    const handleCancelOrder = (purchase) => {
+        setSelectedPurchase({
+            ...purchase,
+            totalPrice: purchase.products.reduce((sum, p) => sum + (p.price * p.quantity), 0)
+        });
+        setIsCancelOrder(true);
+    };
+
+    const handleReviewClick = (purchase) => {
+        setSelectedPurchase({
+            ...purchase,
+            totalPrice: purchase.products.reduce((sum, p) => sum + (p.price * p.quantity), 0)
+        });
+        setIsReviewForm(true);
+    };
+    
+    const handlePurchaseConfirmation = (purchase) => {
+        setSelectedPurchase({
+            ...purchase,
+            totalPrice: purchase.products.reduce((sum, p) => sum + (p.price * p.quantity), 0)
+        });
+        setIsPurchaseConfirmation(true);
+    };    
 
     useEffect(() => {
         const storedPurchases = JSON.parse(localStorage.getItem("purchaseHistory")) || [];
         setPurchaseHistory(storedPurchases);
         setFilteredPurchases(storedPurchases);
-    }, []);
+    }, [isCancelOrder, isReviewForm, isPurchaseConfirmation]);
 
     const handlePrevPage = () => {
         if (currentPage > 1) {
@@ -57,22 +88,16 @@ const PurchaseHistory = () => {
         setSelectedStatus(status);
         setCurrentPage(1);
     };
-    
+
     // 상태별로 필터링된 구매 내역
     const filteredPurchasesList = purchaseHistory.filter(purchase => {
         if (selectedStatus === '전체') return true;
         return purchase.status === selectedStatus;
     });
-    
+
     useEffect(() => {
         setFilteredPurchases(filteredPurchasesList);
     }, [selectedStatus, startDate, endDate, selectedCategory, selectedType]);
-
-    useEffect(() => {
-        const storedPurchases = JSON.parse(localStorage.getItem("purchaseHistory")) || [];
-        setPurchaseHistory(storedPurchases);
-        setFilteredPurchases(storedPurchases);
-    }, []);
 
     const handleSearch = () => {
         let filtered = purchaseHistory;
@@ -133,146 +158,172 @@ const PurchaseHistory = () => {
         <div className="purchaseHistory_container">
             {isDeliveryTracking ? (
                 <DeliveryTracking setDeliveryTracking={setIsDeliveryTracking} />
+            ) : isCancelOrder ? (
+                <CancelOrder 
+                    selectedPurchase={selectedPurchase} 
+                    onClose={() => setIsCancelOrder(false)}/>
+            ) : isReviewForm ? (
+                <ReviewForm 
+                    selectedPurchase={selectedPurchase} 
+                    onClose={() => setIsReviewForm(false)}/>
+            ) : isPurchaseConfirmation ? (
+                <PurchaseConfirmation 
+                    selectedPurchase={selectedPurchase}
+                    onClose={() => setIsPurchaseConfirmation(false)} />
             ) : (
-            <div>
-            <h2 className="pur-title">구매 내역</h2>
-            <p className="notice">* 일반 판매, 커미션 중 선택</p>
+                <div>
+                    <h2 className="pur-title">구매 내역</h2>
+                    <p className="notice">* 일반 판매, 커미션 중 선택</p>
 
-            <div className="filters">
-                {/* 카테고리 드롭다운 */}
-                <div className="categoryDropdown-group">
-                    <button className="categorybtn" onClick={() => setShowCategoryDropdown(!showCategoryDropdown)}>
-                        {selectedCategory}
-                    </button>
-                    {showCategoryDropdown && <CategoryDropdown />}
-                </div>
+                    <div className="filters">
+                        {/* 카테고리 드롭다운 */}
+                        <div className="categoryDropdown-group">
+                            <button className="categorybtn" onClick={() => setShowCategoryDropdown(!showCategoryDropdown)}>
+                                {selectedCategory}
+                            </button>
+                            {showCategoryDropdown && <CategoryDropdown />}
+                        </div>
 
-                {/* 타입 드롭다운 */}
-                <div className="typeDropdown-group">
-                    <button className="typebtn" onClick={() => setShowTypeDropdown(!showTypeDropdown)}>
-                        {selectedType}
-                    </button>
-                    {showTypeDropdown && <TypeDropdown />}
-                </div>
+                        {/* 타입 드롭다운 */}
+                        <div className="typeDropdown-group">
+                            <button className="typebtn" onClick={() => setShowTypeDropdown(!showTypeDropdown)}>
+                                {selectedType}
+                            </button>
+                            {showTypeDropdown && <TypeDropdown />}
+                        </div>
 
-                {/* 날짜 입력 */}
-                <div className="input-date">
-                    <input 
-                        type="date" 
-                        className="start-date" 
-                        value={startDate} 
-                        onChange={(e) => setStartDate(e.target.value)} 
-                        placeholder="시작일"
-                    />
-                    <span className="iconDate"> ~ </span>
-                    <input 
-                        type="date" 
-                        className="end-date" 
-                        value={endDate} 
-                        onChange={(e) => setEndDate(e.target.value)} 
-                        placeholder="종료일"
-                        min={startDate}
-                    />
-                </div>
+                        {/* 날짜 입력 */}
+                        <div className="input-date">
+                            <input 
+                                type="date" 
+                                className="start-date" 
+                                value={startDate} 
+                                onChange={(e) => setStartDate(e.target.value)} 
+                                placeholder="시작일"
+                            />
+                            <span className="iconDate"> ~ </span>
+                            <input 
+                                type="date" 
+                                className="end-date" 
+                                value={endDate} 
+                                onChange={(e) => setEndDate(e.target.value)} 
+                                placeholder="종료일"
+                                min={startDate}
+                            />
+                        </div>
 
-                {/* 검색 버튼 */}
-                <button className="searchbtn" onClick={handleSearch}>
-                    상세 검색 <FiSearch />
-                </button>
-            </div>
+                        {/* 검색 버튼 */}
+                        <button className="searchbtn" onClick={handleSearch}>
+                            상세 검색 <FiSearch />
+                        </button>
+                    </div>
 
-            <div className="status-buttons">
-                <div className="btnClr" style={{ "--clr": "#78fd61", "--clr-glow": "#4003e6" }} onClick={() => handleStatusSelect('전체')}>
-                    <div className="status-circle">{purchaseHistory.length}</div>
-                    <a href="#">전체</a>
-                </div>
-                <div className="btnClr" style={{ "--clr": "#2dd9fe", "--clr-glow": "#00a3d5" }} onClick={() => handleStatusSelect('상품 준비 중')}>
-                    <div className="status-circle">{getStatusCount('상품 준비 중')}</div>
-                    <a href="#">상품 준비 중</a>
-                </div>
-                <div className="btnClr" style={{ "--clr": "#FF53cd", "--clr-glow": "#e10361" }} onClick={() => handleStatusSelect('배송 중')}>
-                    <div className="status-circle">{getStatusCount('배송 중')}</div>
-                    <a href="#">배송 중</a>
-                </div>
-                <div className="btnClr" style={{ "--clr": "#FF53cd", "--clr-glow": "#e10361" }} onClick={() => handleStatusSelect('배송 완료')}>
-                    <div className="status-circle">{getStatusCount('배송 완료')}</div>
-                    <a href="#">배송 완료</a>
-                </div>
-            </div>
+                    <div className="status-buttons">
+                        <div className="btnClr" style={{ "--clr": "#78fd61", "--clr-glow": "#4003e6" }} onClick={() => handleStatusSelect('전체')}>
+                            <div className="status-circle">{purchaseHistory.length}</div>
+                            <a href="#">전체</a>
+                        </div>
+                        <div className="btnClr" style={{ "--clr": "#2dd9fe", "--clr-glow": "#00a3d5" }} onClick={() => handleStatusSelect('상품 준비 중')}>
+                            <div className="status-circle">{getStatusCount('상품 준비 중')}</div>
+                            <a href="#">상품 준비 중</a>
+                        </div>
+                        <div className="btnClr" style={{ "--clr": "#FF53cd", "--clr-glow": "#e10361" }} onClick={() => handleStatusSelect('배송 중')}>
+                            <div className="status-circle">{getStatusCount('배송 중')}</div>
+                            <a href="#">배송 중</a>
+                        </div>
+                        <div className="btnClr" style={{ "--clr": "#FF53cd", "--clr-glow": "#e10361" }} onClick={() => handleStatusSelect('배송 완료')}>
+                            <div className="status-circle">{getStatusCount('배송 완료')}</div>
+                            <a href="#">배송 완료</a>
+                        </div>
+                    </div>
 
-            <table className="history-table">
-                <thead>
-                    <tr>
-                        <th>제품명</th>
-                        <th>주문자</th>
-                        <th>종류</th>
-                        <th>수량</th>
-                        <th>현재 상태</th>
-                        <th>카테고리</th>
-                        <th>결제 시간</th>
-                        <th>배송 관련</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {filteredPurchases.length > 0 ? (
-                        filteredPurchases.map((purchase) => (
-                            <tr key={purchase.id}>
-                                <td>
-                                    {purchase.products.map((product) => (
-                                        <div key={product.name}>
-                                            <img src={product.image} alt={product.name} className="product-img" />
-                                            {product.name}
-                                        </div>
-                                    ))}
-                                </td>
-                                <td>{purchase.ordererName}</td>
-                                <td>{purchase.saleLabel}</td>
-                                <td>{purchase.products.reduce((sum, p) => sum + p.quantity, 0)} 개</td>
-                                <td>{purchase.status}</td>
-                                <td>{purchase.category || "미정"}</td>
-                                <td>{purchase.paymentDate}</td>
-                                <td>
-                                    <div className="action-buttons">
-                                        {purchase.status === '상품 준비 중' && (
-                                            <button className="btn">취소 신청</button>
-                                        )}
-                                        {purchase.status === '배송 완료' && (
-                                            <>
-                                                <button className="btn">구매 확정</button>
-                                                <button className="btn">리뷰 쓰기</button>
-                                            </>
-                                        )}
-                                        {purchase.status === "배송 중" && (
-                                            <button className="btn" onClick={handleDeliveryTracking}>
-                                                배송 조회
-                                            </button>
-                                        )}
-                                    </div>
-                                </td>
+                    <table className="history-table">
+                        <thead>
+                            <tr>
+                                <th>제품명</th>
+                                <th>주문자</th>
+                                <th>종류</th>
+                                <th>수량, 가격</th>
+                                <th>현재 상태</th>
+                                <th>카테고리</th>
+                                <th>결제 시간</th>
+                                <th>배송 관련</th>
                             </tr>
-                        ))
-                    ) : (
-                        <tr>
-                            <td colSpan="8">구매 내역이 없습니다.</td>
-                        </tr>
-                    )}
-                </tbody>
-            </table>
+                        </thead>
+                        <tbody>
+                            {filteredPurchases.length > 0 ? (
+                                filteredPurchases.map((purchase) => (
+                                    <tr key={purchase.id}>
+                                        <td>
+                                            {purchase.products.map((product) => (
+                                                <div key={product.name}>
+                                                    <img src={product.image} alt={product.name} className="product-img" />
+                                                    {product.name}
+                                                </div>
+                                            ))}
+                                        </td>
+                                        <td>{purchase.ordererName}</td>
+                                        <td>{purchase.saleLabel}</td>
+                                        <td>
+                                            {purchase.products.reduce((sum, p) => sum + p.quantity, 0)} 개, 
+                                            {purchase.products.reduce((sum, p) => sum + (p.price * p.quantity), 0).toLocaleString()}원
+                                        </td>
 
-            <div className="pagination">
-                <button className="page-btn" onClick={handlePrevPage}>◀</button>
-                {[...Array(totalPages)].map((_, i) => (
-                    <button 
-                        key={i} 
-                        className={`page-number ${currentPage === i + 1 ? "active" : ""}`} 
-                        onClick={() => setCurrentPage(i + 1)}
-                    >
-                        {i + 1}
-                    </button>
-                ))}
-                <button className="page-btn" onClick={handleNextPage}>▶</button>
-            </div>
-            </div>
+                                        <td>{purchase.status}</td>
+                                        <td>{purchase.category || "미정"}</td>
+                                        <td>{purchase.paymentDate}</td>
+                                        <td>
+                                            <div className="action-buttons">
+                                                {purchase.status === '상품 준비 중' && (
+                                                    <>
+                                                    <button className="btn" onClick={() => handleCancelOrder(purchase)}>
+                                                        취소 신청
+                                                    </button>
+                                                    <button className="btn" onClick={() => handleReviewClick(purchase)}>
+                                                    리뷰 쓰기</button>
+                                                    </>
+                                                )}
+                                                {purchase.status === '배송 완료' && (
+                                                    <>
+                                                        <button className="btn" onClick={() => handlePurchaseConfirmation(purchase)}>
+                                                            구매 확정
+                                                        </button>
+                                                        <button className="btn" onClick={() => handleReviewClick(purchase)}>
+                                                            리뷰 쓰기
+                                                        </button>
+                                                    </>
+                                                )}
+                                                {purchase.status === "배송 중" && (
+                                                    <button className="btn" onClick={handleDeliveryTracking}>
+                                                        배송 조회
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))
+                            ) : (
+                                <tr>
+                                    <td colSpan="8">구매 내역이 없습니다.</td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
+
+                    <div className="pagination">
+                        <button className="page-btn" onClick={handlePrevPage}>◀</button>
+                        {[...Array(totalPages)].map((_, i) => (
+                            <button 
+                                key={i} 
+                                className={`page-number ${currentPage === i + 1 ? "active" : ""}`} 
+                                onClick={() => setCurrentPage(i + 1)}
+                            >
+                                {i + 1}
+                            </button>
+                        ))}
+                        <button className="page-btn" onClick={handleNextPage}>▶</button>
+                    </div>
+                </div>
             )}
         </div>
     );

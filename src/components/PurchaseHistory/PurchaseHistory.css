@@ -105,12 +105,27 @@
     align-items: center;
 }
 
-.product-img {
+.ph-product-img {
     width: 50px;
     height: 50px;
     border-radius: 5px;
     object-fit: cover;
     margin-bottom: 5px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.order-detail-link {
+    text-decoration: underline;
+    cursor: pointer;
+    color: #0066cc;
+    font-weight: 500;
+}
+
+.order-detail-link:hover {
+    text-decoration: underline;
+    color: #004499;
 }
 
 .pagination {
@@ -384,6 +399,68 @@ a:hover::before {
     display: flex;
     flex-direction: column;
     gap: 8px;
+}
+
+/* 검색 관련 스타일 */
+.pur-search-form {
+    margin-bottom: 20px;
+    width: 100%;
+}
+
+.pur-search-container {
+    display: flex;
+    align-items: center;
+    max-width: 500px;
+    margin: 0 auto;
+    position: relative;
+}
+
+.pur-search-input {
+    width: 100%;
+    padding: 10px 15px;
+    padding-right: 40px;
+    border: 2px solid #000;
+    border-radius: 25px;
+    font-size: 16px;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.pur-search-input:focus {
+    border-color: #6c5ce7;
+    box-shadow: 0 0 5px rgba(108, 92, 231, 0.5);
+}
+
+.pur-search-button {
+    position: absolute;
+    right: 10px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #555;
+    font-size: 18px;
+    transition: color 0.3s ease;
+}
+
+.pur-search-button:hover {
+    color: #000;
+}
+
+/* 반응형 스타일 */
+@media screen and (max-width: 768px) {
+    .pur-search-container {
+        max-width: 100%;
+    }
+    
+    .pur-search-input {
+        padding: 8px 12px;
+        padding-right: 35px;
+        font-size: 14px;
+    }
+    
+    .pur-search-button {
+        font-size: 16px;
+    }
 }
 
 /* 반응형 스타일 */
