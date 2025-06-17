@@ -86,10 +86,12 @@ export default function SalePurchaseModal() {
         });
     };
 
+    // 총 상품 금액
     const calculateTotalProductPrice = () => {
         return wantedProducts.reduce((acc, product) => acc + (product.price * product.quantity), 0);
     };
 
+    // 해당 택배의 배송비
     const getDeliveryCost = () => {
         // shippingMethods가 있고 선택된 배송 방법이 있으면 해당 방법의 가격 반환
         if (selectedDelivery && shippingMethods.length > 0) {
@@ -100,9 +102,11 @@ export default function SalePurchaseModal() {
     };
 
     const safetyPaymentFee = 2400;
-
+    // 총 상품 금액
     const totalProductPrice = calculateTotalProductPrice();
+    // 총 배송비 금액
     const deliveryCost = getDeliveryCost();
+    // 총 결제 금액
     const totalAmount = totalProductPrice + deliveryCost + safetyPaymentFee;
 
     const validateBeforePayment = () => {
@@ -118,6 +122,7 @@ export default function SalePurchaseModal() {
         return true;
     };
 
+    // 결제 할 때 사용하는 메서드
     const handlePurchase = async () => {
         try {
             // 필수 필드 검증
@@ -157,6 +162,8 @@ export default function SalePurchaseModal() {
     
             const orderPayment = new OrderPayment(userInfo, shippingMethods);
 
+            console.log('wantedProducts: ',wantedProducts);
+
             const paymentResult = await orderPayment.processPayment(
                 wantedProducts,
                 formData,
@@ -165,7 +172,7 @@ export default function SalePurchaseModal() {
                 refundAccount,
                 totalAmount
             );
-
+            console.log('paymentResult.orderId ::: ',paymentResult.orderId);
             if (!paymentResult.success) {
                 if (paymentResult.userError) {
                     navigate('/login');
@@ -194,7 +201,7 @@ export default function SalePurchaseModal() {
                             quantity: product.quantity,
                         })),
                         formData: formData,
-                        selectedDelivery: selectedDelivery,
+                        selectedDelivery: shippingMethods,
                         refundBank: refundBank,
                         refundAccount: refundAccount,
                         paymentDate: new Date().toISOString().split("T")[0],
@@ -202,6 +209,7 @@ export default function SalePurchaseModal() {
                         saleLabel: saleLabel,
                         category: wantedProducts[0]?.category || "미정",
                         totalAmount: totalAmount,
+                        orderId: paymentResult.orderId,
                     };
     
                     const existingPurchases = JSON.parse(localStorage.getItem("purchaseHistory")) || [];
@@ -313,7 +321,7 @@ export default function SalePurchaseModal() {
                                             checked={selectedDelivery === method.name} 
                                             onChange={() => setSelectedDelivery(method.name)} 
                                         />
-                                        [{method.id}] {method.name} ({Number(method.price).toLocaleString()}원)
+                                        {method.name} ({Number(method.price).toLocaleString()}원)
                                     </label>
                                 ))}
                             </div>

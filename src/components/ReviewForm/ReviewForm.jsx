@@ -31,7 +31,8 @@ const ReviewForm = ({ selectedPurchase, onClose }) => {
             return;
         }
 
-        // Create new review object with all required fields
+        const productId = selectedPurchase.products[0]?.id;
+
         const newReview = {
             purchase: selectedPurchase,
             rating,
@@ -39,8 +40,9 @@ const ReviewForm = ({ selectedPurchase, onClose }) => {
             uploadedImages,
             productImages: selectedPurchase.products.map(product => product.image),
             date: new Date().toISOString().split("T")[0],
-            // Ensure we have the product ID for linking purposes
-            productId: selectedPurchase.products[0].id
+            productId, // 상품 ID 반드시 포함
+            nickname: localStorage.getItem('userName') || "익명",
+            profileImage: null
         };
 
         // Add review to localStorage

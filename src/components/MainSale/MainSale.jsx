@@ -22,7 +22,11 @@ const MainSale = () => {
                     </div>
                 </div>
             
-                <Sale showBanner={false} showOrderButton={false} />
+                <Sale 
+                    showBanner={false} 
+                    showOrderButton={false} 
+                    showCustomProducts={false}  // 이 prop을 추가
+                />
                 
                 <button className='seeSale' 
                     onClick={() => navigate('/sale')}>

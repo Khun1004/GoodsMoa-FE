@@ -1,523 +1,1142 @@
-/* 기본 스타일 (모바일 퍼스트) */
-.saleManagement-container {
-    max-width: 100%;
-    margin: 0 auto;
-    padding: 1.5rem;
-    background-color: #ffffff;
-    color: #333333;
-    font-family: 'Pretendard', 'Apple SD Gothic Neo', sans-serif;
+/* 아이콘 크기 */
+.saleFormManage-icon-xs {
+    width: 12px;
+    height: 12px;
 }
 
-.saleManagement-header-section {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-    margin-bottom: 2rem;
-    background-color: #f8f9fa;
+.saleFormManage-icon-sm {
+    width: 16px;
+    height: 16px;
+}
+
+.saleFormManage-icon-md {
+    width: 20px;
+    height: 20px;
+}
+
+.saleFormManage-icon-lg {
+    width: 40px;
+    height: 40px;
+}
+
+/* 버튼 공통 스타일 */
+.saleFormManage-btn-primary {
+    background-color: #2563eb;
+    color: white;
+    padding: 12px 24px;
     border-radius: 12px;
-    padding: 1.5rem;
-    position: relative;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-}
-
-.saleManagement-thumbnail-container {
-    width: 100%;
-    height: 220px;
-    border-radius: 10px;
-    overflow: hidden;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.saleManagement-thumbnail-image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 8px;
-    transition: transform 0.3s ease;
-}
-
-.saleManagement-thumbnail-image:hover {
-    transform: scale(1.02);
-}
-
-.saleManagement-header-info {
-    width: 100%;
-}
-
-.saleManagement-title {
-    font-size: 1.6rem;
-    font-weight: 700;
-    margin-bottom: 1rem;
-    color: #212529;
-    line-height: 1.3;
-    word-break: keep-all;
-}
-
-.saleManagement-meta-info {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.75rem;
-    margin-bottom: 1rem;
-}
-
-.saleManagement-category, .saleManagement-visibility, .saleManagement-period {
-    padding: 0.4rem 0.8rem;
-    border-radius: 6px;
-    font-size: 0.85rem;
     font-weight: 500;
-    display: inline-flex;
-    align-items: center;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.saleManagement-category::before {
-    content: "🏷️";
-    margin-right: 0.4rem;
-}
-
-.saleManagement-visibility::before {
-    margin-right: 0.4rem;
-}
-
-.saleManagement-visibility.public::before {
-    content: "👁️";
-}
-
-.saleManagement-visibility.private::before {
-    content: "🔒";
-}
-
-.saleManagement-period::before {
-    content: "📅";
-    margin-right: 0.4rem;
-}
-
-.saleManagement-private-code {
-    margin-top: 1rem;
-    padding: 0.75rem 1rem;
-    font-size: 0.9rem;
-    background-color: #fff3cd;
-    border-left: 4px solid #ffc107;
-    border-radius: 4px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.saleManagement-private-code strong {
-    color: #856404;
-    font-size: 1rem;
-    background: #fff;
-    padding: 0.3rem 0.6rem;
-    border-radius: 4px;
-    letter-spacing: 1px;
-    border: 1px dashed #ffc107;
-}
-
-.saleManagement-action-buttons {
-    display: flex;
-    gap: 1rem;
-    margin-bottom: 2rem;
-}
-
-.saleManagement-edit-button, .saleManagement-delete-button {
-    padding: 0.6rem 1.2rem;
-    font-size: 0.95rem;
-    font-weight: 600;
-    border-radius: 6px;
     border: none;
     cursor: pointer;
     transition: all 0.2s ease;
+}
+
+.saleFormManage-btn-primary:hover {
+    background-color: #1d4ed8;
+}
+
+/* ===================
+    로딩 스타일
+=================== */
+.saleFormManage-loading-container {
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    min-height: 100vh;
 }
 
-.saleManagement-edit-button::before {
-    content: "✏️";
-    margin-right: 0.5rem;
-    font-size: 1.1rem;
+.saleFormManage-loading-content {
+    text-align: center;
 }
 
-.saleManagement-delete-button::before {
-    content: "🗑️";
-    margin-right: 0.5rem;
-    font-size: 1.1rem;
+.saleFormManage-loading-spinner {
+    width: 48px;
+    height: 48px;
+    border: 2px solid transparent;
+    border-bottom-color: #2563eb;
+    border-radius: 50%;
+    animation: saleFormManage-spin 1s linear infinite;
+    margin: 0 auto 16px;
 }
 
-.saleManagement-content-section {
+@keyframes saleFormManage-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.saleFormManage-loading-text {
+    color: #6b7280;
+    margin: 0;
+}
+
+/* ===================
+    에러 스타일
+=================== */
+.saleFormManage-error-container {
     display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
 }
 
-.saleManagement-content-section > div {
-    background-color: #f8f9fa;
-    border-radius: 12px;
-    padding: 1.5rem;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+.saleFormManage-error-content {
+    text-align: center;
+    color: #dc2626;
 }
 
-.saleManagement-content-section h2 {
-    font-size: 1.3rem;
-    font-weight: 700;
-    margin-bottom: 1rem;
-    color: #343a40;
-    position: relative;
-    padding-bottom: 0.5rem;
-    border-bottom: 2px solid #e9ecef;
+/* ===================
+    빈 상태 스타일
+=================== */
+.saleFormManage-empty-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
 }
 
-.saleManagement-content-section h2::after {
-    content: "";
-    position: absolute;
-    bottom: -2px;
-    left: 0;
-    width: 60px;
-    height: 2px;
-    background-color: #4dabf7;
-}
-
-.saleManagement-description-content {
-    padding: 1.25rem;
-    background-color: #ffffff;
-    border-radius: 8px;
-    line-height: 1.7;
-    color: #495057;
-    border: 1px solid #e9ecef;
-}
-
-.saleManagement-shipping-section {
+.saleFormManage-empty-content {
+    text-align: center;
+    background-color: white;
+    border-radius: 16px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    padding: 32px;
+    max-width: 28rem;
     width: 100%;
 }
 
-.saleManagement-shipping-methods {
+.saleFormManage-empty-icon {
+    width: 80px;
+    height: 80px;
+    background-color: #f3f4f6;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 24px;
+}
+
+.saleFormManage-empty-icon .saleFormManage-icon-lg {
+    color: #9ca3af;
+}
+
+.saleFormManage-empty-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: #1f2937;
+    margin: 0 0 12px 0;
+}
+
+.saleFormManage-empty-description {
+    color: #6b7280;
+    margin: 0 0 24px 0;
+}
+
+/* ===================
+    상세보기 스타일
+=================== */
+.saleFormManage-detail-container {
+    min-height: 100vh;
+    background-color: #f9fafb;
+}
+
+.saleFormManage-detail-header {
+    background-color: white;
+    border-bottom: 1px solid #e5e7eb;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.saleFormManage-detail-header-content {
+    max-width: 64rem;
+    margin: 0 auto;
+    padding: 16px 24px;
+}
+
+.saleFormManage-detail-header-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.saleFormManage-back-button {
+    display: flex;
+    align-items: center;
+    color: #6b7280;
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: color 0.2s ease;
+    font-size: 14px;
+}
+
+.saleFormManage-back-button:hover {
+    color: #1f2937;
+}
+
+.saleFormManage-back-button .saleFormManage-icon-sm {
+    margin-right: 8px;
+}
+
+.saleFormManage-detail-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.saleFormManage-btn-edit {
+    display: flex;
+    align-items: center;
+    padding: 6px 12px;
+    background-color: #2563eb;
+    color: white;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    font-size: 14px;
+}
+
+.saleFormManage-btn-edit:hover {
+    background-color: #1d4ed8;
+}
+
+.saleFormManage-btn-edit .saleFormManage-icon-sm {
+    margin-right: 6px;
+}
+
+.saleFormManage-btn-delete {
+    display: flex;
+    align-items: center;
+    padding: 6px 12px;
+    background-color: #dc2626;
+    color: white;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    font-size: 14px;
+}
+
+.saleFormManage-btn-delete:hover {
+    background-color: #b91c1c;
+}
+
+.saleFormManage-btn-delete.confirm {
+    background-color: #f97316;
+}
+
+.saleFormManage-btn-delete.confirm:hover {
+    background-color: #ea580c;
+}
+
+.saleFormManage-btn-delete .saleFormManage-icon-sm {
+    margin-right: 6px;
+}
+
+.saleFormManage-detail-content {
+    max-width: 64rem;
+    margin: 0 auto;
+    padding: 16px;
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    gap: 24px;
 }
 
-.saleManagement-method-item {
+@media (min-width: 768px) {
+    .saleFormManage-detail-content {
+        padding: 24px;
+        gap: 32px;
+    }
+    
+    .saleFormManage-btn-edit,
+    .saleFormManage-btn-delete {
+        padding: 8px 16px;
+        font-size: 16px;
+    }
+    
+    .saleFormManage-back-button {
+        font-size: 16px;
+    }
+}
+
+.saleFormManage-detail-card {
+    background-color: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+@media (min-width: 768px) {
+    .saleFormManage-detail-card {
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+}
+
+.saleFormManage-detail-main {
     display: flex;
-    justify-content: space-between;
-    background-color: #ffffff;
-    border-radius: 8px;
-    padding: 0.75rem 1rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-    border: 1px solid #e9ecef;
-    transition: transform 0.2s ease;
+    flex-direction: column;
 }
 
-.saleManagement-method-item:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+@media (min-width: 768px) {
+    .saleFormManage-detail-main {
+        flex-direction: row;
+    }
 }
 
-.saleManagement-method-name {
+.saleFormManage-detail-image {
+    width: 100%;
+}
+
+@media (min-width: 768px) {
+    .saleFormManage-detail-image {
+        width: 33.333%;
+    }
+}
+
+.saleFormManage-detail-thumbnail {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}
+
+@media (min-width: 768px) {
+    .saleFormManage-detail-thumbnail {
+        height: 100%;
+    }
+}
+
+.saleFormManage-detail-info {
+    width: 100%;
+    padding: 20px;
+}
+
+@media (min-width: 768px) {
+    .saleFormManage-detail-info {
+        width: 66.667%;
+        padding: 32px;
+    }
+}
+
+.saleFormManage-detail-title-section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+@media (min-width: 640px) {
+    .saleFormManage-detail-title-section {
+        flex-direction: row;
+        align-items: flex-start;
+        justify-content: space-between;
+    }
+}
+
+.saleFormManage-detail-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #1f2937;
+    line-height: 1.2;
+    margin: 0;
+}
+
+@media (min-width: 768px) {
+    .saleFormManage-detail-title {
+        font-size: 30px;
+    }
+}
+
+.saleFormManage-detail-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+@media (min-width: 768px) {
+    .saleFormManage-detail-badges {
+        gap: 12px;
+        margin-bottom: 24px;
+    }
+}
+
+.saleFormManage-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 8px;
+    border-radius: 9999px;
+    font-size: 12px;
     font-weight: 500;
+}
+
+@media (min-width: 768px) {
+    .saleFormManage-badge {
+        padding: 4px 12px;
+        font-size: 14px;
+    }
+}
+
+.saleFormManage-badge-category {
+    background-color: #f3f4f6;
+    color: #374151;
+}
+
+.saleFormManage-badge-public {
+    background-color: #dcfce7;
+    color: #166534;
+}
+
+.saleFormManage-badge-private {
+    background-color: #fecaca;
+    color: #991b1b;
+}
+
+.saleFormManage-badge-date {
+    background-color: #dbeafe;
+    color: #1d4ed8;
+}
+
+.saleFormManage-badge .saleFormManage-icon-xs {
+    margin-right: 4px;
+}
+
+.saleFormManage-password-notice {
+    background-color: #fefce8;
+    border: 1px solid #fde047;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 16px;
+}
+
+@media (min-width: 768px) {
+    .saleFormManage-password-notice {
+        padding: 16px;
+        margin-bottom: 24px;
+    }
+}
+
+.saleFormManage-password-content {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.saleFormManage-password-icon {
+    color: #ca8a04;
+    margin-right: 8px;
+}
+
+.saleFormManage-password-label {
+    color: #92400e;
+    font-weight: 500;
+    font-size: 14px;
+    margin-right: 8px;
+}
+
+@media (min-width: 768px) {
+    .saleFormManage-password-label {
+        font-size: 16px;
+    }
+}
+
+.saleFormManage-password-code {
+    margin-top: 8px;
+    background-color: #fde047;
+    padding: 4px 8px;
+    border-radius: 4px;
+    color: #78350f;
+    font-family: monospace;
+    font-size: 14px;
+}
+
+@media (min-width: 768px) {
+    .saleFormManage-password-code {
+        margin-top: 0;
+        margin-left: 8px;
+        font-size: 16px;
+    }
+}
+
+.saleFormManage-section-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #1f2937;
+    margin: 0 0 16px 0;
+    padding: 20px;
+    padding-bottom: 0;
+}
+
+@media (min-width: 768px) {
+    .saleFormManage-section-title {
+        font-size: 24px;
+        margin: 0 0 24px 0;
+        padding: 32px;
+        padding-bottom: 0;
+    }
+}
+
+.saleFormManage-section-title-icon {
     display: flex;
     align-items: center;
 }
 
-.saleManagement-method-name::before {
-    content: "🚚";
-    margin-right: 0.5rem;
+.saleFormManage-section-title-icon .saleFormManage-icon-md {
+    margin-right: 8px;
 }
 
-.saleManagement-method-cost {
+.saleFormManage-content-description {
+    padding: 0 20px 20px 20px;
+    color: #374151;
+    line-height: 1.6;
+    max-width: none;
+    font-size: 14px;
+}
+
+@media (min-width: 768px) {
+    .saleFormManage-content-description {
+        padding: 0 32px 32px 32px;
+        font-size: 16px;
+    }
+}
+
+.saleFormManage-info-grid {
+    display: grid;
+    gap: 24px;
+    padding: 0 20px 20px 20px;
+}
+
+@media (min-width: 768px) {
+    .saleFormManage-info-grid {
+        grid-template-columns: 1fr 1fr;
+        padding: 0 32px 32px 32px;
+        gap: 32px;
+    }
+}
+
+.saleFormManage-delivery-list {
+    padding: 0 20px 20px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+@media (min-width: 768px) {
+    .saleFormManage-delivery-list {
+        padding: 0 32px 32px 32px;
+        gap: 16px;
+    }
+}
+
+.saleFormManage-delivery-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    background-color: #f9fafb;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+@media (min-width: 768px) {
+    .saleFormManage-delivery-item {
+        padding: 16px;
+        font-size: 16px;
+    }
+}
+
+.saleFormManage-delivery-name {
+    font-weight: 500;
+    color: #374151;
+}
+
+.saleFormManage-delivery-price {
     font-weight: 600;
-    color: #495057;
+    color: #1f2937;
 }
 
-.saleManagement-tags-section {
-    width: 100%;
-}
-
-.saleManagement-tags-container {
+.saleFormManage-hashtag-list {
+    padding: 0 20px 20px 20px;
     display: flex;
     flex-wrap: wrap;
-    gap: 0.75rem;
-    padding: 0.5rem;
+    gap: 8px;
 }
 
-.saleManagement-tag {
-    padding: 0.35rem 0.7rem;
-    background-color: #e7f5ff;
-    border-radius: 20px;
-    color: #1971c2;
-    font-size: 0.9rem;
+@media (min-width: 768px) {
+    .saleFormManage-hashtag-list {
+        padding: 0 32px 32px 32px;
+        gap: 12px;
+    }
+}
+
+.saleFormManage-hashtag {
+    display: inline-block;
+    padding: 6px 10px;
+    background-color: #dbeafe;
+    color: #1d4ed8;
+    border-radius: 9999px;
+    font-size: 12px;
     font-weight: 500;
-    transition: all 0.2s ease;
-    border: 1px solid #d0ebff;
 }
 
-.saleManagement-tag:hover {
-    background-color: #d0ebff;
-    transform: translateY(-1px);
+@media (min-width: 768px) {
+    .saleFormManage-hashtag {
+        padding: 8px 12px;
+        font-size: 14px;
+    }
 }
 
-.saleManagement-products-grid {
+.saleFormManage-no-tags {
+    color: #6b7280;
+    font-size: 14px;
+}
+
+.saleFormManage-products-grid {
+    padding: 0 20px 20px 20px;
     display: grid;
-    grid-template-columns: 1fr;
-    gap: 1.25rem;
+    gap: 16px;
 }
 
-.saleManagement-product-card {
-    border: 1px solid #e9ecef;
-    border-radius: 10px;
+@media (min-width: 640px) {
+    .saleFormManage-products-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 768px) {
+    .saleFormManage-products-grid {
+        padding: 0 32px 32px 32px;
+        gap: 24px;
+    }
+}
+
+@media (min-width: 1024px) {
+    .saleFormManage-products-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+.saleFormManage-product-card {
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
     overflow: hidden;
-    transition: all 0.3s ease;
-    background-color: #ffffff;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    transition: box-shadow 0.2s ease;
 }
 
-.saleManagement-product-image-container {
-    height: 180px;
+.saleFormManage-product-card:hover {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.saleFormManage-product-image {
+    aspect-ratio: 1;
     overflow: hidden;
-    position: relative;
 }
 
-.saleManagement-product-image {
+.saleFormManage-product-img {
     width: 100%;
     height: 100%;
     object-fit: cover;
     transition: transform 0.3s ease;
 }
 
-.saleManagement-product-card:hover .saleManagement-product-image {
+.saleFormManage-product-card:hover .saleFormManage-product-img {
     transform: scale(1.05);
 }
 
-.saleManagement-product-info {
-    padding: 1rem 1.2rem;
+.saleFormManage-product-info {
+    padding: 16px;
 }
 
-.saleManagement-product-name {
-    margin: 0 0 0.5rem 0;
-    font-size: 1.1rem;
+@media (min-width: 768px) {
+    .saleFormManage-product-info {
+        padding: 24px;
+    }
+}
+
+.saleFormManage-product-name {
     font-weight: 600;
-    color: #343a40;
+    color: #1f2937;
+    margin: 0 0 8px 0;
+    font-size: 16px;
 }
 
-.saleManagement-product-price {
+@media (min-width: 768px) {
+    .saleFormManage-product-name {
+        font-size: 18px;
+    }
+}
+
+.saleFormManage-product-price {
+    font-size: 18px;
     font-weight: 700;
-    margin: 0 0 0.75rem 0;
-    color: #e03131;
-    font-size: 1.1rem;
+    color: #dc2626;
+    margin: 0 0 12px 0;
 }
 
-.saleManagement-product-meta {
+@media (min-width: 768px) {
+    .saleFormManage-product-price {
+        font-size: 20px;
+        margin: 0 0 16px 0;
+    }
+}
+
+.saleFormManage-product-stock {
     display: flex;
     justify-content: space-between;
-    font-size: 0.85rem;
-    color: #6c757d;
-    padding-top: 0.75rem;
-    border-top: 1px solid #f1f3f5;
+    font-size: 12px;
+    color: #6b7280;
 }
 
-.saleManagement-no-data-container {
-    text-align: center;
-    padding: 3rem 1.5rem;
-    background-color: #f8f9fa;
-    border-radius: 12px;
-    margin: 2rem auto;
-    max-width: 600px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-}
-
-.saleManagement-no-data-container p {
-    font-size: 1.1rem;
-    color: #6c757d;
-    margin-bottom: 1.5rem;
-}
-
-.saleManagement-create-button {
-    padding: 0.75rem 1.5rem;
-    background-color: #40c057;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 1rem;
-    font-weight: 600;
-    margin-top: 1rem;
-    transition: all 0.2s ease;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.saleManagement-create-button:hover {
-    background-color: #37b24d;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-}
-
-/* 태블릿 사이즈 (768px 이상) */
 @media (min-width: 768px) {
-    .saleManagement-container {
-        padding: 2rem;
+    .saleFormManage-product-stock {
+        font-size: 14px;
     }
+}
 
-    .saleManagement-header-section {
-        flex-direction: row;
-        gap: 2rem;
-        padding: 2rem;
+/* ===================
+    리스트 뷰 스타일
+=================== */
+.saleFormManage-list-container {
+    width: 100%;
+    margin: 0 auto;
+    padding: 40px 20px;
+}
+
+.saleFormManage-list-content {
+    width: 100%;
+    max-width: 1000px;
+}
+
+.saleFormManage-list-header {
+    margin-bottom: 24px;
+}
+
+@media (min-width: 768px) {
+    .saleFormManage-list-header {
+        margin-bottom: 32px;
     }
+}
 
-    .saleManagement-thumbnail-container {
-        width: 280px;
-        height: 280px;
-        flex-shrink: 0;
+.saleFormManage-list-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #1f2937;
+    margin: 0 0 8px 0;
+}
+
+@media (min-width: 768px) {
+    .saleFormManage-list-title {
+        font-size: 30px;
     }
+}
 
-    .saleManagement-title {
-        font-size: 1.8rem;
+.saleFormManage-list-description {
+    color: #6b7280;
+    margin: 0;
+    font-size: 14px;
+}
+
+@media (min-width: 768px) {
+    .saleFormManage-list-description {
+        font-size: 16px;
     }
+}
 
-    .saleManagement-action-buttons {
-        gap: 1.25rem;
-    }
+.saleFormManage-forms-grid {
+    display: grid;
+    gap: 16px;
+}
 
-    .saleManagement-edit-button, .saleManagement-delete-button {
-        padding: 0.75rem 1.75rem;
-    }
-
-    .saleManagement-products-grid {
+@media (min-width: 640px) {
+    .saleFormManage-forms-grid {
         grid-template-columns: repeat(2, 1fr);
     }
+}
 
-    .saleManagement-product-image-container {
-        height: 200px;
-    }
-
-    /* 태블릿에서도 좌우 배치 */
-    .saleManagement-content-section {
-        flex-direction: row;
-        flex-wrap: wrap;
-    }
-
-    .saleManagement-description-section {
-        width: 100%;
-    }
-
-    .saleManagement-shipping-section {
-        width: calc(50% - 0.75rem);
-    }
-
-    .saleManagement-tags-section {
-        width: calc(50% - 0.75rem);
-    }
-
-    .saleManagement-products-section {
-        width: 100%;
+@media (min-width: 768px) {
+    .saleFormManage-forms-grid {
+        gap: 24px;
     }
 }
 
-/* 데스크탑 사이즈 (1024px 이상) */
 @media (min-width: 1024px) {
-    .saleManagement-container {
-        max-width: 1200px;
-        padding: 2.5rem;
-    }
-
-    .saleManagement-header-section {
-        padding: 2.5rem;
-    }
-
-    .saleManagement-thumbnail-container {
-        width: 320px;
-        height: 320px;
-    }
-
-    .saleManagement-title {
-        font-size: 2.2rem;
-    }
-
-    .saleManagement-meta-info {
-        gap: 1.25rem;
-    }
-
-    .saleManagement-category, .saleManagement-visibility, .saleManagement-period {
-        font-size: 0.95rem;
-    }
-
-    .saleManagement-action-buttons {
-        margin-bottom: 2.5rem;
-    }
-
-    .saleManagement-products-grid {
+    .saleFormManage-forms-grid {
         grid-template-columns: repeat(3, 1fr);
-        gap: 1.75rem;
-    }
-
-    .saleManagement-product-image-container {
-        height: 220px;
-    }
-
-    /* 호버 효과 (데스크탑 전용) */
-    .saleManagement-edit-button:hover {
-        background-color: #228be6;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(33, 150, 243, 0.3);
-    }
-
-    .saleManagement-delete-button:hover {
-        background-color: #e03131;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(244, 67, 54, 0.3);
-    }
-
-    .saleManagement-delete-button.confirm:hover {
-        background-color: #f59f00;
-        box-shadow: 0 4px 8px rgba(255, 152, 0, 0.3);
-    }
-
-    .saleManagement-product-card:hover {
-        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
-        transform: translateY(-3px);
-        transition: all 0.3s ease;
     }
 }
 
-/* 공통 스타일 (모든 화면 크기) */
-.saleManagement-category {
-    background-color: #f4f4f4;
-    color: #495057;
+.saleFormManage-form-card {
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    transition: all 0.3s ease;
+    cursor: pointer;
 }
 
-.saleManagement-visibility.public {
-    background-color: #e7f5ff;
-    color: #1971c2;
+@media (min-width: 768px) {
+    .saleFormManage-form-card {
+        border-radius: 16px;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
 }
 
-.saleManagement-visibility.private {
-    background-color: #ffe3e3;
-    color: #c92a2a;
+.saleFormManage-form-card:hover {
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
 }
 
-.saleManagement-period {
-    background-color: #ebfbee;
-    color: #2b8a3e;
+.saleFormManage-form-thumbnail {
+    position: relative;
+    aspect-ratio: 16/9;
+    overflow: hidden;
 }
 
-.saleManagement-edit-button {
-    background-color: #339af0;
+.saleFormManage-thumbnail-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.saleFormManage-form-card:hover .saleFormManage-thumbnail-img {
+    transform: scale(1.05);
+}
+
+.saleFormManage-thumbnail-overlay {
+    position: absolute;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.saleFormManage-form-card:hover .saleFormManage-thumbnail-overlay {
+    background-color: rgba(0, 0, 0, 0.2);
+}
+
+.saleFormManage-overlay-icon {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.saleFormManage-form-card:hover .saleFormManage-overlay-icon {
+    opacity: 1;
+}
+
+.saleFormManage-icon-circle {
+    background-color: white;
+    border-radius: 50%;
+    padding: 8px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+@media (min-width: 768px) {
+    .saleFormManage-icon-circle {
+        padding: 12px;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+}
+
+.saleFormManage-icon-circle .saleFormManage-icon-md {
+    color: #374151;
+}
+
+.saleFormManage-status-badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+}
+
+@media (min-width: 768px) {
+    .saleFormManage-status-badge {
+        top: 16px;
+        left: 16px;
+    }
+}
+
+.saleFormManage-status {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 8px;
+    border-radius: 9999px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.saleFormManage-status.public {
+    background-color: #10b981;
     color: white;
+}
+
+.saleFormManage-status.private {
+    background-color: #ef4444;
+    color: white;
+}
+
+.saleFormManage-status .saleFormManage-icon-xs {
+    margin-right: 4px;
+}
+
+.saleFormManage-card-content {
+    padding: 16px;
+}
+
+@media (min-width: 768px) {
+    .saleFormManage-card-content {
+        padding: 24px;
+    }
+}
+
+/* 삭제 확인 텍스트 스타일 */
+.saleFormManage-delete-confirm-text {
+    margin-left: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+/* 삭제 버튼 컨테이너 확장 */
+.saleFormManage-action-btn.delete {
+    position: relative;
+    min-width: 24px;
+    transition: min-width 0.2s ease;
+}
+
+.saleFormManage-action-btn.delete.confirm {
+    min-width: 60px;
+    background-color: #ffebee;
+}
+
+.saleFormManage-action-btn.delete.confirm:hover {
+    background-color: #ffcdd2;
+}
+
+.saleFormManage-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+@media (min-width: 768px) {
+    .saleFormManage-card-header {
+        margin-bottom: 12px;
+    }
+}
+
+.saleFormManage-card-title {
+    font-weight: 700;
+    font-size: 16px;
+    color: #1f2937;
+    line-height: 1.2;
+    margin: 0;
+    transition: color 0.2s ease;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+@media (min-width: 768px) {
+    .saleFormManage-card-title {
+        font-size: 18px;
+    }
+}
+
+.saleFormManage-form-card:hover .saleFormManage-card-title {
+    color: #2563eb;
+}
+
+.saleFormManage-card-description {
+    color: #6b7280;
+    font-size: 12px;
+    margin: 0 0 12px 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+@media (min-width: 768px) {
+    .saleFormManage-card-description {
+        font-size: 14px;
+        margin: 0 0 16px 0;
+    }
+}
+
+.saleFormManage-card-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 12px;
+}
+
+@media (min-width: 768px) {
+    .saleFormManage-card-badges {
+        gap: 8px;
+        margin-bottom: 16px;
+    }
+}
+
+.saleFormManage-card-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: 500;
+}
+
+@media (min-width: 768px) {
+    .saleFormManage-card-badge {
+        font-size: 12px;
+    }
+}
+
+.saleFormManage-card-badge.category {
+    background-color: #f3f4f6;
+    color: #374151;
+}
+
+.saleFormManage-card-badge.date {
+    background-color: #dbeafe;
+    color: #1d4ed8;
+}
+
+.saleFormManage-card-badge .saleFormManage-icon-xs {
+    margin-right: 4px;
+}
+
+.saleFormManage-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 12px;
+    border-top: 1px solid #f3f4f6;
+}
+
+@media (min-width: 768px) {
+    .saleFormManage-card-footer {
+        padding-top: 16px;
+    }
+}
+
+.saleFormManage-product-count {
+    font-size: 12px;
+    color: #6b7280;
+}
+
+@media (min-width: 768px) {
+    .saleFormManage-product-count {
+        font-size: 14px;
+    }
+}
+
+.saleFormManage-card-actions {
+    display: flex;
+    gap: 6px;
+}
+
+@media (min-width: 768px) {
+    .saleFormManage-card-actions {
+        gap: 8px;
+    }
+}
+
+.saleFormManage-action-btn {
+    padding: 6px;
     border: none;
     border-radius: 6px;
     cursor: pointer;
-    font-weight: 600;
+    transition: all 0.2s ease;
 }
 
-.saleManagement-delete-button {
-    background-color: #fa5252;
+@media (min-width: 768px) {
+    .saleFormManage-action-btn {
+        padding: 8px;
+        border-radius: 8px;
+    }
+}
+
+.saleFormManage-action-btn.edit {
+    color: #9ca3af;
+    background-color: transparent;
+}
+
+.saleFormManage-action-btn.edit:hover {
+    color: #2563eb;
+    background-color: #dbeafe;
+}
+
+.saleFormManage-action-btn.delete {
+    color: #9ca3af;
+    background-color: transparent;
+}
+
+.saleFormManage-action-btn.delete:hover {
+    color: #dc2626;
+    background-color: #fecaca;
+}
+
+.saleFormManage-action-btn.delete.confirm {
+    color: #f97316;
+    background-color: #fed7aa;
+}
+
+.saleFormManage-action-btn.delete.confirm:hover {
+    background-color: #fdba74;
+}
+
+.saleFormManage-add-form-section {
+    margin-top: 10px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+@media (min-width: 768px) {
+    .saleFormManage-add-form-section {
+        margin-top: 32px;
+    }
+}
+
+.saleFormManage-btn-add-form {
+    display: inline-flex;
+    align-items: center;
+    padding: 10px 20px;
+    background-color: #2563eb;
     color: white;
+    border-radius: 12px;
+    font-weight: 500;
     border: none;
-    border-radius: 6px;
     cursor: pointer;
-    font-weight: 600;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    font-size: 14px;
 }
 
-.saleManagement-delete-button.confirm {
-    background-color: #ff922b;
+@media (min-width: 768px) {
+    .saleFormManage-btn-add-form {
+        padding: 12px 24px;
+        font-size: 16px;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+}
+
+.saleFormManage-btn-add-form:hover {
+    background-color: #1d4ed8;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.saleFormManage-btn-add-form .saleFormManage-icon-sm {
+    margin-right: 6px;
+}
+
+@media (min-width: 768px) {
+    .saleFormManage-btn-add-form .saleFormManage-icon-sm {
+        margin-right: 8px;
+    }
 }

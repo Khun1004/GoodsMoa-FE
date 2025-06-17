@@ -280,6 +280,75 @@
   background: #1d4ed8;
 }
 
+.DeliveryTrackingConfirm-product {
+  margin-bottom: 24px;
+  padding: 16px;
+  background: #f8fafc;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.DeliveryTrackingConfirm-product-info-container {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.DeliveryTrackingConfirm-product-image-container {
+  width: 80px;
+  height: 80px;
+  border-radius: 8px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.DeliveryTrackingConfirm-product-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.DeliveryTrackingConfirm-product-details {
+  flex: 1;
+}
+
+.DeliveryTrackingConfirm-product-name {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 8px;
+  color: #1e293b;
+}
+
+.DeliveryTrackingConfirm-product-quantity, .DeliveryTrackingConfirm-product-price {
+  font-size: 0.9rem;
+  margin: 4px 0;
+  color: #64748b;
+}
+
+.DeliveryTrackingConfirm-product-price {
+  font-weight: 700;
+  color: #2563eb;
+}
+
+/* 뒤로 가기 버튼 스타일 */
+.DeliveryTrackingConfirm-back-button {
+  background: none;
+  border: none;
+  color: #2563eb;
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin-bottom: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 0;
+}
+
+.DeliveryTrackingConfirm-back-button:hover {
+  text-decoration: underline;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .tracking-container {

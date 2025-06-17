@@ -1,4 +1,5 @@
-import React from 'react';
+import { ArrowLeft, Calendar, ChevronRight, Edit2, Eye, Hash, Lock, Package, ShoppingBag, Trash2, Truck } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import ProductService from '../../../../api/ProductService';
 import './SaleFormManagement.css';
@@ -9,14 +10,16 @@ const SUPPORTED_IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'];
 const SaleFormManagement = () => {
     const location = useLocation();
     const navigate = useNavigate();
-    const [formData, setFormData] = React.useState(null);
-    const [confirmDelete, setConfirmDelete] = React.useState(false);
-    const [loading, setLoading] = React.useState(false);
-    const [error, setError] = React.useState(null);
+    const [forms, setForms] = useState([]);
+    const [selectedForm, setSelectedForm] = useState(null);
+    const [viewMode, setViewMode] = useState('list'); // 'list' or 'detail'
+    const [confirmDelete, setConfirmDelete] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
 
     // Get image extension
     const getImageExtension = (img) => {
-        if (!img) return 'png'; // Default for products
+        if (!img) return 'png';
         if (typeof img === 'object' && img.extension) {
             const ext = img.extension.toLowerCase();
             return SUPPORTED_IMAGE_EXTENSIONS.includes(ext) ? ext : 'png';
@@ -29,160 +32,244 @@ const SaleFormManagement = () => {
         return 'png';
     };
 
-    // Data load
-    React.useEffect(() => {
-        const loadData = () => {
-            try {
-                let loadedData = null;
+    // Format form data consistently
+    const formatForm = (form, index = 0) => ({
+        id: form.id || `temp_${Date.now()}_${index}_${Math.random().toString(36).substr(2, 9)}`,
+        title: form.title || '제목 없음',
+        content: form.content || '내용 없음',
+        thumbnailImage: form.thumbnailImage || null,
+        isPublic: form.isPublic !== false,
+        startTime: form.startTime || null,
+        endTime: form.endTime || null,
+        isPermanent: form.isPermanent || false,
+        password: form.password || null,
+        hashtag: form.hashtag || '',
+        category: form.category?.name || form.category || null,
+        categoryId: form.categoryId || null,
+        products: Array.isArray(form.products)
+            ? form.products.map((product, pIndex) => ({
+                id: product.id || `temp_${Date.now()}_${pIndex}`,
+                name: product.name || '상품 이름 없음',
+                price: Number(product.price) || 0,
+                quantity: Number(product.quantity) || 0,
+                maxQuantity: Number(product.maxQuantity) || 1,
+                image: product.image || null,
+                images: product.image ? [product.image] : [],
+                imageUpdated: product.imageUpdated || false,
+            }))
+            : [],
+        delivers: Array.isArray(form.delivers)
+            ? form.delivers.map(method => ({
+                id: method.id || null,
+                name: method.name || '택배',
+                price: Number(method.price) || 3000,
+            }))
+            : [{ name: '택배', price: 3000 }],
+        contentImages: form.contentImages || [],
+        user: form.user || { id: null, name: localStorage.getItem('userName') || '판매자' },
+    });
 
-                if (location.state?.formData) {
-                    loadedData = {
-                        ...location.state.formData,
-                        id: location.state.formData.id || location.state.postId || `temp_${Date.now()}`,
-                    };
-                } else {
-                    const savedData = localStorage.getItem('saleFormData');
-                    if (savedData) {
-                        loadedData = JSON.parse(savedData);
-                        if (!loadedData.id) {
-                            loadedData.id = `temp_${Date.now()}`;
+    useEffect(() => {
+        const fetchAndMergeForms = async () => {
+            try {
+                setLoading(true);
+
+                // Fetch posts from API
+                const response = await ProductService.getPosts(0, 100, 'createdAt,desc');
+                const apiPosts = response.content || [];
+                const formattedApiForms = apiPosts.map((post, index) => formatForm(post, index));
+
+                // Load forms from localStorage
+                const storedSaleFormDataList = JSON.parse(localStorage.getItem('saleFormDataList')) || [];
+
+                // Merge API forms with localStorage forms
+                const mergedForms = [];
+                const formIds = new Set();
+
+                // Add API forms first
+                formattedApiForms.forEach(form => {
+                    mergedForms.push(form);
+                    formIds.add(form.id);
+                });
+
+                // Add localStorage forms that aren't in the API response
+                storedSaleFormDataList.forEach((storedForm, index) => {
+                    if (!formIds.has(storedForm.id)) {
+                        const formattedStoredForm = formatForm(storedForm, index);
+                        mergedForms.push(formattedStoredForm);
+                        formIds.add(formattedStoredForm.id);
+                    } else {
+                        // Update existing form with localStorage data if it has newer changes
+                        const apiFormIndex = mergedForms.findIndex(f => f.id === storedForm.id);
+                        if (apiFormIndex !== -1) {
+                            mergedForms[apiFormIndex] = {
+                                ...mergedForms[apiFormIndex],
+                                ...formatForm(storedForm, index),
+                            };
                         }
                     }
+                });
+
+                // Handle new form from location.state
+                if (location.state?.formData) {
+                    const newForm = formatForm(location.state.formData);
+                    const existingIndex = mergedForms.findIndex(f => f.id === newForm.id);
+                    if (existingIndex >= 0) {
+                        mergedForms[existingIndex] = newForm;
+                    } else {
+                        mergedForms.unshift(newForm);
+                    }
+
+                    // Update localStorage
+                    const updatedSaleFormDataList = mergedForms.filter(f => String(f.id).startsWith('temp_') || !apiPosts.some(p => p.id === f.id));
+                    localStorage.setItem('saleFormDataList', JSON.stringify(updatedSaleFormDataList));
                 }
 
-                if (loadedData) {
-                    // Ensure all required fields exist with defaults
-                    const safeFormData = {
-                        id: loadedData.id,
-                        title: loadedData.title || '제목 없음',
-                        content: loadedData.content || '내용 없음',
-                        thumbnailImage: loadedData.thumbnailImage || null,
-                        isPublic: loadedData.isPublic !== false,
-                        startTime: loadedData.startTime || null,
-                        endTime: loadedData.endTime || null,
-                        isPermanent: loadedData.isPermanent || false,
-                        password: loadedData.password || loadedData.privateCode || null,
-                        hashtag: loadedData.hashtag || '',
-                        category: loadedData.category || null,
-                        products: Array.isArray(loadedData.products)
-                            ? loadedData.products.map((product, index) => ({
-                                  ...product,
-                                  id: product.id || `temp_${Date.now()}_${index}`,
-                                  image: product.image || null,
-                                  quantity: Number(product.quantity) || 0,
-                                  maxQuantity: Number(product.maxQuantity) || 1,
-                                  images: product.image ? [product.image] : [], // Ensure images array
-                              }))
-                            : [],
-                        delivers: Array.isArray(loadedData.delivers)
-                            ? loadedData.delivers.map((method) => ({
-                                  name: method.name || '택배',
-                                  price: Number(method.price) || 3000,
-                              }))
-                            : [{ name: '택배', price: 3000 }],
-                    };
-
-                    setFormData(safeFormData);
-                    localStorage.setItem('saleFormData', JSON.stringify(safeFormData));
-                }
+                setForms(mergedForms);
             } catch (e) {
-                console.error('Failed to load form data:', e);
+                console.error('Failed to fetch or merge forms:', e);
                 setError('데이터 로드 실패');
+            } finally {
+                setLoading(false);
             }
         };
 
-        loadData();
+        fetchAndMergeForms();
     }, [location.state]);
 
-    const handleEdit = () => {
-        if (!formData?.id) {
+    const getImageSrc = (img, postId, isProductImage = false, index = 0) => {
+        if (!img) return 'https://images.unsplash.com/photo-1590736969955-71cc94901144?w=400&h=300&fit=crop';
+
+        if (typeof img === 'string' && (img.startsWith('http') || img.startsWith('blob:'))) {
+            return img.split('?')[0];
+        }
+
+        if (typeof img === 'object' && img.preview) {
+            return img.preview;
+        }
+
+        const id = String(postId || '');
+        if (id && !id.startsWith('temp_')) {
+            const extension = getImageExtension(img);
+            return `${API_BASE_URL}/productPost/${
+                isProductImage ? 'product' : 'thumbnail'
+            }/${id}_${isProductImage ? index + 1 : 1}.${extension}`;
+        }
+
+        return typeof img === 'string' ? img : 'https://images.unsplash.com/photo-1590736969955-71cc94901144?w=400&h=300&fit=crop';
+    };
+
+    const handleFormClick = (form) => {
+        setSelectedForm(form);
+        setViewMode('detail');
+    };
+
+    const handleBackToList = () => {
+        setViewMode('list');
+        setSelectedForm(null);
+    };
+
+    const handleEdit = (form) => {
+        if (!form?.id) {
             console.error('No post ID available for editing');
             alert('수정할 게시물 정보가 없습니다.');
             return;
         }
-    
+
         const transformImage = (img, postId, isProductImage = false, index = 0) => {
-            if (!img) {
-                console.warn(`No image provided for ${isProductImage ? 'product' : 'thumbnail'} at index ${index}`);
-                return null;
-            }
-    
+            if (!img) return null;
+
             let extension = isProductImage ? 'png' : 'jpg';
             if (typeof img === 'object' && img.extension) {
                 extension = getImageExtension(img);
             } else if (typeof img === 'string' && img.includes('.')) {
                 extension = getImageExtension(img);
             }
-    
+
             if (typeof img === 'string' && (img.startsWith('http') || img.startsWith('blob:'))) {
-                return img; // Preserve existing URLs
+                return img;
             }
-    
+
             const id = String(postId || '');
             if (id && !id.startsWith('temp_')) {
-                const url = `${API_BASE_URL}/productPost/${
+                return `${API_BASE_URL}/productPost/${
                     isProductImage ? 'product' : 'thumbnail'
                 }/${id}_${isProductImage ? index + 1 : 1}.${extension}`;
-                console.log(`Constructed image URL: ${url}`);
-                return url;
             }
-    
+
             return typeof img === 'object' && img.preview ? img : img;
         };
-    
-        console.log(`Navigating to SaleForm with postId: ${formData.id}`);
+
         navigate('/saleform', {
             state: {
                 from: 'management',
-                postId: formData.id, // Pass the real postId
-                title: formData.title,
-                category: typeof formData.category === 'object' ? formData.category.name : formData.category,
-                description: formData.content,
-                image: transformImage(formData.thumbnailImage, formData.id),
-                hashtag: typeof formData.hashtag === 'string'
-                    ? formData.hashtag.split(',').filter(tag => tag.trim())
-                    : Array.isArray(formData.hashtag)
-                    ? formData.hashtag
+                postId: form.id,
+                title: form.title,
+                category: form.category || '',
+                description: form.content,
+                image: transformImage(form.thumbnailImage, form.id),
+                hashtag: typeof form.hashtag === 'string'
+                    ? form.hashtag.split(',').filter(tag => tag.trim())
+                    : Array.isArray(form.hashtag)
+                    ? form.hashtag
                     : [],
-                shippingMethods: formData.delivers,
-                products: formData.products.map((product, index) => ({
+                shippingMethods: form.delivers,
+                products: form.products.map((product, index) => ({
                     ...product,
-                    image: transformImage(product.image, formData.id, true, index),
-                    images: product.image ? [transformImage(product.image, formData.id, true, index)] : [],
-                    isExisting: !String(formData.id).startsWith('temp_'),
+                    image: transformImage(product.image, form.id, true, index),
+                    images: product.image ? [transformImage(product.image, form.id, true, index)] : [],
+                    isExisting: !String(form.id).startsWith('temp_'),
                     imageUpdated: false,
                 })),
-                isPublic: formData.isPublic,
-                privateCode: formData.password,
-                start_time: formData.startTime,
-                end_time: formData.endTime,
-                isPermanent: formData.isPermanent,
-                contentImages: formData.contentImages || [],
+                isPublic: form.isPublic,
+                privateCode: form.password,
+                start_time: form.startTime,
+                end_time: form.endTime,
+                isPermanent: form.isPermanent,
+                contentImages: form.contentImages || [],
             },
         });
     };
 
-    const handleDelete = async () => {
-        if (!formData?.id) {
+    const handleDelete = async (form) => {
+        if (!form?.id) {
             alert('삭제할 게시물 정보가 없습니다.');
             return;
         }
-
+    
         if (!confirmDelete) {
-            setConfirmDelete(true);
+            setConfirmDelete(form.id);
             setTimeout(() => setConfirmDelete(false), 3000);
             return;
         }
-
+    
         try {
             setLoading(true);
-
-            const postId = String(formData.id || '');
+    
+            const postId = String(form.id || '');
             if (!postId.startsWith('temp_')) {
+                // Delete post from the database
                 await ProductService.deletePost(postId);
             }
-
-            localStorage.removeItem('saleFormData');
+    
+            // Update localStorage
+            const storedSaleFormDataList = JSON.parse(localStorage.getItem('saleFormDataList')) || [];
+            const updatedSaleFormDataList = storedSaleFormDataList.filter(data => data.id !== form.id);
+            localStorage.setItem('saleFormDataList', JSON.stringify(updatedSaleFormDataList));
+    
+            // Update apiResponseList
+            const storedApiResponseList = JSON.parse(localStorage.getItem('apiResponseList')) || [];
+            const updatedApiResponseList = storedApiResponseList.filter(res => res?.id !== form.id);
+            localStorage.setItem('apiResponseList', JSON.stringify(updatedApiResponseList));
+    
+            // Update forms state
+            setForms(forms.filter(f => f.id !== form.id));
+            setConfirmDelete(false);
+    
+            if (selectedForm?.id === form.id) {
+                handleBackToList();
+            }
+    
             navigate('/sale', {
                 state: {
                     message: '게시물이 성공적으로 삭제되었습니다.',
@@ -198,178 +285,318 @@ const SaleFormManagement = () => {
         }
     };
 
-    if (!formData) {
+    const formatDate = (dateString) => {
+        if (!dateString) return '미정';
+        return new Date(dateString).toLocaleDateString('ko-KR');
+    };
+
+    const parseHashtags = (hashtag) => {
+        if (!hashtag) return [];
+        if (Array.isArray(hashtag)) return hashtag;
+        return hashtag.split(',').map(tag => tag.trim()).filter(tag => tag);
+    };
+
+    if (loading) {
         return (
-            <div className="saleManagement-no-data-container">
-                <p>등록된 판매 폼이 없습니다.</p>
-                <button
-                    className="saleManagement-create-button"
-                    onClick={() => navigate('/saleform')}
-                >
-                    새 판매 폼 만들기
-                </button>
+            <div className="loading-container">
+                <div className="loading-content">
+                    <div className="loading-spinner"></div>
+                    <p className="loading-text">처리 중...</p>
+                </div>
             </div>
         );
     }
 
-    if (loading) {
-        return <div className="loading">처리 중...</div>;
-    }
-
     if (error) {
-        return <div className="error">오류: {error}</div>;
+        return (
+            <div className="error-container">
+                <div className="error-content">
+                    <p>오류: {error}</p>
+                </div>
+            </div>
+        );
     }
 
-    const getImageSrc = (img, postId, isProductImage = false, index = 0) => {
-        if (!img) return '/path/to/placeholder.png'; // Use placeholder for null images
+    if (forms.length === 0) {
+        return (
+            <div className="saleFormManage-empty-container">
+                <div className="saleFormManage-empty-content">
+                    <div className="saleFormManage-empty-icon">
+                        <ShoppingBag className="saleFormManage-icon-lg" />
+                    </div>
+                    <h3 className="saleFormManage-empty-title">등록된 판매 폼이 없습니다</h3>
+                    <p className="saleFormManage-empty-description">새로운 판매 폼을 만들어서 상품을 판매해보세요!</p>
+                    <button 
+                        className="saleFormManage-btn-primary"
+                        onClick={() => navigate('/saleform')}
+                    >
+                        새 판매 폼 만들기
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
-        let extension = isProductImage ? 'png' : 'jpg';
-        extension = getImageExtension(img);
+    if (viewMode === 'detail' && selectedForm) {
+        return (
+            <div className="container">
+                <div className="saleFormManage-detail-container">
+                    <div className="saleFormManage-detail-header">
+                        <div className="saleFormManage-detail-header-content">
+                            <div className="saleFormManage-detail-header-nav">
+                                <button 
+                                    onClick={handleBackToList}
+                                    className="saleFormManage-back-button"
+                                >
+                                    <ArrowLeft className="saleFormManage-icon-sm" />
+                                    목록으로 돌아가기
+                                </button>
+                                <div className="saleFormManage-detail-actions">
+                                    <button 
+                                        onClick={() => handleEdit(selectedForm)}
+                                        className="saleFormManage-btn-edit"
+                                    >
+                                        <Edit2 className="saleFormManage-icon-sm" />
+                                        수정하기
+                                    </button>
+                                    <button 
+                                        onClick={() => handleDelete(selectedForm)}
+                                        className={`saleFormManage-btn-delete ${confirmDelete === selectedForm.id ? 'confirm' : ''}`}
+                                    >
+                                        <Trash2 className="saleFormManage-icon-sm" />
+                                        {confirmDelete === selectedForm.id ? '정말 삭제하시겠습니까?' : '삭제하기'}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-        if (typeof img === 'string' && (img.startsWith('http') || img.startsWith('blob:'))) {
-            return img.split('?')[0]; // Remove query params
-        }
+                    <div className="saleFormManage-detail-content">
+                        <div className="saleFormManage-detail-card">
+                            <div className="saleFormManage-detail-main">
+                                <div className="saleFormManage-detail-image">
+                                    <img
+                                        src={getImageSrc(selectedForm.thumbnailImage, selectedForm.id)}
+                                        alt={selectedForm.title}
+                                        className="saleFormManage-detail-thumbnail"
+                                        onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1590736969955-71cc94901144?w=400&h=300&fit=crop'; }}
+                                    />
+                                </div>
+                                <div className="saleFormManage-detail-info">
+                                    <div className="saleFormManage-detail-title-section">
+                                        <h1 className="saleFormManage-detail-title">{selectedForm.title}</h1>
+                                    </div>
+                                    
+                                    <div className="saleFormManage-detail-badges">
+                                        {selectedForm.category && (
+                                            <span className="saleFormManage-badge badge-category">
+                                                <Package className="saleFormManage-icon-xs" />
+                                                {typeof selectedForm.category === 'object' ? selectedForm.category.name : selectedForm.category}
+                                            </span>
+                                        )}
+                                        <span className={`saleFormManage-badge ${selectedForm.isPublic ? 'badge-public' : 'badge-private'}`}>
+                                            {selectedForm.isPublic ? <Eye className="saleFormManage-icon-xs" /> : <Lock className="saleFormManage-icon-xs" />}
+                                            {selectedForm.isPublic ? '공개' : '비공개'}
+                                        </span>
+                                        <span className="saleFormManage-badge badge-date">
+                                            <Calendar className="saleFormManage-icon-xs" />
+                                            {selectedForm.isPermanent ? '상시판매' : `${formatDate(selectedForm.startTime)} ~ ${formatDate(selectedForm.endTime)}`}
+                                        </span>
+                                    </div>
 
-        if (typeof img === 'object' && img.preview) {
-            return img.preview;
-        }
+                                    {!selectedForm.isPublic && selectedForm.password && (
+                                        <div className="saleFormManage-password-notice">
+                                            <div className="saleFormManage-password-content">
+                                                <Lock className="saleFormManage-icon-sm password-icon" />
+                                                <span className="saleFormManage-password-label">비공개 코드: </span>
+                                                <code className="saleFormManage-password-code">
+                                                    {selectedForm.password}
+                                                </code>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
 
-        const id = String(postId || '');
-        if (id && !id.startsWith('temp_')) {
-            return `${API_BASE_URL}/productPost/${
-                isProductImage ? 'product' : 'thumbnail'
-            }/${id}_${isProductImage ? index + 1 : 1}.${extension}`;
-        }
+                        <div className="saleFormManage-detail-card">
+                            <h2 className="saleFormManage-section-title">상세 설명</h2>
+                            <div 
+                                className="saleFormManage-content-description"
+                                dangerouslySetInnerHTML={{ __html: selectedForm.content }}
+                            />
+                        </div>
 
-        return typeof img === 'string' ? img : '/path/to/placeholder.png';
-    };
+                        <div className="saleFormManage-info-grid">
+                            <div className="saleFormManage-detail-card">
+                                <h2 className="saleFormManage-section-title section-title-icon">
+                                    <Truck className="saleFormManage-icon-md" />
+                                    배송 정보
+                                </h2>
+                                <div className="saleFormManage-delivery-list">
+                                    {selectedForm.delivers?.map((method, index) => (
+                                        <div key={index} className="saleFormManage-delivery-item">
+                                            <span className="saleFormManage-delivery-name">{method.name || '택배'}</span>
+                                            <span className="saleFormManage-delivery-price">
+                                                {method.price && Number(method.price) > 0
+                                                    ? `${Number(method.price).toLocaleString()}원`
+                                                    : '무료'}
+                                            </span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="saleFormManage-detail-card">
+                                <h2 className="saleFormManage-section-title section-title-icon">
+                                    <Hash className="saleFormManage-icon-md" />
+                                    태그
+                                </h2>
+                                <div className="saleFormManage-hashtag-list">
+                                    {parseHashtags(selectedForm.hashtag).length > 0 ? (
+                                        parseHashtags(selectedForm.hashtag).map((tag, index) => (
+                                            <span key={index} className="saleFormManage-hashtag">
+                                                #{tag}
+                                            </span>
+                                        ))
+                                    ) : (
+                                        <span className="saleFormManage-no-tags">등록된 태그가 없습니다</span>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="saleFormManage-detail-card">
+                            <h2 className="saleFormManage-section-title">
+                                판매 상품 ({selectedForm.products?.length || 0}개)
+                            </h2>
+                            <div className="products-grid">
+                                {selectedForm.products?.map((product, index) => (
+                                    <div key={product.id || index} className="saleFormManage-product-card">
+                                        {product.image && (
+                                            <div className="saleFormManage-product-image">
+                                                <img
+                                                    src={getImageSrc(product.image, selectedForm.id, true, index)}
+                                                    alt={product.name}
+                                                    className="saleFormManage-product-img"
+                                                    onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1590736969955-71cc94901144?w=400&h=300&fit=crop'; }}
+                                                />
+                                            </div>
+                                        )}
+                                        <div className="saleFormManage-product-info">
+                                            <h3 className="saleFormManage-product-name">{product.name || '상품 이름 없음'}</h3>
+                                            <p className="saleFormManage-product-price">
+                                                {product.price ? `${Number(product.price).toLocaleString()}원` : '가격 미정'}
+                                            </p>
+                                            <div className="saleFormManage-product-stock">
+                                                <span>재고: {product.quantity || 0}개</span>
+                                                <span>최대 {product.maxQuantity || 1}개</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     return (
-        <div className="saleManagement-container">
-            <div className="saleManagement-header-section">
-                {formData.thumbnailImage && (
-                    <div className="saleManagement-thumbnail-container">
-                        <img
-                            src={getImageSrc(formData.thumbnailImage, formData.id)}
-                            alt="대표 이미지"
-                            className="saleManagement-thumbnail-image"
-                            onError={(e) => { e.target.src = '/path/to/placeholder.png'; }}
-                        />
-                    </div>
-                )}
-
-                <div className="saleManagement-header-info">
-                    <h1 className="saleManagement-title">{formData.title}</h1>
-
-                    <div className="saleManagement-meta-info">
-                        {formData.category && (
-                            <span className="saleManagement-category">
-                                {typeof formData.category === 'object' ? formData.category.name : formData.category}
-                            </span>
-                        )}
-                        <span className={`saleManagement-visibility ${formData.isPublic ? 'public' : 'private'}`}>
-                            {formData.isPublic ? '공개' : '비공개'}
-                        </span>
-                        {formData.isPermanent ? (
-                            <span className="saleManagement-period">상시판매</span>
-                        ) : (
-                            <span className="saleManagement-period">
-                                {formData.startTime ? new Date(formData.startTime).toLocaleDateString() : '미정'} ~
-                                {formData.endTime ? new Date(formData.endTime).toLocaleDateString() : '미정'}
-                            </span>
-                        )}
+        <div className="container">
+            <div className="saleFormManage-list-container">
+                <div className="saleFormManage-list-content">
+                    <div className="saleFormManage-list-header">
+                        <h1 className="saleFormManage-list-title">판매 폼 관리</h1>
                     </div>
 
-                    {!formData.isPublic && formData.password && (
-                        <div className="saleManagement-private-code">
-                            <span>비공개 코드: </span>
-                            <strong>{formData.password}</strong>
-                        </div>
-                    )}
-                </div>
-            </div>
-
-            <div className="saleManagement-action-buttons">
-                <button className="saleManagement-edit-button" onClick={handleEdit}>
-                    수정하기
-                </button>
-                <button
-                    className={`saleManagement-delete-button ${confirmDelete ? 'confirm' : ''}`}
-                    onClick={handleDelete}
-                >
-                    {confirmDelete ? '정말 삭제하시겠습니까?' : '삭제하기'}
-                </button>
-            </div>
-
-            <div className="saleManagement-content-section">
-                <div className="saleManagement-description-section">
-                    <h2>상세 설명</h2>
-                    <div
-                        className="saleManagement-description-content"
-                        dangerouslySetInnerHTML={{ __html: formData.content }}
-                    />
-                </div>
-
-                <div className="saleManagement-shipping-section">
-                    <h2>배송 정보</h2>
-                    <div className="saleManagement-shipping-methods">
-                        {formData.delivers?.map((method, index) => (
-                            <div key={index} className="saleManagement-method-item">
-                                <span className="saleManagement-method-name">{method.name || '택배'}</span>
-                                <span className="saleManagement-method-cost">
-                                    {method.price && Number(method.price) > 0
-                                        ? `${Number(method.price).toLocaleString()}원`
-                                        : '무료'}
-                                </span>
-                            </div>
-                        ))}
+                    <div className="saleFormManage-add-form-section">
+                        <button 
+                            className="saleFormManage-btn-add-form"
+                            onClick={() => navigate('/saleform')}
+                        >
+                            <ShoppingBag className="saleFormManage-icon-sm" />
+                            새 판매 폼 만들기
+                        </button>
                     </div>
-                </div>
 
-                <div className="saleManagement-tags-section">
-                    <h2>태그</h2>
-                    <div className="saleManagement-tags-container">
-                        {formData.hashtag ? (
-                            typeof formData.hashtag === 'string' ? (
-                                formData.hashtag.split(',').map((tag, index) =>
-                                    tag.trim() ? <span key={index} className="saleManagement-tag">#{tag.trim()}</span> : null
-                                )
-                            ) : Array.isArray(formData.hashtag) ? (
-                                formData.hashtag.map((tag, index) =>
-                                    tag.trim() ? <span key={index} className="saleManagement-tag">#{tag.trim()}</span> : null
-                                )
-                            ) : null
-                        ) : (
-                            <span className="no-tags">등록된 태그가 없습니다</span>
-                        )}
-                    </div>
-                </div>
-
-                <div className="saleManagement-products-section">
-                    <h2>판매 상품 ({formData.products?.length || 0}개)</h2>
-
-                    <div className="saleManagement-products-grid">
-                        {formData.products?.map((product, index) => (
-                            <div key={product.id || index} className="saleManagement-product-card">
-                                {product.image && (
-                                    <div className="saleManagement-product-image-container">
-                                        <img
-                                            src={getImageSrc(product.image, formData.id, true, index)}
-                                            alt={product.name}
-                                            className="saleManagement-product-image"
-                                            onError={(e) => { e.target.src = '/path/to/placeholder.png'; }}
-                                        />
+                    <div className="saleFormManage-forms-grid">
+                        {forms.map((form) => (
+                            <div 
+                                key={form.id} 
+                                className="saleFormManage-form-card"
+                                onClick={() => handleFormClick(form)}
+                            >
+                                <div className="saleFormManage-form-thumbnail">
+                                    <img
+                                        src={getImageSrc(form.thumbnailImage, form.id)}
+                                        alt={form.title}
+                                        className="saleFormManage-thumbnail-img"
+                                        onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1590736969955-71cc94901144?w=400&h=300&fit=crop'; }}
+                                    />
+                                    <div className="saleFormManage-thumbnail-overlay">
+                                        <div className="saleFormManage-overlay-icon">
+                                            <div className="saleFormManage-icon-circle">
+                                                <ChevronRight className="saleFormManage-icon-md" />
+                                            </div>
+                                        </div>
                                     </div>
-                                )}
+                                    <div className="saleFormManage-status-badge">
+                                        <span className={`saleFormManage-status ${form.isPublic ? 'public' : 'private'}`}>
+                                            {form.isPublic ? <Eye className="saleFormManage-icon-xs" /> : <Lock className="saleFormManage-icon-xs" />}
+                                            {form.isPublic ? '공개' : '비공개'}
+                                        </span>
+                                    </div>
+                                </div>
 
-                                <div className="saleManagement-product-info">
-                                    <h3 className="saleManagement-product-name">{product.name || '상품 이름 없음'}</h3>
-                                    <p className="saleManagement-product-price">
-                                        {product.price ? `${Number(product.price).toLocaleString()}원` : '가격 미정'}
-                                    </p>
-                                    <div className="saleManagement-product-meta">
-                                        <span>재고: {product.quantity || 0}개</span>
-                                        <span>최대 {product.maxQuantity || 1}개 구매 가능</span>
+                                <div className="saleFormManage-card-content">
+                                    <div className="saleFormManage-card-header">
+                                        <h3 className="saleFormManage-card-title">
+                                            {form.title}
+                                        </h3>
+                                    </div>
+
+                                    <div className="saleFormManage-card-badges">
+                                        {form.category && (
+                                            <span className="saleFormManage-card-badge category">
+                                                <Package className="saleFormManage-icon-xs" />
+                                                {typeof form.category === 'object' ? form.category.name : form.category}
+                                            </span>
+                                        )}
+                                        <span className="saleFormManage-card-badge date">
+                                            <Calendar className="saleFormManage-icon-xs" />
+                                            {form.isPermanent ? '상시' : '기간'}
+                                        </span>
+                                    </div>
+
+                                    <div className="saleFormManage-card-footer">
+                                        <span className="saleFormManage-product-count">
+                                            상품 {form.products?.length || 0}개
+                                        </span>
+                                        <div className="saleFormManage-card-actions">
+                                            <button 
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleEdit(form);
+                                                }}
+                                                className="saleFormManage-action-btn edit"
+                                            >
+                                                <Edit2 className="saleFormManage-icon-xs" />
+                                            </button>
+                                            <button 
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleDelete(form);
+                                                }}
+                                                className={`saleFormManage-action-btn delete ${confirmDelete === form.id ? 'confirm' : ''}`}
+                                            >
+                                                <Trash2 className="saleFormManage-icon-xs" />
+                                                {confirmDelete === form.id && (
+                                                    <span className="saleFormManage-delete-confirm-text">정말?</span>
+                                                )}
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

@@ -50,7 +50,7 @@ const trackingDataByStatus = {
 
 const statusStages = ["신청완료", "상품이동", "배송지도착", "배송완료"];
 
-export default function DeliveryTracking({ setDeliveryTracking }) {
+export default function DeliveryTracking({ setDeliveryTracking, selectedPurchase }) {
   const navigate = useNavigate();
   const [currentStage, setCurrentStage] = useState("배송완료");
   const [clickedItem, setClickedItem] = useState(null);
@@ -73,6 +73,10 @@ export default function DeliveryTracking({ setDeliveryTracking }) {
     setDeliveryTracking(false);
   };
 
+  const handleGoBack = () => {
+    setDeliveryTracking(false);
+  };
+
   const getIconForStage = (stage) => {
     if (!visibleIcons[stage] && stage !== currentStage && 
         statusStages.indexOf(stage) > statusStages.indexOf(currentStage)) {
@@ -91,6 +95,35 @@ export default function DeliveryTracking({ setDeliveryTracking }) {
 
   return (
     <div className="tracking-container">
+      {/* 뒤로 가기 버튼 추가 */}
+      <button 
+        className="DeliveryTrackingConfirm-back-button"
+        onClick={handleGoBack}
+      >
+        &larr; 뒤로 가기
+      </button>
+
+      <div className="DeliveryTrackingConfirm-product">
+        {selectedPurchase && (
+          <div className="DeliveryTrackingConfirm-product-info-container">
+            <div className="DeliveryTrackingConfirm-product-image-container">
+              <img 
+                src={selectedPurchase.products[0].image} 
+                alt={selectedPurchase.products[0].name} 
+                className="DeliveryTrackingConfirm-product-image"
+              />
+            </div>
+            <div className="DeliveryTrackingConfirm-product-details">
+              <h3 className="DeliveryTrackingConfirm-product-name">{selectedPurchase.products[0].name}</h3>
+              <p className="DeliveryTrackingConfirm-product-price">
+                {selectedPurchase.products.reduce((sum, p) => sum + (p.price * p.quantity), 0).toLocaleString()}원
+              </p>
+              <p className="DeliveryTrackingConfirm-product-quantity">수량: {selectedPurchase.products.reduce((sum, p) => sum + p.quantity, 0)}개</p>
+            </div>
+          </div>
+        )}
+      </div>
+
       <div className="tracking-header">
         <div>
           <h2 className="tracking-number">{trackingData.trackingNumber}</h2>

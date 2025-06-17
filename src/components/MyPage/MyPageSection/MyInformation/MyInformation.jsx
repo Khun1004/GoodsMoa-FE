@@ -4,7 +4,7 @@ import EditAddress from "../../../EditAddress/EditAddress";
 import "./MyInformation.css";
 
 function MyInformation() {
-    const { userInfo } = useContext(LoginContext);
+    const { userInfo, profileImage, updateProfileImage, verifyUser } = useContext(LoginContext);
     const hiddenFileInput = useRef(null);
     const [isEditingAddress, setIsEditingAddress] = useState(false);
     const [isAddingAddress, setIsAddingAddress] = useState(false);
@@ -58,6 +58,56 @@ function MyInformation() {
         }).open();
     };
 
+    useEffect(() => {
+        const loadData = () => {
+            // 프로필 정보
+            setImage(localStorage.getItem("profileImage"));
+            setUserName(localStorage.getItem("profileName") || "프로필");
+            setNickName(localStorage.getItem("profileNickName") || userInfo?.nickname || "");
+            setDescription(localStorage.getItem("profileDescription") || 
+                "구매자에게 보여주는 자기소개 자리 입니다. \n구매자들이 자기소개를 보고 판매자가 어떤 물건을 파는지 파악하는 용도 입니다.");
+            
+            // 계정 정보
+            setUserEmail(localStorage.getItem("userEmail") || userInfo?.email || "");
+            setUserPassword(localStorage.getItem("userPassword") || "");
+            setUserPhone(localStorage.getItem("userPhone") || userInfo?.phoneNumber || "");
+            
+            // 계좌 정보
+            setAccountHolder(localStorage.getItem("accountHolder") || "");
+            setBankName(localStorage.getItem("bankName") || "");
+            setAccountNumber(localStorage.getItem("accountNumber") || "");
+            
+            // 배송지 정보
+            setRecipientName(localStorage.getItem("recipientName") || "");
+            setRecipientPhone(localStorage.getItem("recipientPhone") || "");
+            setUserAddress(localStorage.getItem("userAddress") || "");
+            setUserDetailAddress(localStorage.getItem("userDetailAddress") || "");
+            
+            // 배송지 목록
+            const savedAddresses = localStorage.getItem("shippingAddresses");
+            if (savedAddresses) {
+                const parsedAddresses = JSON.parse(savedAddresses);
+                setShippingAddresses(parsedAddresses);
+                
+                // 기본 배송지 설정
+                const defaultAddress = parsedAddresses.find(addr => addr.isDefault) || parsedAddresses[0];
+                if (defaultAddress) {
+                    setRecipientName(defaultAddress.recipientName);
+                    setRecipientPhone(defaultAddress.recipientPhone);
+                    setUserAddress(defaultAddress.address);
+                    setUserDetailAddress(defaultAddress.detailAddress);
+                }
+            }
+            
+            // 인증 상태
+            const storedVerified = localStorage.getItem("verified") === "true";
+            setVerified(storedVerified);
+            verifyUser(storedVerified);
+        };
+
+        loadData();
+    }, []);
+
     const handleSave = () => {
         if (
             image &&
@@ -75,7 +125,7 @@ function MyInformation() {
             recipientName.trim() !== "" &&
             recipientPhone.trim() !== ""
         ) {
-            // 모든 조건 만족 시 데이터 저장
+            // 모든 필드 localStorage에 저장
             localStorage.setItem("profileImage", image);
             localStorage.setItem("profileName", userName);
             localStorage.setItem("profileNickName", nickName);
@@ -91,15 +141,21 @@ function MyInformation() {
             localStorage.setItem("recipientName", recipientName);
             localStorage.setItem("recipientPhone", recipientPhone);
             localStorage.setItem("ordererName", nickName);
-
+            
             // 배송지 목록 저장
             localStorage.setItem("shippingAddresses", JSON.stringify(shippingAddresses));
-
+            
+            // 인증 상태 저장
+            localStorage.setItem("verified", "true");
+            
+            verifyUser(true);
             setVerified(true);
             alert("본인 인증이 완료되었습니다!");
         } else {
-            alert("사진과 모든 정보를 작성해야 본인 인증이 완료됩니다.");
+            verifyUser(false);
+            localStorage.setItem("verified", "false");
             setVerified(false);
+            alert("사진과 모든 정보를 작성해야 본인 인증이 완료됩니다.");
         }
     };
 
@@ -167,19 +223,23 @@ function MyInformation() {
     const handleImageChange = (event) => {
         const file = event.target.files[0];
         if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                const newImage = reader.result;
-                setImage(newImage);
-                localStorage.setItem("profileImage", newImage);
-            };
-            reader.readAsDataURL(file);
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            const newImage = reader.result;
+            setImage(newImage);
+            localStorage.setItem("profileImage", newImage);
+            // 프로필 이미지 업데이트
+            updateProfileImage(newImage);
+          };
+          reader.readAsDataURL(file);
         }
-    };
+      };
 
     const handleDeleteImage = () => {
         setImage(null);
         localStorage.removeItem("profileImage");
+        // 프로필 이미지 제거
+        updateProfileImage(null);
     };
 
     const handleClick = () => {

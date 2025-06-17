@@ -7,35 +7,34 @@ import "./SalePurchasePerfect.css";
 export default function SalePurchasePerfect() {
     const location = useLocation();
     const navigate = useNavigate();
-    const [purchaseData, setPurchaseData] = useState(null);
+    const orderInfo = location.state?.orderInfo;
+
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // Get the latest purchase from localStorage
-        const purchases = JSON.parse(localStorage.getItem("purchaseHistory")) || [];
-        if (purchases.length > 0) {
-            // Get the latest purchase (last item in the array)
-            const latestPurchase = purchases[purchases.length - 1];
-            setPurchaseData(latestPurchase);
+        console.log('orderInfo ::: ',orderInfo);
+        if (!orderInfo) {
+            navigate("/"); // orderInfo가 없으면 홈으로 돌려보냄
         }
-        
-        // Simulate loading time for better UX
+
         const timer = setTimeout(() => {
             setLoading(false);
         }, 800);
-        
+
         return () => clearTimeout(timer);
-    }, []);
+    }, [orderInfo, navigate]);
 
     const handleGoToHome = () => {
         navigate("/");
     };
 
     const handleViewOrder = () => {
-        navigate("/my-orders");
+        navigate("/my-orders", {
+            state: { orderInfo }, // 여기에 같이 넘겨주면 됨!
+        });
     };
 
-    // Format date to Korean style (YYYY년 MM월 DD일)
+
     const formatDate = (dateString) => {
         const date = new Date(dateString);
         const year = date.getFullYear();
@@ -44,20 +43,11 @@ export default function SalePurchasePerfect() {
         return `${year}년 ${month}월 ${day}일`;
     };
 
-    if (loading) {
+    if (loading || !orderInfo) {
         return (
             <div className="loading-container">
                 <div className="loading-spinner"></div>
                 <p>결제 완료 중...</p>
-            </div>
-        );
-    }
-
-    if (!purchaseData) {
-        return (
-            <div className="error-container">
-                <h2>주문 정보를 찾을 수 없습니다</h2>
-                <button className="home-button" onClick={handleGoToHome}>홈으로 돌아가기</button>
             </div>
         );
     }
@@ -67,7 +57,7 @@ export default function SalePurchasePerfect() {
             <button className="back-button" onClick={handleGoToHome}>
                 <IoIosArrowBack />
             </button>
-            
+
             <div className="purchase-perfect-content">
                 <div className="success-animation">
                     <FaCheckCircle className="check-icon" />
@@ -76,46 +66,55 @@ export default function SalePurchasePerfect() {
                         <div className="success-ring ring2"></div>
                     </div>
                 </div>
-                
+
                 <h1 className="perfect-title">결제 완료</h1>
                 <p className="perfect-message">
                     주문이 성공적으로 완료되었습니다.<br />
                     주문내역은 마이페이지에서 확인하실 수 있습니다.
                 </p>
-                
+
                 <div className="order-summary">
                     <h3>주문 정보</h3>
                     <div className="summary-item">
                         <span className="salePurchasePerfectSpan">주문 번호</span>
-                        <span className="salePurchasePerfectSpan">#{purchaseData.id}</span>
+                        <span className="salePurchasePerfectSpan">#{orderInfo.id}</span>
                     </div>
                     <div className="summary-item">
                         <span className="salePurchasePerfectSpan">주문자</span>
-                        <span className="salePurchasePerfectSpan">{purchaseData.ordererName}</span>
+                        <span className="salePurchasePerfectSpan">{orderInfo.userName}</span>
                     </div>
                     <div className="summary-item">
                         <span className="salePurchasePerfectSpan">결제 일시</span>
-                        <span className="salePurchasePerfectSpan">{formatDate(purchaseData.paymentDate)}</span>
+                        <span className="salePurchasePerfectSpan">
+              {formatDate(orderInfo.paidAt)}
+            </span>
                     </div>
                     <div className="summary-item">
                         <span className="salePurchasePerfectSpan">결제 금액</span>
-                        <span className="highlight">{purchaseData.totalAmount.toLocaleString()}원</span>
+                        <span className="highlight">{orderInfo.totalPrice.toLocaleString()}원</span>
                     </div>
                 </div>
-                
-                <div className="product-list">
-                    <h3>주문 상품 ({purchaseData.products.length})</h3>
-                    {purchaseData.products.map((product, index) => (
-                        <div className="product-item" key={index}>
-                            {product.image && <img src={product.image} alt={product.name} className="product-thumbnail" />}
-                            <div className="product-details">
-                                <p className="product-name">{product.name}</p>
-                                <p className="product-info">{product.quantity}개 · {(product.price * product.quantity).toLocaleString()}원</p>
+
+                {/* 주문 상품 리스트가 있다면 출력 */}
+                {orderInfo.products && Array.isArray(orderInfo.products) && (
+                    <div className="product-list">
+                        <h3>주문 상품 ({orderInfo.products.length})</h3>
+                        {orderInfo.products.map((product, index) => (
+                            <div className="product-item" key={index}>
+                                {product.image && (
+                                    <img src={product.image} alt={product.name} className="product-thumbnail" />
+                                )}
+                                <div className="product-details">
+                                    <p className="product-name">{product.name}</p>
+                                    <p className="product-info">
+                                        {product.quantity}개 · {(product.price * product.quantity).toLocaleString()}원
+                                    </p>
+                                </div>
                             </div>
-                        </div>
-                    ))}
-                </div>
-                
+                        ))}
+                    </div>
+                )}
+
                 <div className="status-tracker">
                     <div className="status-point active">
                         <div className="status-dot"></div>
@@ -137,10 +136,14 @@ export default function SalePurchasePerfect() {
                         <span className="salePurchasePerfectSpan">배송 완료</span>
                     </div>
                 </div>
-                
+
                 <div className="button-group">
-                    <button className="view-order-button" onClick={handleViewOrder}>주문 내역 보기</button>
-                    <button className="home-button" onClick={handleGoToHome}>쇼핑 계속하기</button>
+                    <button className="view-order-button" onClick={handleViewOrder}>
+                        주문 내역 보기
+                    </button>
+                    <button className="home-button" onClick={handleGoToHome}>
+                        쇼핑 계속하기
+                    </button>
                 </div>
             </div>
         </div>
