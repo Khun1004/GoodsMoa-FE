@@ -7,21 +7,27 @@
 .categoryMain-section {
     position: relative;
     width: 100%;
-    margin-top: 20px;
+    max-width: 1400px;   /* 팜플렛과 동일하게 */
+    margin: 0 auto 20px auto;  /* 중앙 정렬, 아래 여백 */
+    padding: 0 28px;     /* 팜플렛과 동일한 좌우 패딩 */
 }
+
+
 
 .scroll-container {
     position: relative;
 }
 
 .categoryMain-list {
+    width: 100%;
     display: flex;
-    gap: 25px;
+    gap: 95px;
     overflow-x: auto;
-    justify-content: center;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
+    box-sizing: border-box;
+    justify-content: flex-start;
 }
+
+
 
 .categoryMain-list::-webkit-scrollbar {
     display: none;
@@ -32,7 +38,7 @@
     flex-direction: column;
     align-items: center;
     text-align: center;
-    min-width: 80px;
+    min-width: 70px;
     flex-shrink: 0;
 }
 
@@ -41,8 +47,8 @@
     align-items: center;
     justify-content: center;
     background-color: #f0f0f1;
-    width: 6rem;
-    height: 5rem;
+    width: 5rem;
+    height: 4rem;
     border-radius: 0.5rem;
     transition: all 0.3s;
 }

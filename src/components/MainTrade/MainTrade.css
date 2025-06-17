@@ -8,6 +8,18 @@
 
 .container {
     width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 24px;
+    box-sizing: border-box;
+}
+.divider {
+    margin: 2rem auto 0 auto;         /* 위쪽 여백, 중앙 정렬 */
+    border: none;                     /* 기본 hr 스타일 제거 */
+    border-top: 2px solid #e5e7eb;    /* 윗줄만 2px */
+    width: 90%;                       /* 부모의 90%만 차지 */
+    max-width: 1200px;                /* 필요시 최대폭 제한 */
+    box-sizing: border-box;
 }
 
 .mainTradeHeader {
@@ -151,4 +163,30 @@
 
 .bg-yellow {
     background-color: #fef9c3;
+}
+
+.seeTrade {
+    /* 1. display 속성을 block으로 변경 */
+    display: block;
+    
+    /* 2. margin 속성을 수정하여 중앙 정렬 */
+    /* margin: top right bottom left; */
+    /* 아래 코드는 위쪽 여백 20px, 좌우 여백은 자동으로, 아래쪽 여백은 0으로 설정합니다. */
+    margin: 20px auto 0;
+
+    width: 500px; /* 고정 너비는 그대로 유지 */
+    
+    background-color: black;
+    border: 1px solid black;
+    color: white;
+    border-radius: 10px;
+    padding: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+
+.seeTrade:hover {
+    background-color: white;
+    color: black;
+    border: 1px solid black;
 }

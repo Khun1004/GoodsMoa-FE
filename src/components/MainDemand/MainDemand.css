@@ -1,9 +1,9 @@
-.main-sale-container {
+.main-demand-container {
     width: 100%;
     text-align: center;
 }
 
-.seeSale {
+.seeDemand {
     background-color: black;
     border: 1px black;
     color: white;
@@ -14,7 +14,7 @@
     width: 500px;
 }
 
-.seeSale:hover {
+.seeDemand:hover {
     background-color: white;
     color: black;
     border: 1px solid black;

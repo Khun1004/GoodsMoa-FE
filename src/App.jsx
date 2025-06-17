@@ -29,6 +29,7 @@ import Like from "./components/Like/Like";
 import OAuthRedirect from "./components/LoginOAuth/OAuthRedirect";
 import MainSale from "./components/MainSale/MainSale";
 import MainTrade from "./components/MainTrade/MainTrade";
+import MainDemand from "./components/MainDemand/MainDemand";
 import Modal from "./components/Modal/Modal";
 import MyPage from "./components/MyPage/MyPage/MyPage";
 import MyInformation from "./components/MyPage/MyPageSection/MyInformation/MyInformation";
@@ -86,9 +87,10 @@ const AppContent = ({ handleOrderPopup, orderPopup, openModal,
             <div className="pt-[120px]">
               <Hero handleOrderPopup={handleOrderPopup} />
               <Category />
-              <Products />
+              {/* <Products /> */}
               <MainSale />
               <MainTrade />
+              <MainDemand />
             </div>
           }
         />
