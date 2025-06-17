@@ -193,6 +193,46 @@ const handleLikeToggle = async () => {
     setIsModalOpen(false);
   };
 
+  const handleChatClick = async () => {
+    console.log("✅ handleChatClick 호출됨");
+    // 실제 데이터 구조에 맞게 판매자 ID 추출
+    const sellerId = tradePost?.sellerId || tradePost?.userId;
+    if (!userInfo) {
+      alert("로그인이 필요합니다.");
+      return;
+    }
+    if (!sellerId) {
+      alert("판매자 정보가 없습니다.");
+      return;
+    }
+    if (userInfo.id === sellerId) {
+      alert("자기 자신과는 채팅할 수 없습니다.");
+      return;
+    }
+
+    // 채팅방 생성 요청 (title 필드 없이)
+    const res = await fetch("http://localhost:8080/chatroom/create", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        buyerId: userInfo.id,   // 구매자 ID
+        sellerId: sellerId      // 판매자 ID
+      }),
+      credentials: "include"
+    });
+
+    if (res.ok) {
+      const roomData = await res.json();
+      window.open(`/chat-app?roomId=${roomData.id}`, "_blank", "width=1000,height=800,resizable=yes");
+    } else if (res.status === 409) {
+      // 이미 채팅방이 존재하는 경우(중복)
+      const roomData = await res.json();
+      window.open(`/chat-app?roomId=${roomData.id}`, "_blank", "width=1000,height=800,resizable=yes");
+    } else {
+      alert("채팅방 생성에 실패했습니다.");
+    }
+  };
+  
   const handleBuyClick = () => {
     navigate("/tradePurchase", {
       state: {
@@ -234,9 +274,7 @@ const handleLikeToggle = async () => {
     },
   });
 };
-const handleChatClick = () => {
-  window.open("/chat-app", "_blank", "width=500,height=700,resizable=yes");
-};
+
 
 
 
@@ -283,9 +321,10 @@ const handleChatClick = () => {
 
             <div className="tradeRCBtn">
               <button className="tradeDetailReportBtn" onClick={handleReportClick}>🚨 신고하기</button>
-             <button className="tradeDetailChatBtn" onClick={handleChatClick}>
+              <button className="tradeDetailChatBtn" onClick={handleChatClick}>
   💬 채팅하기
 </button>
+
 
               <button
   className={`detail-like-button ${liked ? 'liked' : ''}`}

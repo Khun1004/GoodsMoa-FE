@@ -216,3 +216,19 @@
         grid-template-columns: 1fr;
     }
 }
+.tags-list {
+    margin-top: 8px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  .tag-item {
+    display: inline-block;
+    background: #e3e9f7;
+    color: #3b82f6;
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-size: 13px;
+    font-weight: 500;
+  }
+  

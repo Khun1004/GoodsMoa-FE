@@ -30,6 +30,12 @@ export default function ChatApp() {
   const stompClient = useRef(null);
   const myUserId = userInfo?.id;
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const roomId = params.get("roomId");
+    if (roomId) setCurrentRoomId(roomId);
+  }, [])
+
   // ===== 채팅방 리스트 불러오기 =====
   const fetchChatRooms = useCallback(() => {
     if (!myUserId) return;

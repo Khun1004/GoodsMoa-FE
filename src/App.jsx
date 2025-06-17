@@ -56,6 +56,8 @@ import TradeBuyPerfect from "./components/Trade/TradeBuyPerfect/TradeBuyPerfect"
 import TradeDetail from "./components/Trade/TradeDetail/TradeDetail";
 import TradeForm from "./components/Trade/TradeForm/TradeForm";
 import TradeWrite from "./components/Trade/TradeWrite/TradeWrite";
+import { TradeProvider } from "./contexts/TradeContext";
+import TossRedirectHandler from "./components/Trade/TossRedirectHandler";
 
 const AppContent = ({
                         handleOrderPopup,
@@ -71,6 +73,7 @@ const AppContent = ({
     if (isLoading) return <Loading />; // ✅ 렌더링 지연 처리
 
     return (
+        <TradeProvider>
         <div className="bg-white dark:bg-gray-900 dark:text-white duration-200">
             {!isChatPage && location.pathname !== "/Search" && (
                 <Navbar
@@ -169,14 +172,14 @@ const AppContent = ({
         />
 
         {/* TradeDetail Page */}
-        <Route
-          path="/tradeDetail"
-          element={
-            <div className="pt-[130px]">
-              <TradeDetail />
-            </div>
-          }
-        />
+          <Route
+              path="/tradeDetail/:id"
+              element={
+                  <div className="pt-[130px]">
+                      <TradeDetail />
+                  </div>
+              }
+          />
 
         {/* Trade Page */}
         <Route
@@ -366,14 +369,14 @@ const AppContent = ({
         />
 
       {/* SalePurchaseSuccess (결제 성공 후 Toss 리디렉션) */}
-      <Route
-          path="/payment/success"
-          element={
-              <div className="pt-[130px]">
-                  <PaymentSuccess />
-              </div>
-          }
-      />
+      {/*<Route*/}
+      {/*    path="/payment/success"*/}
+      {/*    element={*/}
+      {/*        <div className="pt-[130px]">*/}
+      {/*            <PaymentSuccess />*/}
+      {/*        </div>*/}
+      {/*    }*/}
+      {/*/>*/}
 
       {/* SalePurchaseCheck Page */}
       <Route path="/salePurchasePerfect"
@@ -485,6 +488,9 @@ const AppContent = ({
           }
         />
 
+      <Route path="/tradeBuy" element={<TradeBuy />} />
+      <Route path="/tradeBuy/success" element={<TossRedirectHandler />} />
+      <Route path="/payment/success" element={<TossRedirectHandler />} />
         {/* OrderPage Page */}
         <Route path="/order" element={
           <div className="pt-[130px]">
@@ -500,6 +506,7 @@ const AppContent = ({
       {/* Footer will be hidden on /chat-app */}
       {!isChatPage && <Footer />}
     </div>
+    </TradeProvider>
   );
 };
 
@@ -529,7 +536,7 @@ const App = () => {
         setModalContent("");
     };
 
-    if (isLoading) return <Loading />;;
+    if (isLoading) return <Loading />;
 
     return (
         <AppContent
