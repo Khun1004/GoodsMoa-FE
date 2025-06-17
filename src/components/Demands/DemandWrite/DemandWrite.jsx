@@ -8,11 +8,11 @@ const DemandWrite = () => {
     const navigate = useNavigate();
     const location = useLocation();
 
-    // location.state에서 값 있으면 초기화
+    // 폼에서 받아온 내용(수정 or 등록) 초기화
     const [content, setContent] = useState(location.state?.description ?? "");
     const [descriptionImages, setDescriptionImages] = useState(location.state?.descriptionImages ?? []);
 
-    // location.state가 바뀌면 항상 동기화 (뒤로가기 등 대응)
+    // location.state가 바뀌면 동기화 (뒤로가기 등 대응)
     useEffect(() => {
         if (location.state?.description !== undefined) {
             setContent(location.state.description);
@@ -22,9 +22,9 @@ const DemandWrite = () => {
         }
     }, [location.state]);
 
-    // 저장 시 상세설명, 이미지 배열을 DemandFormInput으로 같이 넘김
+    // 저장 시 demandForm으로 전체 정보 전달 (수정/등록 모두)
     const handleSave = () => {
-        navigate("/demandForm", {
+        navigate("/demandform", {
             state: {
                 ...location.state,
                 description: content,
@@ -33,12 +33,15 @@ const DemandWrite = () => {
         });
     };
 
-    // 파일 첨부 핸들러
+    // 이미지 첨부 핸들러
     const handleImageUpload = (e) => {
         const file = e.target.files[0];
         if (!file) return;
+
+        // 이미지 배열에 저장
         setDescriptionImages(prev => [...prev, file]);
 
+        // quill 에디터에 이미지 미리보기 추가
         const reader = new FileReader();
         reader.onload = (event) => {
             const quill = quillRef.current.getEditor();

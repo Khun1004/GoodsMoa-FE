@@ -25,7 +25,7 @@ const getFullThumbnailUrl = (thumbnailUrl) =>
     thumbnailUrl
         ? thumbnailUrl.startsWith('http')
             ? thumbnailUrl
-            : `http://localhost:8080/${thumbnailUrl.replace(/^\/+/, '')}`
+            : `http://localhost:8080/${thumbnailUrl.replace(/^\/+/,'')}`
         : Demand1;
 
 const Demand = ({ showBanner = true }) => {
@@ -42,6 +42,9 @@ const Demand = ({ showBanner = true }) => {
     const [orderBy, setOrderBy] = useState('old');
     const [includeExpired, setIncludeExpired] = useState(true);
     const [includeScheduled, setIncludeScheduled] = useState(true);
+    const [page, setPage] = useState(0);
+    const [totalPages, setTotalPages] = useState(0);
+    const pageSize = 8;
 
     const fetchDemandProducts = useCallback(
         _.debounce(async () => {
@@ -54,8 +57,8 @@ const Demand = ({ showBanner = true }) => {
                     order_by: orderBy,
                     include_expired: includeExpired.toString(),
                     include_scheduled: includeScheduled.toString(),
-                    page: '0',
-                    page_size: '50',
+                    page: page.toString(),
+                    page_size: pageSize.toString(),
                 });
                 const url = `http://localhost:8080/demand?${params.toString()}`;
                 const res = await fetch(url);
@@ -64,13 +67,14 @@ const Demand = ({ showBanner = true }) => {
                 const productsArr = Array.isArray(data.content) ? data.content : [];
                 setDemandProducts(productsArr);
                 setLiked(new Array(productsArr.length).fill(false));
+                setTotalPages(data.totalPages || 1);
             } catch (err) {
                 setError(err.message);
             } finally {
                 setLoading(false);
             }
         }, 500),
-        [searchTerm, category, orderBy, includeExpired, includeScheduled]
+        [searchTerm, category, orderBy, includeExpired, includeScheduled, page]
     );
 
     useEffect(() => {
@@ -81,8 +85,6 @@ const Demand = ({ showBanner = true }) => {
     useEffect(() => {
         const storedLiked = localStorage.getItem('demandLiked');
         if (storedLiked) setLiked(JSON.parse(storedLiked));
-        const storedFormData = localStorage.getItem('demandFormData');
-        if (storedFormData) setSavedDemandFormData(JSON.parse(storedFormData));
     }, [formData]);
 
     const handleSearchChange = (e) => setSearchTerm(e.target.value);
@@ -101,7 +103,7 @@ const Demand = ({ showBanner = true }) => {
                     </div>
                 )}
 
-                <div className="search-bar-and-filters" style={{ marginTop: '20px', marginBottom: '30px', display: 'flex', alignItems: 'center', gap: '20px' }}>
+                <div className="search-bar-and-filters" style={{ marginTop: '20px', marginBottom: '30px', display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
                     <div className="filters" style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
                         {categoryOptions.map((option) => (
                             <button key={option.id} className={`category-button ${category === option.id ? 'selected' : ''}`} onClick={() => handleCategoryChange(option.id)}>
@@ -115,8 +117,21 @@ const Demand = ({ showBanner = true }) => {
                         className="demand-search-input"
                         value={searchTerm}
                         onChange={handleSearchChange}
-                        style={{ flexGrow: 1, padding: '8px 12px', fontSize: '14px' }}
+                        style={{ padding: '8px 12px', fontSize: '14px' }}
                     />
+                    <select value={orderBy} onChange={(e) => setOrderBy(e.target.value)}>
+                        <option value="new">최신순</option>
+                        <option value="old">오래된순</option>
+                        <option value="close">마감임박</option>
+                    </select>
+                    <select value={includeExpired} onChange={(e) => setIncludeExpired(e.target.value === 'true')}>
+                        <option value="true">만료 포함</option>
+                        <option value="false">만료 제외</option>
+                    </select>
+                    <select value={includeScheduled} onChange={(e) => setIncludeScheduled(e.target.value === 'true')}>
+                        <option value="true">미시작 포함</option>
+                        <option value="false">미시작 제외</option>
+                    </select>
                 </div>
 
                 <div className="demandProductFrame">
@@ -169,6 +184,26 @@ const Demand = ({ showBanner = true }) => {
                             </div>
                         ))
                     )}
+                </div>
+
+                <div className="pagination" style={{ textAlign: 'center', marginTop: '30px' }}>
+                    {Array.from({ length: totalPages }, (_, i) => (
+                        <button
+                            key={i}
+                            onClick={() => setPage(i)}
+                            style={{
+                                margin: '0 5px',
+                                padding: '6px 10px',
+                                backgroundColor: i === page ? '#333' : '#eee',
+                                color: i === page ? '#fff' : '#000',
+                                border: 'none',
+                                borderRadius: '4px',
+                                cursor: 'pointer'
+                            }}
+                        >
+                            {i + 1}
+                        </button>
+                    ))}
                 </div>
             </div>
         </div>
