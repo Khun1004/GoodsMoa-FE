@@ -151,36 +151,46 @@ const SaleDetail = () => {
     };
 
     // 채팅 실행하는 메서드
-    const handleChatClick = () => {
-        const chatWindow = window.open('/chat-app', '_blank', 'width=600,height=800');
+    const handleChatClick = async () => {
+        console.log("✅ handleChatClick 호출됨");
+        // 실제 데이터 구조에 맞게 판매자 ID 추출
+        const sellerId = product?.sellerId || product?.userId;
+        if (!userInfo) {
+            alert("로그인이 필요합니다.");
+            return;
+        }
+        if (!sellerId) {
+            alert("판매자 정보가 없습니다.");
+            return;
+        }
+        if (userInfo.id === sellerId) {
+            alert("자기 자신과는 채팅할 수 없습니다.");
+            return;
+        }
 
-        if (chatWindow) {
-            // 🚨 메시지를 여러 번 반복 전송해서 하나라도 잡히게
-            const interval = setInterval(() => {
-                if (!chatWindow.closed) {
-                    console.log("🔥 반복해서 postMessage 전송");
-                    chatWindow.postMessage(
-                        {
-                            type: 'CHAT_INIT_DATA',
-                            data: {
-                                sellerId: product.userId,
-                                postTitle: product.title,
-                            },
-                        },
-                        '*'
-                    );
-                } else {
-                    console.log("🛑 창이 닫혀 반복 중단");
-                    clearInterval(interval);
-                }
-            }, 1000); // 1초마다 전송
+        // 채팅방 생성 요청 (title 필드 없이)
+        const res = await fetch("http://localhost:8080/chatroom/create", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                buyerId: userInfo.id,   // 구매자 ID
+                sellerId: sellerId      // 판매자 ID
+            }),
+            credentials: "include"
+        });
 
-            // 일정 시간 후 반복 중단 (예: 10초 후)
-            setTimeout(() => clearInterval(interval), 10000);
+        if (res.ok) {
+            const roomData = await res.json();
+            window.open(`/chat-app?roomId=${roomData.id}`, "_blank", "width=1000,height=800,resizable=yes");
+        } else if (res.status === 409) {
+            // 이미 채팅방이 존재하는 경우(중복)
+            const roomData = await res.json();
+            window.open(`/chat-app?roomId=${roomData.id}`, "_blank", "width=1000,height=800,resizable=yes");
         } else {
-            console.error("❌ 팝업 차단 등으로 창 열기 실패");
+            alert("채팅방 생성에 실패했습니다.");
         }
     };
+
     const onImageClick = (image) => {
         setSelectedImage(image);
 
