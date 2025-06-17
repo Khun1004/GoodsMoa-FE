@@ -107,7 +107,7 @@ export default function SalePurchaseModal() {
     // 총 배송비 금액
     const deliveryCost = getDeliveryCost();
     // 총 결제 금액
-    const totalAmount = totalProductPrice + deliveryCost + safetyPaymentFee;
+    const totalAmount = totalProductPrice + deliveryCost;
 
     const validateBeforePayment = () => {
         if (!userInfo?.id) {
@@ -201,7 +201,8 @@ export default function SalePurchaseModal() {
                             quantity: product.quantity,
                         })),
                         formData: formData,
-                        selectedDelivery: shippingMethods,
+                        selectedDelivery: selectedDelivery,
+                        shippingMethods: shippingMethods,
                         refundBank: refundBank,
                         refundAccount: refundAccount,
                         paymentDate: new Date().toISOString().split("T")[0],
@@ -211,10 +212,6 @@ export default function SalePurchaseModal() {
                         totalAmount: totalAmount,
                         orderId: paymentResult.orderId,
                     };
-    
-                    const existingPurchases = JSON.parse(localStorage.getItem("purchaseHistory")) || [];
-                    const updatedPurchases = [...existingPurchases, purchaseData];
-                    localStorage.setItem("purchaseHistory", JSON.stringify(updatedPurchases));
     
                     navigate("/salePurchaseCheck", { state: { purchaseData } });
                 }
@@ -297,10 +294,6 @@ export default function SalePurchaseModal() {
                         <div className="payment-item">
                             <span>배송비</span>
                             <span>{deliveryCost.toLocaleString()} 원</span>
-                        </div>
-                        <div className="payment-item">
-                            <span>안전결제 수수료</span>
-                            <span>{safetyPaymentFee.toLocaleString()} 원</span>
                         </div>
                         <div className="total-payment">
                             <span>총 결제 금액</span>

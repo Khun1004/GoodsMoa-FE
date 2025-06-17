@@ -470,7 +470,7 @@ const SaleFormManagement = () => {
                             <h2 className="saleFormManage-section-title">
                                 판매 상품 ({selectedForm.products?.length || 0}개)
                             </h2>
-                            <div className="products-grid">
+                            <div className="saleFormManage-products-grid">
                                 {selectedForm.products?.map((product, index) => (
                                     <div key={product.id || index} className="saleFormManage-product-card">
                                         {product.image && (

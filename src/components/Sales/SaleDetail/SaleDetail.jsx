@@ -11,106 +11,94 @@ const API_BASE_URL = 'http://localhost:8080';
 const SaleDetail = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    const { profileImage: contextProfileImage, userInfo } = useContext(LoginContext);
-    const [profileImage, setProfileImage] = useState(
-        contextProfileImage || 
-        location.state?.userProfileImage || 
-        location.state?.profileImage || 
-        null
-    );
-    
-    // 사용자 이름 상태 - userInfo.nickname을 우선적으로 사용
-    const [userName, setUserName] = useState(
-        userInfo?.nickname || 
-        location.state?.userName || 
-        localStorage.getItem('userName') || 
-        "사용자 이름"
-    );    
-
-    useEffect(() => {
-        if (contextProfileImage) {
-            setProfileImage(contextProfileImage);
-        }
-    }, [contextProfileImage]);
-
-    // LoginContext의 사용자 정보가 변경될 때 동기화
-    useEffect(() => {
-        if (userInfo?.nickname) {
-            setUserName(userInfo.nickname);
-        }
-        if (userInfo?.profileImage) {
-            setProfileImage(userInfo.profileImage);
-        }
-    }, [userInfo]);
-    
-    // Extract all possible data from location state with defaults
-    const { 
-        product = {}, 
-        products = [], 
+    const {
+        product,
+        products = [],
         selectedImage: initialSelectedImage = null,
-        shippingMethods = [], 
-        productReviews: initialProductReviews = [], 
-        start_time = null, 
-        end_time = null, 
+        productReviews: initialProductReviews = [],
+        start_time = null,
+        end_time = null,
         saleLabel = "판매",
         isPublic = true,
         privateCode = "",
         description = "",
         hashtags = [],
-        from = ""
+        from = "",
+        userName: userNameProp,
+        profileImage: profileImageProp
     } = location.state || {};
-    
-    // Initialize state values from location data
+    const shippingMethods = product?.shippingMethods || [];
+
+    const { profileImage: contextProfileImage, userInfo } = useContext(LoginContext);
+
+    const [profileImage, setProfileImage] = useState(
+        contextProfileImage || profileImageProp || null
+    );
+
+    const [userName, setUserName] = useState(
+        userInfo?.nickname || userNameProp || localStorage.getItem('userName') || "사용자 이름"
+    );
+
+    useEffect(() => {
+        if (contextProfileImage) setProfileImage(contextProfileImage);
+    }, [contextProfileImage]);
+
+    useEffect(() => {
+        if (userInfo?.nickname) setUserName(userInfo.nickname);
+        if (userInfo?.profileImage) setProfileImage(userInfo.profileImage);
+        console.log('product.content ::: ',product.content);
+    }, [userInfo]);
+
+    const fixedContent = (product.content || "").replace(/<img[^>]*src=['"]([^'"]+)['"][^>]*>/g, (match, src) => {
+        if (src.startsWith("http")) return match; // 절대경로면 그대로
+        return match.replace(src, `http://localhost:8080/${src}`);
+    });
+
     const [selectedImage, setSelectedImage] = useState(initialSelectedImage || product.src || product.image || null);
     const [selectedProduct, setSelectedProduct] = useState(product);
     const [wantedProducts, setWantedProducts] = useState([]);
-    const [hashtag, setHashtag] = useState(hashtags || product.hashtag || []);
-    const [category, setCategory] = useState(location.state?.category || product?.category || "미정");
+    const [hashtag, setHashtag] = useState([]);
+
+    useEffect(() => {
+        const tagSource = location.state?.hashtags || product?.hashtag || "";
+        const parsed = typeof tagSource === 'string' ? tagSource.split(',') : Array.isArray(tagSource) ? tagSource : [];
+        setHashtag(parsed);
+    }, [location.state, product?.hashtag]);
+
+    const [category, setCategory] = useState(location.state?.category || product?.category || product?.categoryName || "미정");
     const [productReviews, setProductReviews] = useState(initialProductReviews);
 
-    // Fetch reviews from localStorage when component mounts or product changes
     useEffect(() => {
         const storedReviews = JSON.parse(localStorage.getItem("reviews")) || [];
-        // Filter reviews to match the current product's ID
-        const filteredReviews = storedReviews.filter(review => 
-            review.productId === product.id || 
+        const filteredReviews = storedReviews.filter(review =>
+            review.productId === product.id ||
             review.purchase?.products?.some(p => p.id === product.id)
         );
         setProductReviews(filteredReviews);
     }, [product.id]);
 
-    // 리뷰 데이터 처리 로직 개선
     useEffect(() => {
-        // location.state에서 전달된 리뷰 데이터가 있으면 사용
         if (location.state?.productReviews) {
             setProductReviews(location.state.productReviews);
             return;
         }
 
-        // 없으면 localStorage에서 필터링
         const storedReviews = JSON.parse(localStorage.getItem("reviews")) || [];
-        
         const filteredReviews = storedReviews.filter(review => {
-            // 명시적 productId 매칭
             if (review.productId === product.id) return true;
-            
-            // 구매 데이터 내 상품 매칭
             if (review.purchase?.products) {
                 return review.purchase.products.some(p => p.id === product.id);
             }
-            
             return false;
         });
-        
         setProductReviews(filteredReviews);
     }, [product.id, location.state?.productReviews]);
 
-    // 스토리지 변경 감지 로직 추가
     useEffect(() => {
         const handleStorageChange = () => {
             const storedReviews = JSON.parse(localStorage.getItem("reviews")) || [];
-            const filteredReviews = storedReviews.filter(review => 
-                review.productId === product.id || 
+            const filteredReviews = storedReviews.filter(review =>
+                review.productId === product.id ||
                 review.purchase?.products?.some(p => p.id === product.id)
             );
             setProductReviews(filteredReviews);
@@ -120,59 +108,54 @@ const SaleDetail = () => {
         return () => window.removeEventListener("storage", handleStorageChange);
     }, [product.id]);
 
-    // Calculate reviews summary
-    const averageRating = productReviews.length > 0 
+    const averageRating = productReviews.length > 0
         ? (productReviews.reduce((sum, review) => sum + review.rating, 0) / productReviews.length).toFixed(1)
         : 0;
-    
-    // Format price function for consistent display
+
     const formatPrice = (price) => {
         if (!price) return "가격 미정";
         return typeof price === 'number' ? price.toLocaleString() : Number(price).toLocaleString();
     };
-    
-    // Check if selected image is a valid product image
+
     const isValidProductImage = () => {
         if (!selectedImage) return false;
-        
-        // Check if the selected image exists in the products array
-        if (Array.isArray(products) && products.length > 0) {
-            return products.some(prod => {
-                const prodImage = prod.image || prod.preview || prod.src;
-                return prodImage === selectedImage;
+
+        const selectedFileName = selectedImage.split('/').pop();
+
+        const candidates = product?.products || products || [];
+
+        if (candidates.length > 0) {
+            return candidates.some(prod => {
+                const prodImage = prod.image || prod.preview || prod.src || "";
+                return prodImage.includes(selectedFileName);
             });
         }
-        
-        // If no products array, check if it matches the main product image
-        const mainProductImage = product.image || product.src;
-        return mainProductImage === selectedImage;
+
+        const mainImage = product.image || product.src || "";
+        return mainImage.includes(selectedFileName);
     };
-    
+
+
     useEffect(() => {
-        // If coming from saleForm, handle specific data format
         if (from === 'saleForm' && product.products) {
-            // Initialize with the first product's image if products exist
             if (product.products.length > 0 && !selectedImage) {
-                const firstProductImage = product.products[0].image || 
-                    (product.products[0].preview ? product.products[0].preview : null);
-                
+                const firstProductImage = product.products[0].image || product.products[0].preview || null;
                 if (firstProductImage) {
                     setSelectedImage(firstProductImage);
                 }
             }
         }
     }, [from, product, selectedImage]);
-    
+
     const handleReportClick = () => {
         navigate('/report', { state: { selectedProduct } });
     };
 
+    // 채팅 실행하는 메서드
     const handleChatClick = () => {
-        // 채팅할 상품 정보와 판매자 정보를 함께 전달
         const chatWindow = window.open('/chat-app', '_blank', 'width=600,height=800');
-        
+
         if (chatWindow) {
-            // 새 창이 열린 후 상태 전달
             chatWindow.onload = () => {
                 chatWindow.postMessage({
                     type: 'CHAT_INIT_DATA',
@@ -187,23 +170,24 @@ const SaleDetail = () => {
             chatWindow.focus();
         }
     };
-    
+
     const onImageClick = (image) => {
         setSelectedImage(image);
-        
-        // Find the corresponding product
-        let selected;
-        if (Array.isArray(products) && products.length > 0) {
-            selected = products.find((p) => 
-                p.image === image || p.src === image || 
-                (p.preview && p.preview === image)
-            );
-        }
-        
+
+        const imageFileName = image.split('/').pop(); // ex: 3_1.png
+
+        const candidateProducts = product?.products || products || [];
+
+        const selected = candidateProducts.find((p) => {
+            const candidatePath = p.image || p.src || p.preview || "";
+            return candidatePath.includes(imageFileName);
+        });
+
         if (selected) {
             setSelectedProduct(selected);
         }
     };
+
 
     const [activeTab, setActiveTab] = useState('상세 설명');
 
@@ -217,12 +201,12 @@ const SaleDetail = () => {
             alert("상품 이미지를 선택해주세요.");
             return;
         }
-        
+
         if (wantedProducts.some(p => p.id === selectedProduct.id)) {
             alert("이미 추가된 상품입니다.");
             return;
         }
-        
+
         const productWithCategory = {
             ...selectedProduct,
             id: selectedProduct.id || Date.now(),
@@ -233,10 +217,10 @@ const SaleDetail = () => {
             quantity: 1,
             postId: product.id
         };
-    
+
         setWantedProducts([...wantedProducts, productWithCategory]);
     };
-    
+
     const handleCancelClick = (productToRemove) => {
         setWantedProducts(wantedProducts.filter(product => product !== productToRemove));
     };
@@ -244,15 +228,15 @@ const SaleDetail = () => {
     const increaseQuantity = (product) => {
         // Check max quantity constraint
         const maxQty = product.maxQuantity || product.maxPurchase || 99;
-        
+
         setWantedProducts(wantedProducts.map(p =>
-            p.id === product.id ? { 
-                ...p, 
-                quantity: p.quantity < maxQty ? p.quantity + 1 : p.quantity 
+            p.id === product.id ? {
+                ...p,
+                quantity: p.quantity < maxQty ? p.quantity + 1 : p.quantity
             } : p
         ));
     };
-    
+
     const decreaseQuantity = (product) => {
         setWantedProducts(wantedProducts.map(p =>
             p.id === product.id ? { ...p, quantity: p.quantity > 1 ? p.quantity - 1 : 1 } : p
@@ -262,10 +246,10 @@ const SaleDetail = () => {
     const handleCartClick = () => {
         // Get existing cart items
         const existingCart = JSON.parse(localStorage.getItem("wantedProducts")) || [];
-        
+
         // Combine with new items (avoiding duplicates)
         const combinedCart = [...existingCart];
-        
+
         wantedProducts.forEach(newProduct => {
             const existingIndex = combinedCart.findIndex(p => p.id === newProduct.id);
             if (existingIndex >= 0) {
@@ -276,15 +260,15 @@ const SaleDetail = () => {
                 combinedCart.push(newProduct);
             }
         });
-        
+
         localStorage.setItem("wantedProducts", JSON.stringify(combinedCart));
         window.dispatchEvent(new Event("storage"));
         navigate('/order', { state: { wantedProducts, saleLabel, shippingMethods } });
     };
-    
+
     // Calculate total product cost
     const calculateProductCost = () => {
-        return wantedProducts.reduce((total, product) => 
+        return wantedProducts.reduce((total, product) =>
             total + (product.price || 0) * product.quantity, 0);
     };
 
@@ -312,12 +296,12 @@ const SaleDetail = () => {
                         <div className="person-profile">
                             <label className="person-user-profile">
                                 {profileImage ? (
-                                    <img 
-                                        src={profileImage} 
-                                        alt="Profile" 
-                                        onError={(e) => { 
-                                            e.target.onerror = null; 
-                                            e.target.src = placeholderImage; 
+                                    <img
+                                        src={profileImage}
+                                        alt="Profile"
+                                        onError={(e) => {
+                                            e.target.onerror = null;
+                                            e.target.src = placeholderImage;
                                         }}
                                     />
                                 ) : (
@@ -332,10 +316,10 @@ const SaleDetail = () => {
                         {/* Clicked Image Rendering */}
                         <div className="personImageFrameLeft">
                             {selectedImage ? (
-                                <img 
-                                    src={selectedImage} 
-                                    alt={selectedProduct.name || product.title || "식네임 이미지"} 
-                                    className="person-image" 
+                                <img
+                                    src={selectedImage}
+                                    alt={selectedProduct.name || product.title || "식네임 이미지"}
+                                    className="person-image"
                                     onError={(e) => {
                                         e.target.onerror = null;
                                         e.target.src = placeholderImage;
@@ -345,12 +329,12 @@ const SaleDetail = () => {
                                 <img src={placeholderImage} alt="식네임 이미지 없음" className="person-image" />
                             )}
                         </div>
-                        <button 
+                        <button
                             className={`needORlike ${!isValidProductImage() ? 'disabled' : ''}`}
                             onClick={handleWantClick}
                             disabled={!isValidProductImage()}
                         >
-                            원합니다
+                            상품 추가하기
                         </button>
                     </div>
 
@@ -365,23 +349,23 @@ const SaleDetail = () => {
                             <p className="person-price">가격: {formatPrice(selectedProduct.price || product.price)} 원</p>
                             <p className="person-stock">
                                 재고: {
-                                    selectedProduct.quantity !== undefined ? selectedProduct.quantity : 
+                                selectedProduct.quantity !== undefined ? selectedProduct.quantity :
                                     selectedProduct.stock !== undefined ? selectedProduct.stock : "무제한"
-                                } {
-                                    selectedProduct.maxQuantity ? ` / ${selectedProduct.maxQuantity}` :
+                            } {
+                                selectedProduct.maxQuantity ? ` / ${selectedProduct.maxQuantity}` :
                                     selectedProduct.maxPurchase ? ` / ${selectedProduct.maxPurchase}` : ""
-                                }
+                            }
                             </p>
                             <p className="person-sale-period">
                                 판매기간: {
-                                    product.isPermanent ? "상시판매" :
-                                    (start_time && end_time) ? `${start_time} ~ ${end_time}` : 
-                                    "상시판매"
-                                }
+                                product.isPermanent ? "상시판매" :
+                                    (start_time && end_time) ? `${start_time} ~ ${end_time}` :
+                                        "상시판매"
+                            }
                             </p>
                             <p className="person-category">카테고리: {category || product.category || "미정"}</p>
                         </div>
-                        
+
                         {/* Tags Section */}
                         <div className="tags-list">
                             {hashtag && hashtag.length > 0 ? (
@@ -404,21 +388,19 @@ const SaleDetail = () => {
 
                         {/* Thumbnail Image List */}
                         <div className="personImageFrameRight">
-                            {Array.isArray(products) && products.length > 0 ? (
-                                products.map((prod, index) => {
-                                    const thumbnailSrc = prod.image || 
-                                                    (prod.preview ? prod.preview : null);
-                                    
+                            {Array.isArray(product.products) && product.products.length > 0 ? (
+                                product.products.map((prod, index) => {
+                                    const thumbnailSrc = prod.image || prod.preview || prod.src;
+
                                     if (!thumbnailSrc) return null;
-                                    
+
                                     return (
                                         <img
                                             key={index}
-                                            src={thumbnailSrc.startsWith('http') ? thumbnailSrc : 
-                                                `${API_BASE_URL}${thumbnailSrc}`}
+                                            src={thumbnailSrc.startsWith('http') ? thumbnailSrc : `${API_BASE_URL}/${thumbnailSrc}`}
                                             alt={`상품 이미지 ${index + 1}`}
                                             className="person-image-thumbnail"
-                                            onClick={() => onImageClick(thumbnailSrc)}
+                                            onClick={() => onImageClick(thumbnailSrc.startsWith('http') ? thumbnailSrc : `${API_BASE_URL}/${thumbnailSrc}`)}
                                             onError={(e) => {
                                                 e.target.onerror = null;
                                                 e.target.src = placeholderImage;
@@ -426,20 +408,19 @@ const SaleDetail = () => {
                                         />
                                     );
                                 })
+                            ) : product.image ? (
+                                <img
+                                    src={product.image.startsWith('http') ? product.image : `${API_BASE_URL}/${product.image}`}
+                                    alt="상품 이미지"
+                                    className="person-image-thumbnail"
+                                    onClick={() => onImageClick(product.image.startsWith('http') ? product.image : `${API_BASE_URL}/${product.image}`)}
+                                    onError={(e) => {
+                                        e.target.onerror = null;
+                                        e.target.src = placeholderImage;
+                                    }}
+                                />
                             ) : (
-                                product.image && (
-                                    <img 
-                                        src={product.image.startsWith('http') ? product.image : 
-                                            `${API_BASE_URL}${product.image}`} 
-                                        alt="상품 이미지" 
-                                        className="person-image-thumbnail"
-                                        onClick={() => onImageClick(product.image)}
-                                        onError={(e) => {
-                                            e.target.onerror = null;
-                                            e.target.src = placeholderImage;
-                                        }}
-                                    />
-                                )
+                                <img src={placeholderImage} alt="이미지 없음" className="person-image-thumbnail" />
                             )}
                         </div>
                     </div>
@@ -453,7 +434,7 @@ const SaleDetail = () => {
                             <div className="image-container">
                                 <img src={product.image || placeholderImage} alt={product.name} className="wanted-image" />
                                 <div className="sale-labelProduct">
-                                    {saleLabel} <span className="separator">  </span> {product.name} 
+                                    {saleLabel} <span className="separator">  </span> {product.name}
                                     <span className="separator">  </span> {category || product.category || "미정"}
                                 </div>
                             </div>
@@ -476,7 +457,7 @@ const SaleDetail = () => {
                     ))
                 ) : (
                     <div className='wanted-product-empty'>
-                        <p>원한 상품이 없습니다. "원합니다"를 눌러 주세요.</p>
+                        <p>원한 상품이 없습니다. {'"원합니다"'}를 눌러 주세요.</p>
                     </div>
                 )}
             </div>
@@ -497,8 +478,8 @@ const SaleDetail = () => {
             </div>
 
             <div className='person-button-group'>
-                <button 
-                    className='person-cart-btn' 
+                <button
+                    className='person-cart-btn'
                     onClick={handleCartClick}
                     disabled={wantedProducts.length === 0}
                 >
@@ -508,7 +489,7 @@ const SaleDetail = () => {
                     className="person-buy"
                     onClick={() => navigate('/purchase', { state: { wantedProducts, saleLabel, shippingMethods, product: location.state?.product } })}
                     disabled={wantedProducts.length === 0}
-                    >
+                >
                     구매하기
                 </button>
             </div>
@@ -535,7 +516,7 @@ const SaleDetail = () => {
             <div className='personReviewFrame'>
                 {activeTab === '상세 설명' ? (
                     <div className='person-description'>
-                        <p dangerouslySetInnerHTML={{ __html: description || product.content || product.description || "상품 설명이 없습니다." }} />
+                        <p dangerouslySetInnerHTML={{ __html: description || fixedContent || product.description || "상품 설명이 없습니다." }} />
                     </div>
                 ) : (
                     productReviews.length > 0 ? (
@@ -553,7 +534,7 @@ const SaleDetail = () => {
                                     {[5, 4, 3, 2, 1].map((stars) => {
                                         const count = productReviews.filter(review => review.rating === stars).length;
                                         const percentage = productReviews.length > 0 ? Math.round((count / productReviews.length) * 100) : 0;
-                                        
+
                                         return (
                                             <div key={stars} className="rating-bar">
                                                 <span className='starPoint'>{getRatingLabel(stars)}</span>
@@ -566,7 +547,7 @@ const SaleDetail = () => {
                                     })}
                                 </div>
                             </div>
-                            
+
                             <div className="person-review">
                                 {productReviews.map((review, index) => (
                                     <div key={index} className="person-review-item">

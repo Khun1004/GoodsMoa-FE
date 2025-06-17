@@ -3,6 +3,7 @@ import { CgProfile } from "react-icons/cg";
 import { FaHeart } from 'react-icons/fa';
 import { SlSocialDropbox } from "react-icons/sl";
 import { useLocation, useNavigate } from 'react-router-dom';
+import productService from "../../../api/ProductService";
 import { default as placeholderImage, default as Sale1 } from '../../../assets/sales/sale1.jpg';
 import Sale10 from '../../../assets/sales/sale10.jpg';
 import Sale2 from '../../../assets/sales/sale2.jpg';
@@ -13,7 +14,6 @@ import Sale6 from '../../../assets/sales/sale6.jpg';
 import Sale7 from '../../../assets/sales/sale7.jpg';
 import Sale8 from '../../../assets/sales/sale8.jpg';
 import Sale9 from '../../../assets/sales/sale9.jpg';
-import welcomeVideo from '../../../assets/saleWelcome.mp4';
 import { LoginContext } from "../../../contexts/LoginContext";
 import './Sale.css';
 
@@ -53,6 +53,7 @@ const Sale = ({ showBanner = true, showCustomProducts = true }) => {
     const [searchQuery, setSearchQuery] = useState("");
     const location = useLocation();
     const navigate = useNavigate();
+    const [posts, setPosts] = useState([]);
 
     const [saleFormDataList, setSaleFormDataList] = useState(() => {
         const storedData = localStorage.getItem('saleFormDataList');
@@ -63,6 +64,20 @@ const Sale = ({ showBanner = true, showCustomProducts = true }) => {
         const storedResponses = localStorage.getItem('apiResponseList');
         return storedResponses ? JSON.parse(storedResponses) : [];
     });
+
+    // 서버에서 가져오는 상품들
+    useEffect(() => {
+        const fetchProductPosts = async () => {
+            try {
+                const res = await productService.getPosts(); // 기본값: page 0, size 10
+                setPosts(res.content); // Page<PostsResponse> 구조에서 .content 사용
+            } catch (err) {
+                console.error('상품글 목록 불러오기 실패:', err.message);
+            }
+        };
+
+        fetchProductPosts();
+    }, []);
 
     // 리뷰 데이터 로드 및 필터링 로직 개선
     useEffect(() => {
@@ -189,6 +204,21 @@ const Sale = ({ showBanner = true, showCustomProducts = true }) => {
         });
     };
 
+    const filteredPosts = posts.filter(post => {
+        const query = searchQuery.toLowerCase();
+        
+        // title 검색
+        const titleMatch = post.title?.toLowerCase().includes(query);
+        
+        // hashtag 검색
+        const hashtagMatch = post.hashtag?.toLowerCase().includes(query);
+        
+        // 작성자 이름 검색
+        const authorMatch = post.userNickName?.toLowerCase().includes(query);
+        
+        return titleMatch || hashtagMatch || authorMatch;
+    });
+
     const formatHashtags = (hashtagData) => {
         if (!hashtagData) return [];
         if (Array.isArray(hashtagData)) return hashtagData.filter(tag => tag.trim() !== '');
@@ -238,34 +268,49 @@ const Sale = ({ showBanner = true, showCustomProducts = true }) => {
         }
     };
 
-    const handleProductClick = (product) => {
-        navigate('/person', {
-            state: {
-                product: {
-                    ...product,
-                    id: product.id,
-                    name: product.name,
-                    price: product.price,
-                    image: product.src,
-                    src: product.src,
-                    quantity: 10,
-                    maxQuantity: 20
-                },
-                products: [{
-                    ...product,
-                    image: product.src,
-                    src: product.src
-                }],
-                selectedImage: product.src,
-                saleLabel: "판매",
-                userName: userName,
-                profileImage: userInfo?.profileImage || profileImage,
-                from: 'sale',
-                productReviews: productReviews.filter(review => 
-                    review.productId === product.id || 
-                    review.purchase?.products?.some(p => p.id === product.id))
+    // 서버에서 product/post-detail/{id}로 불러온 값을 /person으로 보냄
+    const handleProductClick = async (post) => {
+        try {
+            // 1. 상세 정보 조회
+            const detailedPost = await productService.getPostDetail(post.id);
+            const imageUrl = `http://localhost:8080/${detailedPost.thumbnailImage}`;
+            const shippingMethods = detailedPost.delivers || [];
+
+            // 2. 이동
+            navigate('/person', {
+                state: {
+                    product: {
+                        ...detailedPost,
+                        id: detailedPost.id,
+                        name: detailedPost.title, // 또는 detailedPost.name
+                        price: detailedPost.price,
+                        content: detailedPost.content,
+                        image: imageUrl,
+                        src: imageUrl,
+                        quantity: 10,
+                        maxQuantity: 20,
+                        shippingMethods
+                    },
+                    products: [{
+                        ...detailedPost,
+                        image: imageUrl,
+                        src: imageUrl
+                    }],
+                    selectedImage: imageUrl,
+                    saleLabel: "판매",
+                    userName: userName,
+                    profileImage: userInfo?.profileImage || profileImage,
+                    from: 'sale',
+                    productReviews: productReviews.filter(review =>
+                        review.productId === detailedPost.id ||
+                        review.purchase?.products?.some(p => p.id === detailedPost.id))
                 }
-        });
+            });
+
+        } catch (err) {
+            console.error('handleProductClick 중 에러:', err);
+            alert('상품 정보를 불러오는 데 실패했습니다.');
+        }
     };
 
     const getImageExtension = (image) => {
@@ -316,7 +361,7 @@ const Sale = ({ showBanner = true, showCustomProducts = true }) => {
 
     const handleSaleFormProductClick = (saleFormData) => {
         if (!saleFormData) return;
-    
+
         const thumbnailImageUrl = getThumbnailImageUrl(saleFormData.thumbnailImage, saleFormData.id);
     
         const formattedProducts = saleFormData.products?.map((product, index) => ({
@@ -376,23 +421,12 @@ const Sale = ({ showBanner = true, showCustomProducts = true }) => {
         <div className='container'>
             <div className="sale-container">
                 {showBanner && (
-                    <div className="sale-banner">
-                        <video 
-                            autoPlay
-                            loop
-                            muted
-                            playsInline
-                            className="sale-video"
-                            disablePictureInPicture
-                            onContextMenu={(e) => e.preventDefault()}
-                        >
-                            <source src={welcomeVideo} type="video/mp4" />
-                        </video>
+                    <div className="sales-banner">
                         <div className="sale-banner-content">
-                            <h1 className="sale-title">😊 원하는 상품을 검색해 보세요 😊</h1>
+                            <h1 className="sales-title">원하는 상품을 검색해 보세요</h1>
                             <input 
                                 type="text" 
-                                placeholder="상품명, 제목, 해시태그 검색" 
+                                placeholder="제목, 해시태그 검색" 
                                 className="sale-search-input" 
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -415,43 +449,58 @@ const Sale = ({ showBanner = true, showCustomProducts = true }) => {
                     )}
 
                     <div className="sale-grid">
-                        {filteredProducts.map((product) => (
-                            <div key={product.id} className="sale-card">
+                        {(isSearching ? filteredPosts : posts).map((post) => (
+                            <div key={post.id} className="sale-card">
+                                {/* 작성자 프로필 */}
                                 <div className="sale-profile-info">
-                                    {userInfo?.profileImage ? (
-                                        <img 
-                                        src={userInfo.profileImage} 
-                                        alt="Profile" 
-                                        className="sale-profile-pic" 
-                                        onError={(e) => { e.target.src = placeholderImage; }}
+                                    {post.userImage ? (
+                                        <img
+                                            src={`http://localhost:8080/${post.userImage}`}
+                                            alt="작성자"
+                                            className="sale-profile-pic"
+                                            onError={(e) => { e.target.src = placeholderImage; }}
                                         />
                                     ) : (
                                         <CgProfile className="sale-profile-pic" />
                                     )}
-                                    <p className="sale-user-name">{userName}</p>
+                                    <p className="sale-user-name">{post.userNickName}</p>
                                 </div>
-                                <div onClick={() => handleProductClick(product)}>
-                                    <img 
-                                        src={product.src} 
-                                        alt={product.name} 
-                                        className="sale-image" 
+
+                                {/* 썸네일 이미지 클릭 시 상세로 */}
+                                <div onClick={() => handleProductClick(post)}>
+                                    <img
+                                        src={`http://localhost:8080/${post.thumbnailImage}`}
+                                        alt={post.title}
+                                        className="sale-image"
                                         onError={(e) => { e.target.src = placeholderImage; }}
                                     />
                                 </div>
+
+                                {/* 좋아요 버튼 */}
                                 <span className="sale-label">판매</span>
-                                <button 
-                                    className={`sale-like-button ${liked[product.id] ? 'liked' : ''}`} 
+                                <button
+                                    className={`sale-like-button ${liked[post.id] ? 'liked' : ''}`}
                                     onClick={(e) => {
                                         e.stopPropagation();
-                                        handleLike(product.id);
+                                        handleLike(post.id);
                                     }}
                                 >
                                     <FaHeart size={18} />
                                 </button>
-                                <p className="sale-product-name">{product.name}</p>
-                                <p className="sale-product-price">
-                                    {product.price.toLocaleString()}원
-                                </p>
+
+                                {/* 상품 제목 */}
+                                <p className="sale-product-name">{post.title}</p>
+
+                                {/* 해시태그 */}
+                                {post.hashtag && (
+                                    <div className="tags-container">
+                                        <div className="tags-list">
+                                            {post.hashtag.split(",").map((tag, idx) => (
+                                                <span key={idx} className="tag-item">#{tag.trim()}</span>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         ))}
                     </div>
@@ -508,11 +557,7 @@ const Sale = ({ showBanner = true, showCustomProducts = true }) => {
                                         </button>
                                     )}
                                     <p className="sale-product-name">{saleFormData.title}</p>
-                                    {saleFormData.products?.[0] && (
-                                        <p className="sale-product-price">
-                                            {Number(saleFormData.products[0].price).toLocaleString()}원
-                                        </p>
-                                    )}
+                                    
                                     {showDetails[saleFormData.id] && (
                                         <div className="product-details">
                                             <div dangerouslySetInnerHTML={{ 
@@ -600,7 +645,7 @@ const Sale = ({ showBanner = true, showCustomProducts = true }) => {
                 )}
 
                 {/* 검색 결과가 없을 때 표시 */}
-                {searchQuery && filteredProducts.length === 0 && filteredSaleFormData.length === 0 && (
+                {searchQuery && filteredProducts.length === 0 && filteredSaleFormData.length === 0 && filteredPosts.length === 0 && (
                     <div className="no-search-results">
                         <p style={{ textAlign: 'center', marginTop: '50px', fontSize: '18px', color: '#666' }}>
                             "{searchQuery}"에 대한 검색 결과가 없습니다.

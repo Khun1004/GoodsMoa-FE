@@ -13,11 +13,9 @@ export function SalePurchaseCheck() {
     const orderId = purchaseData.orderId || null;
     const formData = purchaseData.formData || {};
     const wantedProducts = purchaseData.products || [];
-    const selectedDelivery = Array.isArray(purchaseData.selectedDelivery)
-        ? purchaseData.selectedDelivery[0]
-        : purchaseData.selectedDelivery || null;
     const refundBank = purchaseData.refundBank || "";
     const refundAccount = purchaseData.refundAccount || "";
+    const selectedDelivery = purchaseData.selectedDelivery || null;
     const shippingMethods = purchaseData.shippingMethods || [];
 
     const calculateTotalProductPrice = () => {
@@ -34,46 +32,97 @@ export function SalePurchaseCheck() {
         console.log('shippingMethods : ', shippingMethods);
     }, []);
 
-    const getDeliveryCost = () => {
-        const delivery = Array.isArray(selectedDelivery) ? selectedDelivery[0] : selectedDelivery;
-        return delivery?.price != null ? Number(delivery.price) : 0;
-    };
-
     const getDeliveryDisplay = () => {
-        const delivery = Array.isArray(selectedDelivery) ? selectedDelivery[0] : selectedDelivery;
-        if (delivery?.name && delivery?.price != null) {
-            return `${delivery.name} (${Number(delivery.price).toLocaleString()}원)`;
+        if (!purchaseData.selectedDelivery) return "배송 방법 미선택";
+        
+        // 선택한 배송 방법 이름으로 실제 배송 방법 객체 찾기
+        const deliveryMethod = purchaseData.shippingMethods.find(
+            method => method.name === purchaseData.selectedDelivery
+        );
+        
+        if (deliveryMethod) {
+            return `${deliveryMethod.name} (${Number(deliveryMethod.price).toLocaleString()}원)`;
         }
         return "배송 방법 미선택";
+    };
+    
+    // 배송비 계산 로직
+    const getDeliveryCost = () => {
+        if (!purchaseData.selectedDelivery) return 0;
+        
+        const deliveryMethod = purchaseData.shippingMethods.find(
+            method => method.name === purchaseData.selectedDelivery
+        );
+        return deliveryMethod ? Number(deliveryMethod.price) : 0;
     };
 
     const safetyPaymentFee = 2400;
     const totalProductPrice = calculateTotalProductPrice();
     const deliveryCost = getDeliveryCost();
-    const totalAmount = totalProductPrice + deliveryCost + safetyPaymentFee;
+    const totalAmount = totalProductPrice + deliveryCost;
 
     const handlePayment = async () => {
         if (!agreeTerms) {
             alert("결제 약관에 동의해주세요.");
             return;
         }
-
+    
         if (!orderId) {
             alert("유효하지 않은 주문입니다. 다시 시도해주세요.");
             return;
         }
-
-        // ✅ TossPayments SDK가 로드됐는지 확인
+    
         if (typeof window.TossPayments !== 'function') {
             alert("결제 모듈이 아직 로드되지 않았습니다. 잠시 후 다시 시도해주세요.");
             return;
         }
-
+    
         try {
             const response = await OrderSaleDetail.requestTossPayment({ orderId });
-
+    
+            // Create complete order data with more details
+            const completeOrderData = {
+                id: new Date().getTime(),
+                orderId: orderId,
+                products: wantedProducts.map(product => ({
+                    ...product,
+                    totalPrice: product.price * product.quantity
+                })),
+                formData: formData,
+                selectedDelivery: selectedDelivery,
+                refundBank: refundBank,
+                refundAccount: refundAccount,
+                paymentDate: new Date().toISOString(),
+                status: "상품 준비 중",
+                saleLabel: purchaseData.saleLabel,
+                category: wantedProducts[0]?.category || "미정",
+                totalPrice: totalAmount,
+                ordererName: formData.ordererName,
+                ordererPhone: formData.ordererPhone,
+                ordererEmail: formData.ordererEmail,
+                paidAt: new Date().toISOString(),
+                userName: formData.ordererName,
+                shipping: {
+                    name: formData.recipient_name,
+                    phone: formData.phone_number,
+                    address: `${formData.zipCode} ${formData.mainAddress} ${formData.detailedAddress || ''}`,
+                    memo: formData.deliveryMemo
+                },
+                deliveryFee: deliveryCost,  // 배송비 명시적으로 포함
+                selectedDelivery: selectedDelivery, // 배송 방법 정보 포함
+                tracking: {
+                    number: "",
+                    company: ""
+                }
+            };
+    
+            // Save to localStorage for PurchaseHistory
+            const existingPurchases = JSON.parse(localStorage.getItem("purchaseHistory")) || [];
+            const updatedPurchases = [...existingPurchases, completeOrderData];
+            localStorage.setItem("purchaseHistory", JSON.stringify(updatedPurchases));
+    
             const tossPayments = window.TossPayments("test_ck_AQ92ymxN342Zya29jK2KrajRKXvd");
-
+    
             await tossPayments.requestPayment("카드", {
                 amount: response.amount,
                 orderId: response.orderCode,
@@ -81,7 +130,15 @@ export function SalePurchaseCheck() {
                 customerName: response.customerName,
                 successUrl: `http://localhost:5177/payment/success`,
                 failUrl: `http://localhost:5177/payment/fail`,
-        });
+            });
+    
+            // Navigate to success page with order data
+            navigate('/payment/success', {
+                state: {
+                    orderInfo: completeOrderData
+                }
+            });
+    
         } catch (error) {
             console.error("Payment error:", error);
             alert("결제 요청 중 오류가 발생했습니다. 다시 시도해주세요.");
@@ -166,7 +223,9 @@ export function SalePurchaseCheck() {
 
                 <div className="salePurchaseCheck-section">
                     <h3 className="salePurchaseCheck-section-title">배송 방법</h3>
-                    <div className="salePurchaseCheck-delivery-method">{getDeliveryDisplay()}</div>
+                    <div className="salePurchaseCheck-delivery-method">
+                        {getDeliveryDisplay()}
+                    </div>
                 </div>
 
                 <div className="salePurchaseCheck-section">
@@ -254,10 +313,6 @@ export function SalePurchaseCheck() {
                         <div className="salePurchaseCheck-price-row">
                             <span className="salePurchaseCheck-price-label">배송비</span>
                             <span className="salePurchaseCheck-price-value">{deliveryCost.toLocaleString()}원</span>
-                        </div>
-                        <div className="salePurchaseCheck-price-row">
-                            <span className="salePurchaseCheck-price-label">안전결제 수수료</span>
-                            <span className="salePurchaseCheck-price-value">{safetyPaymentFee.toLocaleString()}원</span>
                         </div>
                         <div className="salePurchaseCheck-price-row-total">
                             <span className="salePurchaseCheck-price-label-total">총 결제 금액</span>

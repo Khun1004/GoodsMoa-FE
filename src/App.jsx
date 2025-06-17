@@ -27,10 +27,11 @@ import DemandWrite from "./components/Demands/DemandWrite/DemandWrite";
 import Footer from "./components/Footer/Footer";
 import Hero from "./components/Hero/Hero";
 import Like from "./components/Like/Like";
+import Loading from "./components/Loading/Loading";
 import OAuthRedirect from "./components/LoginOAuth/OAuthRedirect";
+import MainDemand from "./components/MainDemand/MainDemand";
 import MainSale from "./components/MainSale/MainSale";
 import MainTrade from "./components/MainTrade/MainTrade";
-import MainDemand from "./components/MainDemand/MainDemand";
 import Modal from "./components/Modal/Modal";
 import MyPage from "./components/MyPage/MyPage/MyPage";
 import MyInformation from "./components/MyPage/MyPageSection/MyInformation/MyInformation";
@@ -38,8 +39,8 @@ import Navbar from "./components/Navbar/Navbar";
 import Notice from "./components/Notice/Notice";
 import OrderPage from "./components/OrderPage/OrderPage";
 import Paint from "./components/Paint/Paint";
-import Products from "./components/Products/Products";
 import ReportForm from "./components/ReportForm/ReportForm";
+import MyOrders from "./components/Sales/MyOrders/MyOrders";
 import Sale from "./components/Sales/Sale/Sale";
 import SaleDetail from "./components/Sales/SaleDetail/SaleDetail";
 import SaleForm from "./components/Sales/SaleForm/SaleForm";
@@ -55,9 +56,6 @@ import TradeBuyPerfect from "./components/Trade/TradeBuyPerfect/TradeBuyPerfect"
 import TradeDetail from "./components/Trade/TradeDetail/TradeDetail";
 import TradeForm from "./components/Trade/TradeForm/TradeForm";
 import TradeWrite from "./components/Trade/TradeWrite/TradeWrite";
-
-// Loading 컴포넌트 import
-import Loading from "./components/Loading/Loading";
 
 const AppContent = ({
                         handleOrderPopup,
@@ -377,14 +375,23 @@ const AppContent = ({
           }
       />
 
-        {/* SalePurchaseCheck Page */}
-        <Route path="/salePurchasePerfect"
-          element={
-            <div className="pt-[130px]">
-              <SalePurchasePerfect />
-            </div>
-          }
-        />
+      {/* SalePurchaseCheck Page */}
+      <Route path="/salePurchasePerfect"
+        element={
+          <div className="pt-[130px]">
+            <SalePurchasePerfect />
+          </div>
+        }
+      />
+
+      {/* SalePurchaseCheck Page */}
+      <Route path="/my-orders"
+        element={
+          <div className="pt-[130px]">
+            <MyOrders />
+          </div>
+        }
+      />
 
         {/* Community Page */}
         <Route path="/community"

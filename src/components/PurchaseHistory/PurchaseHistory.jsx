@@ -29,7 +29,22 @@ const PurchaseHistory = () => {
     };
 
     const handleImageClick = (purchase) => {
-        setSelectedPurchase(purchase);
+        setSelectedPurchase({
+            ...purchase,
+            // deliveryFee가 없는 경우 shippingMethods에서 가격을 계산
+            deliveryFee: purchase.deliveryFee || 
+                       (purchase.shippingMethods && purchase.shippingMethods.length > 0 
+                        ? Number(purchase.shippingMethods[0].price) 
+                        : 0),
+            // selectedDelivery가 배열인 경우 첫 번째 요소 사용
+            selectedDelivery: Array.isArray(purchase.selectedDelivery) 
+                ? purchase.selectedDelivery[0] 
+                : purchase.selectedDelivery || 
+                  (purchase.shippingMethods && purchase.shippingMethods.length > 0 
+                   ? purchase.shippingMethods[0] 
+                   : { name: '기본 배송', price: 0 }),
+            totalPrice: purchase.products.reduce((sum, p) => sum + (p.price * p.quantity), 0)
+        });
         setShowDetail(true);
     };
     
@@ -59,8 +74,17 @@ const PurchaseHistory = () => {
 
     useEffect(() => {
         const storedPurchases = JSON.parse(localStorage.getItem("purchaseHistory")) || [];
-        setPurchaseHistory(storedPurchases);
+        // 상태별로 정렬 (최신 주문이 먼저 오도록)
+        const sortedPurchases = storedPurchases.sort((a, b) => 
+            new Date(b.paymentDate) - new Date(a.paymentDate)
+        );
+        setPurchaseHistory(sortedPurchases);
     }, [isCancelOrder, isReviewForm, isPurchaseConfirmation]);
+
+    useEffect(() => {
+        const storedPurchases = JSON.parse(localStorage.getItem("purchaseHistory")) || [];
+        setPurchaseHistory(storedPurchases);
+    }, []);
 
     const handlePrevPage = () => {
         if (currentPage > 1) {
@@ -209,7 +233,7 @@ const PurchaseHistory = () => {
                                                 </div>
                                             ))}
                                         </td>
-                                        <td>{purchase.ordererName}</td>
+                                        <td>{purchase.formData?.ordererName || purchase.ordererName || 'N/A'}</td>
                                         <td>{purchase.saleLabel}</td>
                                         <td>
                                             {purchase.products.reduce((sum, p) => sum + p.quantity, 0)} 개, 

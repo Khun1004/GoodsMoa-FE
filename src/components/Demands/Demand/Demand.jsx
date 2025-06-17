@@ -1,5 +1,6 @@
 // 리액트 훅과 외부 라이브러리 import
-import React, { useEffect, useState, useCallback } from 'react';
+import _ from 'lodash';
+import React, { useCallback, useEffect, useState } from 'react';
 import { CgProfile } from 'react-icons/cg';
 import { FaHeart } from 'react-icons/fa';
 import { SlSocialDropbox } from 'react-icons/sl';
@@ -7,7 +8,6 @@ import { Link, useLocation } from 'react-router-dom';
 import welcomeVideo from '../../../assets/demandWelcome.mp4';
 import Demand1 from '../../../assets/demands/demand1.jpg';
 import './Demand.css';
-import _ from 'lodash';
 
 const categoryOptions = [
     { id: 0, name: '전체' },
@@ -36,6 +36,7 @@ const Demand = ({ showBanner = true }) => {
     const [liked, setLiked] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [savedDemandFormData, setSavedDemandFormData] = useState(null);
 
     const [searchTerm, setSearchTerm] = useState('');
     const [category, setCategory] = useState('0');
