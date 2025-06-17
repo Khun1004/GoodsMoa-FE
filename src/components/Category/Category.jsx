@@ -4,18 +4,14 @@ import { useNavigate } from 'react-router-dom';
 import './Category.css';
 
 const mainCategories = [
-    { id: 1, name: "창작캐릭터", icon: "🐱", route: "/category1" },
-    { id: 2, name: "창작공예/문구", icon: "😊", route: "/category2" },
-    { id: 3, name: "인형/인형소품", icon: "🧸", route: "/category3" },
-    { id: 4, name: "순수창작", icon: "💡", route: "/category/4" },
-    { id: 5, name: "패션/액세서리", icon: "👕", route: "/category/5" },
-    { id: 6, name: "아이돌/스타", icon: "💖", route: "/category/6" },
-    { id: 7, name: "만화/애니", icon: "👓", route: "/category/7" },
-    { id: 8, name: "밀키트/식사", icon: "🍇", route: "/category/8" },
-    { id: 9, name: "게임", icon: "🎮", route: "/category/9" },
-    { id: 10, name: "영화", icon: "🎞️", route: "/category/10" },
-    { id: 11, name: "드라마", icon: "📺", route: "/category/11" },
-    { id: 12, name: "공연/행사", icon: "🎟️", route: "/category/12" },
+    { id: 1, name: "애니메이션", icon: "🎬", route: "/category/1" },
+    { id: 2, name: "아이돌", icon: "🎤", route: "/category/2" },
+    { id: 3, name: "순수창작", icon: "🎨", route: "/category/3" },
+    { id: 4, name: "게임", icon: "🎮", route: "/category/4" },
+    { id: 5, name: "영화", icon: "🎞️", route: "/category/5" },
+    { id: 6, name: "드라마", icon: "📺", route: "/category/6" },
+    { id: 7, name: "웹소설", icon: "📖", route: "/category/7" },
+    { id: 8, name: "웹툰", icon: "💬", route: "/category/8" },
 ];
 
 const Category = ({ title, categories = mainCategories }) => {

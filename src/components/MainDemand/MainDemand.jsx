@@ -2,30 +2,30 @@ import React from 'react';
 import { FaHeart } from 'react-icons/fa';
 import { SlSocialDropbox } from "react-icons/sl";
 import { useNavigate } from 'react-router-dom';
-import Sale from '../Sales/Sale/Sale';
-import './MainSale.css';
+import Sale from '../Demands/Demand/Demand';
+import './MainDemand.css';
 
 const MainSale = () => {
     const navigate = useNavigate();
 
     return (
         <div>
-            <div className="main-sale-container">
+            <div className="main-demand-container">
             
                 <div className='container'>
-                    <div className='sale-header'>
-                        <div className='sale-icon'>
-                            <SlSocialDropbox className='salebox-icon'/>
+                    <div className='demand-header'>
+                        <div className='demand-icon'>
+                            <SlSocialDropbox className='demandbox-icon'/>
                             <FaHeart className='heart-icon'/>
                         </div>
-                        <h2 className="sale-heading">판매</h2>
+                        <h2 className="demand-heading">수요조사</h2>
                     </div>
                 </div>
             
                 <Sale showBanner={false} showOrderButton={false} />
                 
-                <button className='seeSale' 
-                    onClick={() => navigate('/sale')}>
+                <button className='seeDemand' 
+                    onClick={() => navigate('/demand')}>
                     더 보기
                 </button>
                 <hr className="divider"></hr>
