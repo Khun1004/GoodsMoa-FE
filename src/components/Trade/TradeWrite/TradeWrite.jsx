@@ -1,27 +1,35 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useContext } from "react";
 import { CiImageOn } from "react-icons/ci";
 import { FaAlignCenter, FaAlignJustify, FaAlignLeft, FaAlignRight, FaBold, FaCaretDown, FaItalic, FaPaintBrush, FaStrikethrough, FaUnderline } from "react-icons/fa";
 import { IoIosArrowBack } from "react-icons/io";
 import { LuRedo2, LuUndo2 } from "react-icons/lu";
 import { PiListBulletsBold } from "react-icons/pi";
 import { RiFontSize } from "react-icons/ri";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import "./TradeWrite.css";
+import { TradeContext } from "../../../contexts/TradeContext";
 
 const TradeWrite = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   const editorRef = useRef(null);
+  const { formTradeData, setFormTradeData } = useContext(TradeContext);
+
   const [contentImages, setContentImages] = useState([]);
   const [color, setColor] = useState("#000000");
   const [descriptions, setDescriptions] = useState(
-    Array.isArray(location.state?.formTradeData?.description)
-      ? location.state.formTradeData.description
-      : []
+    Array.isArray(formTradeData?.description) ? formTradeData.description : []
   );
   const [contentImageFiles, setContentImageFiles] = useState(
-    location.state?.formTradeData?.contentImageFiles || []
+    formTradeData?.contentImageFiles || []
   );
+  const [savedSelection, setSavedSelection] = useState(null);
+
+  const saveSelection = () => {
+    const selection = window.getSelection();
+    if (selection && selection.rangeCount > 0) {
+      setSavedSelection(selection.getRangeAt(0));
+    }
+  };
 
   const handleCommand = (command, value = null) => {
     document.execCommand(command, false, value);
@@ -36,9 +44,24 @@ const TradeWrite = () => {
 
     files.forEach((file) => {
       const localUrl = URL.createObjectURL(file);
-      const imgHTML = `<img src='${localUrl}' alt='image' />`;
+      const img = document.createElement("img");
+      img.src = localUrl;
+      img.alt = "image";
+
+      if (savedSelection) {
+        const range = savedSelection.cloneRange();
+        range.deleteContents();
+        range.insertNode(img);
+        range.setStartAfter(img);
+        range.setEndAfter(img);
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+      } else {
+        editorRef.current.appendChild(img);
+      }
+
       editorRef.current.focus();
-      document.execCommand("insertHTML", false, imgHTML);
     });
 
     setContentImageFiles((prev) => [...prev, ...files]);
@@ -51,74 +74,62 @@ const TradeWrite = () => {
     document.execCommand("foreColor", false, selectedColor);
   };
 
-  const handleSave = () => {
-    const tempDiv = document.createElement("div");
-    tempDiv.innerHTML = editorRef.current.innerHTML;
-    const nodes = Array.from(tempDiv.childNodes);
+const handleSave = () => {
+  const tempDiv = document.createElement("div");
+  tempDiv.innerHTML = editorRef.current.innerHTML;
+  const nodes = Array.from(tempDiv.childNodes);
 
-    const parsedDescriptions = [];
-    let sequenceCounter = 0;
-    let detectedImageCount = 0;
+  const parsedDescriptions = [];
+  let sequenceCounter = 0;
+  let detectedImageCount = 0;
 
-    nodes.forEach((node) => {
-      if (node.nodeName === "IMG") {
-        parsedDescriptions.push({
-          type: "IMAGE",
-          value: "",
-          sequence: sequenceCounter++
-        });
+  nodes.forEach((node) => {
+    if (node.nodeName === "IMG") {
+      parsedDescriptions.push({ type: "IMAGE", value: "", sequence: sequenceCounter++ });
+      detectedImageCount++;
+    } else if (node.nodeType === Node.ELEMENT_NODE) {
+      const text = node.innerText || node.textContent;
+      if (text.trim()) {
+        parsedDescriptions.push({ type: "TEXT", value: text.trim(), sequence: sequenceCounter++ });
+      }
+      const imgs = node.getElementsByTagName("img");
+      for (let img of imgs) {
+        parsedDescriptions.push({ type: "IMAGE", value: "", sequence: sequenceCounter++ });
         detectedImageCount++;
-      } else if (node.nodeType === Node.ELEMENT_NODE) {
-        const text = node.innerText || node.textContent;
-        if (text.trim()) {
-          parsedDescriptions.push({
-            type: "TEXT",
-            value: text.trim(),
-            sequence: sequenceCounter++
-          });
-        }
-        const imgs = node.getElementsByTagName("img");
-        for (let img of imgs) {
-          parsedDescriptions.push({
-            type: "IMAGE",
-            value: "",
-            sequence: sequenceCounter++
-          });
-          detectedImageCount++;
-        }
-      } else if (node.nodeType === Node.TEXT_NODE) {
-        const text = node.textContent.trim();
-        if (text) {
-          parsedDescriptions.push({
-            type: "TEXT",
-            value: text,
-            sequence: sequenceCounter++
-          });
-        }
       }
-    });
-
-    if (detectedImageCount !== contentImages.length) {
-      alert(`에디터에 들어간 이미지 수(${detectedImageCount})와 업로드된 이미지 수(${contentImages.length})가 다릅니다. 모든 이미지를 본문에 넣었는지 확인해주세요.`);
-      return;
+    } else if (node.nodeType === Node.TEXT_NODE) {
+      const text = node.textContent.trim();
+      if (text) {
+        parsedDescriptions.push({ type: "TEXT", value: text, sequence: sequenceCounter++ });
+      }
     }
+  });
 
-    const updatedFormData = {
-      ...location.state?.formTradeData,
-      description: parsedDescriptions,
-      contentImageFiles: contentImages
-    };
+  if (detectedImageCount !== contentImages.length) {
+    alert(`에디터에 들어간 이미지 수(${detectedImageCount})와 업로드된 이미지 수(${contentImages.length})가 다릅니다.`);
+    return;
+  }
 
-    console.log("🚀 저장 직전 description:", parsedDescriptions);
-    console.log("📦 저장 직전 contentImageFiles:", contentImages);
-
-    navigate("/tradeForm", {
-      state: {
-        formTradeData: updatedFormData,
-        isEditMode: !!updatedFormData.id
-      }
-    });
+  const updatedFormData = {
+    ...formTradeData,
+    description: parsedDescriptions,
+    contentImageFiles: contentImages,
+    detailImages: formTradeData.detailImages || [],
+    detailImageFiles: formTradeData.detailImageFiles || [],
   };
+
+  console.log("✅ 저장 직전 updatedFormData 확인:", updatedFormData);
+
+  setFormTradeData(updatedFormData);
+
+  navigate("/tradeForm", {
+    state: {
+      formTradeData: updatedFormData,
+      isEditMode: !!updatedFormData.id,
+    },
+  });
+};
+
 
   useEffect(() => {
     if (editorRef.current && descriptions.length > 0) {
@@ -189,7 +200,10 @@ const TradeWrite = () => {
           className="editor"
           contentEditable
           suppressContentEditableWarning
+          onMouseUp={saveSelection}
+          onKeyUp={saveSelection}
         />
+
       </div>
     </div>
   );

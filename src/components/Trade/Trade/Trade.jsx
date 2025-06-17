@@ -21,16 +21,16 @@ import './Trade.css';
 const Trade = ({ showBanner = true}) => {
     const { userInfo, isLogin } = useContext(LoginContext);
 
-    // 비로그인 사용자는 접근 제한
-    if (!isLogin) {
-        return (
-            <div className="sale-container">
-                <h2 style={{ textAlign: "center", marginTop: "3rem" }}>
-                    🔒 로그인 후 중고거래 게시글을 확인할 수 있습니다.
-                </h2>
-            </div>
-        );
-    }
+    // // 비로그인 사용자는 접근 제한
+    // if (!isLogin) {
+    //     return (
+    //         <div className="sale-container">
+    //             <h2 style={{ textAlign: "center", marginTop: "3rem" }}>
+    //                 🔒 로그인 후 중고거래 게시글을 확인할 수 있습니다.
+    //             </h2>
+    //         </div>
+    //     );
+    // }
 const [likedServerPosts, setLikedServerPosts] = useState({});
 
 const handleServerLikeToggle = async (tradeId) => {
