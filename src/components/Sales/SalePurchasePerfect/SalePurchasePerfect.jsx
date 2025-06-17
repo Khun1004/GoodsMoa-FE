@@ -29,9 +29,7 @@ export default function SalePurchasePerfect() {
     };
 
     const handleViewOrder = () => {
-        navigate("/my-orders", {
-            state: { orderInfo }, // 여기에 같이 넘겨주면 됨!
-        });
+        navigate("/mypage")
     };
 
 
@@ -86,8 +84,20 @@ export default function SalePurchasePerfect() {
                     <div className="summary-item">
                         <span className="salePurchasePerfectSpan">결제 일시</span>
                         <span className="salePurchasePerfectSpan">
-              {formatDate(orderInfo.paidAt)}
-            </span>
+                            {formatDate(orderInfo.paidAt)}
+                        </span>
+                    </div>
+                    <div className="summary-item">
+                        <span className="salePurchasePerfectSpan">배송 방법</span>
+                        <span className="salePurchasePerfectSpan">
+                            {orderInfo.selectedDelivery?.name || "기본 배송"}
+                        </span>
+                    </div>
+                    <div className="summary-item">
+                        <span className="salePurchasePerfectSpan">배송지</span>
+                        <span className="salePurchasePerfectSpan">
+                            {orderInfo.formData?.mainAddress || "주소 정보 없음"}
+                        </span>
                     </div>
                     <div className="summary-item">
                         <span className="salePurchasePerfectSpan">결제 금액</span>

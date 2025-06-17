@@ -762,9 +762,17 @@
     }
 }
 
+/* 1024px 이상에서 3열로 변경 */
 @media (min-width: 1024px) {
     .saleFormManage-forms-grid {
         grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* 추가: 너비가 충분히 넓을 때 4열까지 확장 */
+@media (min-width: 1280px) {
+    .saleFormManage-forms-grid {
+        grid-template-columns: repeat(4, 1fr);
     }
 }
 

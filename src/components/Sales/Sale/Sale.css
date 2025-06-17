@@ -5,7 +5,7 @@
     padding: 20px; */
 }
 
-.sale-banner {
+.sales-banner {
     position: relative;
     width: 100%;
     height: 250px;
@@ -14,15 +14,44 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    /* 기하학적 패턴 배경 */
+    background: linear-gradient(120deg, #a8edea 0%, #fed6e3 100%);
 }
 
-.sale-video {
+/* 기하학적 패턴 애니메이션 */
+.sales-banner::before {
+    content: '';
     position: absolute;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+    right: 0;
+    bottom: 0;
+    background-image: 
+        radial-gradient(circle at 25% 25%, rgba(255,255,255,0.1) 2px, transparent 2px),
+        radial-gradient(circle at 75% 75%, rgba(255,255,255,0.1) 2px, transparent 2px),
+        linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.05) 30%, rgba(255,255,255,0.05) 70%, transparent 70%);
+    background-size: 60px 60px, 40px 40px, 80px 80px;
+    background-position: 0 0, 30px 30px, 0 0;
+    animation: geometricFloat 20s linear infinite;
+}
+
+@keyframes geometricFloat {
+    0% { 
+        transform: rotate(0deg) translateX(0);
+        opacity: 0.3;
+    }
+    50% {
+        opacity: 0.1;
+    }
+    100% { 
+        transform: rotate(360deg) translateX(20px);
+        opacity: 0.3;
+    }
+}
+
+/* 기존 비디오 관련 스타일 제거 */
+.sale-video {
+    display: none;
 }
 
 .sale-video::-webkit-media-controls-picture-in-picture-button {
@@ -31,26 +60,45 @@
 
 .sale-banner-content {
     text-align: center;
-    backdrop-filter: blur(5px);
-    padding: 20px;
-    border-radius: 10px;
+    backdrop-filter: blur(10px);
+    padding: 30px 40px;
+    border-radius: 20px;
     background-color: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    z-index: 2;
+    position: relative;
 }
 
-.sale-title {
+.sales-title {
     font-size: 30px;
     font-weight: bold;
     color: black;
-    margin-bottom: 10px;
+    margin-bottom: 20px;
+    text-shadow: 0 2px 4px rgba(255, 255, 255, 0.8);
 }
 
 .sale-search-input {
     width: 100%;
     max-width: 500px;
-    padding: 10px;
-    border-radius: 5px;
-    border: 1px solid #ccc;
-    background-color: rgb(238, 238, 238);
+    padding: 12px 20px;
+    border-radius: 25px;
+    border: none;
+    background-color: rgba(255, 255, 255, 0.9);
+    font-size: 16px;
+    outline: none;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+}
+
+.sale-search-input:focus {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+    background-color: rgba(255, 255, 255, 1);
+}
+
+.sale-search-input::placeholder {
+    color: #666;
 }
 
 .sale-header {
