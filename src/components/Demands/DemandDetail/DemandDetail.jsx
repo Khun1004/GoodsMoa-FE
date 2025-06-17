@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import DemandService from '../../../api/DemandService.jsx';
 import './DemandDetail.css';
 
 const getFullImageUrl = (url) =>
@@ -95,14 +96,25 @@ const DemandDetail = () => {
     };
 
     // 참여하기 버튼
-    const handleDemandBuy = () => {
-        navigate('/demandDetailBuy', {
-            state: {
-                selectedProducts,
-                totalItems,
-                totalPrice,
-            }
-        });
+    const handleDemandBuy = async() => {
+        try {
+            const productsPayload = selectedProducts.map(item => ({
+                postProductId: item.id, // 상품 id
+                quantity: item.quantity // 선택한 수량
+            }));
+            await DemandService.createOrder(id, productsPayload);
+            alert('참여가 완료되었습니다!');
+            // 필요하다면 페이지 이동 등 추가 작업
+        } catch (error) {
+            alert(`참여 중 오류: ${error.message}`);
+        }
+        // navigate('/demandDetailBuy', {
+        //     state: {
+        //         selectedProducts,
+        //         totalItems,
+        //         totalPrice,
+        //     }
+        // });
     };
 
     // 신고하기
