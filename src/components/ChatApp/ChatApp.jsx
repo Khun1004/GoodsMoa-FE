@@ -87,34 +87,45 @@ export default function ChatApp() {
 
 
   // ===== 채팅방 생성 =====
-  const handleCreateRoom = async () => {
+  const handleCreateRoom = async (sellerId, postTitle) => { // 1. 인자 추가
     if (!userInfo?.id) {
       alert("로그인이 필요합니다.");
       return;
     }
+    
+    // 2. prompt 대신 인자로 받은 sellerId를 사용
     const senderId = userInfo.id;
-    const receiverId = prompt("상대방 userId를 입력하세요:");
-    if (!receiverId) {
-      alert("상대방 userId가 필요합니다.");
-      return;
+    const receiverId = sellerId; 
+
+    // 현재 사용자와 판매자가 같으면 채팅방 생성 방지
+    if (senderId === receiverId) {
+        alert("자기 자신과는 채팅할 수 없습니다.");
+        return;
     }
+
+    // 3. 채팅방 제목을 게시글 제목으로 자동 설정
+    
+
+    console.log(`채팅방 생성 시도: ${senderId}(구매자) -> ${receiverId}(판매자)`);
+
     const res = await fetch("http://localhost:8080/chatroom/room/create", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         senderId,
         receiverId,
-        title: newRoomTitle,
+        title: newRoomTitle, // 자동으로 생성된 제목 사용
       }),
     });
+
     if (res.ok) {
-      setNewRoomTitle("");
-      // 목록 다시 불러오기
+      alert("채팅방이 생성되었습니다.");
+      // 목록 다시 불러오기 또는 해당 채팅방으로 이동하는 로직
+      // 예: const roomData = await res.json(); navigate(`/chatroom/${roomData.id}`);
     } else {
-      alert("채팅방 생성 실패");
+      alert("채팅방 생성에 실패했습니다.");
     }
   };
-
   // ... (이하 다른 함수들은 그대로 유지) ...
   
     // ===== 채팅방 참여 =====
