@@ -46,7 +46,6 @@ const SaleDetail = () => {
     useEffect(() => {
         if (userInfo?.nickname) setUserName(userInfo.nickname);
         if (userInfo?.profileImage) setProfileImage(userInfo.profileImage);
-        console.log('product.content ::: ',product.content);
     }, [userInfo]);
 
     const fixedContent = (product.content || "").replace(/<img[^>]*src=['"]([^'"]+)['"][^>]*>/g, (match, src) => {
@@ -156,21 +155,32 @@ const SaleDetail = () => {
         const chatWindow = window.open('/chat-app', '_blank', 'width=600,height=800');
 
         if (chatWindow) {
-            chatWindow.onload = () => {
-                chatWindow.postMessage({
-                    type: 'CHAT_INIT_DATA',
-                    data: {
-                        product: selectedProduct || product,
-                        sellerName: userName,
-                        sellerImage: profileImage,
-                        productImage: selectedImage || product.image || product.src
-                    }
-                }, '*');
-            };
-            chatWindow.focus();
+            // 🚨 메시지를 여러 번 반복 전송해서 하나라도 잡히게
+            const interval = setInterval(() => {
+                if (!chatWindow.closed) {
+                    console.log("🔥 반복해서 postMessage 전송");
+                    chatWindow.postMessage(
+                        {
+                            type: 'CHAT_INIT_DATA',
+                            data: {
+                                sellerId: product.userId,
+                                postTitle: product.title,
+                            },
+                        },
+                        '*'
+                    );
+                } else {
+                    console.log("🛑 창이 닫혀 반복 중단");
+                    clearInterval(interval);
+                }
+            }, 1000); // 1초마다 전송
+
+            // 일정 시간 후 반복 중단 (예: 10초 후)
+            setTimeout(() => clearInterval(interval), 10000);
+        } else {
+            console.error("❌ 팝업 차단 등으로 창 열기 실패");
         }
     };
-
     const onImageClick = (image) => {
         setSelectedImage(image);
 
@@ -358,9 +368,11 @@ const SaleDetail = () => {
                             </p>
                             <p className="person-sale-period">
                                 판매기간: {
-                                product.isPermanent ? "상시판매" :
-                                    (start_time && end_time) ? `${start_time} ~ ${end_time}` :
-                                        "상시판매"
+                                product.isPermanent
+                                    ? "상시판매"
+                                    : (product.startTime && product.endTime)
+                                        ? `${product.startTime} ~ ${product.endTime}`
+                                        : "상시판매"
                             }
                             </p>
                             <p className="person-category">카테고리: {category || product.category || "미정"}</p>
@@ -457,7 +469,7 @@ const SaleDetail = () => {
                     ))
                 ) : (
                     <div className='wanted-product-empty'>
-                        <p>원한 상품이 없습니다. {'"원합니다"'}를 눌러 주세요.</p>
+                        <p>상품 추가 시 여기에 추가 됩니다.</p>
                     </div>
                 )}
             </div>
