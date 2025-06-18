@@ -29,7 +29,6 @@ function MyPage() {
     const [activePage, setActivePage] = useState(null);
     const [editingAddress, setEditingAddress] = useState(false);
     const [menuOpen, setMenuOpen] = useState(false);
-
     const sectionRef = useRef(null);
     
     // 공유할 문의 및 답변 상태를 MyPage에서 관리
