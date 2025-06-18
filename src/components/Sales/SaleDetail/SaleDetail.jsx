@@ -5,12 +5,17 @@ import { FaStar } from "react-icons/fa";
 import { useLocation, useNavigate } from 'react-router-dom';
 import { LoginContext } from "../../../contexts/LoginContext";
 import "./SaleDetail.css";
+import LikeButton from '../Sale/LikeButton';
+import productService from '../../../api/ProductService';
 
 const API_BASE_URL = 'http://localhost:8080';
 
 const SaleDetail = () => {
     const navigate = useNavigate();
     const location = useLocation();
+    const [liked, setLiked] = useState({});
+    const [likedInfo, setLikedInfo] = useState(null);
+    const [likeError, setLikeError] = useState(null);
     const {
         product,
         products = [],
@@ -47,6 +52,32 @@ const SaleDetail = () => {
         if (userInfo?.nickname) setUserName(userInfo.nickname);
         if (userInfo?.profileImage) setProfileImage(userInfo.profileImage);
     }, [userInfo]);
+
+    // 좋아요 상태 가져오기
+    useEffect(() => {
+        const fetchLikedInfo = async () => {
+            if (!product?.id) return;
+
+            try {
+                const res = await productService.getSingleLikedPost(product.id);
+                setLiked(prev => ({
+                    ...prev,
+                    [String(product.id)]: !!res
+                }));
+            } catch (err) {
+                // 404인 경우엔 콘솔 줄이기
+                if (err.message.includes("404")) {
+                    console.warn(`🤍 좋아요 안 되어 있음 (ID: ${product.id})`);
+                } else {
+                    console.error(`❌ 좋아요 조회 중 에러 (ID: ${product.id}):`, err);
+                }
+
+                setLiked({ [String(product.id)]: false });
+            }
+        };
+
+        fetchLikedInfo();
+    }, [product?.id]);
 
     const fixedContent = (product.content || "").replace(/<img[^>]*src=['"]([^'"]+)['"][^>]*>/g, (match, src) => {
         if (src.startsWith("http")) return match; // 절대경로면 그대로
@@ -304,6 +335,29 @@ const SaleDetail = () => {
         }
     };
 
+    // 좋아요 토글
+    const handleLike = async (postId) => {
+        console.log('handleLike 실행됨!@!@!@!@!@!@!@!@!@');
+        const isLiked = liked[String(postId)];
+
+        try {
+            if (isLiked) {
+                await productService.unlikeProduct(postId);
+            } else {
+                await productService.likeProduct(postId);
+            }
+
+            // 상태 토글
+            setLiked(prev => ({
+                ...prev,
+                [String(postId)]: !isLiked,
+            }));
+        } catch (err) {
+            console.error('좋아요 처리 중 오류:', err.message);
+            alert('좋아요 처리에 실패했습니다.');
+        }
+    };
+
     // Placeholder image for when images are missing
     const placeholderImage = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300' viewBox='0 0 300 300'%3E%3Crect width='300' height='300' fill='%23f0f0f0'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial' font-size='24' fill='%23999999'%3E이미지 없음%3C/text%3E%3C/svg%3E";
 
@@ -402,10 +456,13 @@ const SaleDetail = () => {
                         </div>
 
                         <div className='person-button'>
-                            <span className='person-report' onClick={handleReportClick}>
+                              <span className='person-report' onClick={handleReportClick}>
                                 <AiFillAlert className='report-icon' /> 신고하기
-                            </span>
-                            <button className="person-chatting" onClick={handleChatClick}>채팅하기</button>
+                              </span>
+                            <div style={{ display: 'flex', alignItems: 'center' }}>
+                                <button className="person-chatting" onClick={handleChatClick}>채팅하기</button>
+                                <LikeButton postId={product.id} liked={liked} handleLike={handleLike} />
+                            </div>
                         </div>
 
                         {/* Thumbnail Image List */}

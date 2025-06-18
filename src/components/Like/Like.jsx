@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import {Link, useNavigate} from 'react-router-dom';
 // ✅ 네가 사용한 CSS에 필요한 아이콘들을 lucide-react에서 가져온다고 가정
 import { Package, Calendar, ChevronRight, Lock, Eye } from 'lucide-react';
 import './Like.css'; // 네가 제공한 CSS 파일
+import productService from '../../api/ProductService';
 
 // --- 헬퍼 함수 ---
 const API_BASE_URL = 'http://localhost:8080';
@@ -24,6 +25,11 @@ const formatDate = (dateString) => {
 
 const Like = () => {
   const [likedPosts, setLikedPosts] = useState([]);
+  const [likedProductPosts, setLikedProductPosts] = useState([]);
+  const [productPageInfo, setProductPageInfo] = useState({ page: 0, totalPages: 1 });
+  const [liked, setLiked] = useState({}); // postId => true
+  const navigate = useNavigate();
+
   const [pageInfo, setPageInfo] = useState({ page: 0, size: 12, totalPages: 0 }); // size를 그리드에 맞게 조정 (4열 기준)
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -37,7 +43,7 @@ const Like = () => {
         const res = await fetch(url, { credentials: 'include' });
 
         if (!res.ok) throw new Error(`서버 응답 오류 (상태: ${res.status})`);
-        
+
         const data = await res.json();
         setLikedPosts(data.content || []);
         setPageInfo(prev => ({ ...prev, page: data.number, totalPages: data.totalPages }));
@@ -51,13 +57,124 @@ const Like = () => {
     fetchLikes();
   }, [pageInfo.page, pageInfo.size]);
 
+  // ======상품 좋아요 가져오기=========
+    useEffect(() => {
+        const fetchInitialLikes = async () => {
+            const token = localStorage.getItem('userInfo'); // 또는 userInfo에 token이 있다면 거기서 꺼내기
+            if (!token) {
+                console.log('🔒 토큰 없음. 좋아요 요청 생략');
+                return;
+            }
+
+            try {
+                const res = await productService.getLikedPosts(0); // ✅ 첫 페이지
+                const likedMap = {};
+
+                // ✅ 좋아요 상태 설정
+                res.content.forEach(item => {
+                    likedMap[String(item.postId)] = true;
+                });
+                setLiked(likedMap);
+
+                // ✅ 상품 목록 및 페이지 정보 설정
+                setLikedProductPosts(res.content || []);
+                setProductPageInfo({
+                    page: res.number,
+                    totalPages: res.totalPages,
+                });
+
+                console.log('👍 좋아요한 상품 초기 데이터:', res);
+            } catch (err) {
+                console.error('💥 초기 좋아요 정보 로딩 실패:', err.message);
+            }
+        };
+
+        fetchInitialLikes();
+    }, []);
+
+    useEffect(() => {
+        const fetchPagedLikedProducts = async () => {
+            try {
+                const res = await productService.getLikedPosts(productPageInfo.page);
+                setLikedProductPosts(res.content || []);
+                setProductPageInfo({
+                    page: res.number,
+                    totalPages: res.totalPages,
+                });
+            } catch (err) {
+                console.error('📦 좋아요한 상품 페이지 가져오기 실패:', err.message);
+            }
+        };
+
+        // 0번은 이미 초기화에서 처리했으므로 이후 페이지만 fetch
+        if (productPageInfo.page !== 0) {
+            fetchPagedLikedProducts();
+        }
+    }, [productPageInfo.page]);
+
   const handlePageChange = (newPage) => {
     if (newPage >= 0 && newPage < pageInfo.totalPages) {
       setPageInfo((prev) => ({ ...prev, page: newPage }));
     }
   };
 
-  if (loading) {
+    const handleProductPageChange = (newPage) => {
+        setProductPageInfo(prev => ({ ...prev, page: newPage }));
+    };
+
+    // 상품으로 넘어가는 헨들러
+    const handleProductClick = async (post) => {
+        console.log('post ::: ', post);
+
+        try {
+            // 1. 상세 정보 조회
+            const detailedPost = await productService.getPostDetail(post.postId); // postId 주의
+            const imageUrl = `http://localhost:8080/${detailedPost.thumbnailImage}`;
+            const shippingMethods = detailedPost.delivers || [];
+
+            // 2. 유저 정보 로컬스토리지에서 가져오기
+            const rawUserInfo = localStorage.getItem('userInfo');
+            const parsedUserInfo = rawUserInfo ? JSON.parse(rawUserInfo) : {};
+            const userName = parsedUserInfo?.name || '사용자';
+            const profileImage = parsedUserInfo?.profileImage || '';
+
+            // 3. 이동
+            navigate('/person', {
+                state: {
+                    product: {
+                        ...detailedPost,
+                        id: detailedPost.postId,
+                        name: detailedPost.title,
+                        price: detailedPost.price,
+                        content: detailedPost.content,
+                        image: imageUrl,
+                        src: imageUrl,
+                        quantity: 10,
+                        maxQuantity: 20,
+                        shippingMethods
+                    },
+                    products: [{
+                        ...detailedPost,
+                        image: imageUrl,
+                        src: imageUrl
+                    }],
+                    selectedImage: imageUrl,
+                    saleLabel: "판매",
+                    userName: userName,
+                    profileImage: profileImage,
+                    from: 'sale',
+                    // productReviews: [...필요시 여기에 추가]
+                }
+            });
+
+        } catch (err) {
+            console.error('handleProductClick 중 에러:', err);
+            alert('상품 정보를 불러오는 데 실패했습니다.');
+        }
+    };
+
+
+    if (loading) {
     return (
         <div className="like-loading-container">
             <div className="like-loading-content">
@@ -78,109 +195,183 @@ const Like = () => {
     );
   }
 
-  return (
-    <div className="like-list-container">
-      <div className="like-list-content">
-        <div className="like-list-header">
-          <h1 className="like-list-title">좋아요한 중고거래 목록</h1>
-        </div>
-
-        {likedPosts.length === 0 ? (
-            <div className="like-empty-container">
-                <div className="like-empty-content">
-                    <h3 className="like-empty-title">좋아요한 게시글이 없습니다</h3>
-                    <p className="like-empty-description">관심있는 게시글에 좋아요를 눌러보세요!</p>
+    return (
+        <div className="like-list-container">
+            <div className="like-list-content">
+                {/* 👍 좋아요한 상품 목록 */}
+                <div className="like-list-header">
+                    <h1 className="like-list-title">좋아요한 상품 목록</h1>
                 </div>
-            </div>
-        ) : (
-          <>
-          
-            {/* ✅ .like-forms-grid: 상품 카드를 감싸는 그리드 */}
-            <div className="like-forms-grid">
-              {likedPosts.map((post, idx) => (
-                 <Link
-                 to={`/tradeDetail/${post.tradeId ?? idx}`}
-                 key={post.tradeId ?? idx}
-                 className="like-form-card"
-               >
-               
-                  
-                  {/* ✅ .like-form-thumbnail: 이미지 영역 */}
-                  <div className="like-form-thumbnail">
-                    <img
-                      src={getImageUrl(post.thumbnailImage)}
-                      alt={post.title}
-                      className="like-thumbnail-img"
-                      onError={(e) => { e.target.onerror = null; e.target.src = getImageUrl(null); }}
-                    />
-                    {/* ✅ .like-thumbnail-overlay: 마우스 호버 시 효과 */}
-                    <div className="like-thumbnail-overlay">
-                      <div className="like-overlay-icon">
-                        <div className="like-icon-circle">
-                          <ChevronRight className="like-icon-md" />
+                {likedProductPosts.length === 0 ? (
+                    <div className="like-empty-container">
+                        <div className="like-empty-content">
+                            <h3 className="like-empty-title">좋아요한 상품이 없습니다</h3>
+                            <p className="like-empty-description">관심있는 상품에 좋아요를 눌러보세요!</p>
                         </div>
-                      </div>
                     </div>
-                    {/* ✅ .like-status-badge: 판매 상태 표시 */}
-                    <div className="like-status-badge">
-                        <span className={`like-status ${post.tradeStatus === '판매중' ? 'public' : 'private'}`}>
-                            <Eye className="like-icon-xs" />
-                            {post.tradeStatus}
+                ) : (
+                    <>
+                        <div className="like-forms-grid">
+                            {likedProductPosts.map((post) => (
+                                <div
+                                    key={post.postId}
+                                    className="like-form-card"
+                                    onClick={() => handleProductClick(post)}
+                                >
+                                    <div className="like-form-thumbnail">
+                                        <img
+                                            src={getImageUrl(post.thumbnailImage)}
+                                            alt={post.title}
+                                            className="like-thumbnail-img"
+                                            onError={(e) => {
+                                                e.target.onerror = null;
+                                                e.target.src = getImageUrl(null);
+                                            }}
+                                        />
+                                    </div>
+                                    <div className="like-card-content">
+                                        <div className="like-card-header">
+                                            <h3 className="like-card-title">{post.title}</h3>
+                                        </div>
+                                        <div className="like-card-badges">
+                                            {post.hashtag && (
+                                                <span className="like-card-badge category">#{post.hashtag}</span>
+                                            )}
+                                            {post.createdAt && (
+                                                <span className="like-card-badge date">
+                          <Calendar className="like-icon-xs" />
+                                                    {formatDate(post.createdAt)}
                         </span>
-                    </div>
-                  </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
 
-                  {/* ✅ .like-card-content: 텍스트 정보 영역 */}
-                  <div className="like-card-content">
-                    <div className="like-card-header">
-                      <h3 className="like-card-title">{post.title}</h3>
+                        {productPageInfo.totalPages > 1 && (
+                            <div style={{ textAlign: 'center', marginTop: '32px' }}>
+                                <button
+                                    onClick={() => handleProductPageChange(productPageInfo.page - 1)}
+                                    disabled={productPageInfo.page === 0}
+                                    className="like-btn-primary"
+                                    style={{ marginRight: '12px' }}
+                                >
+                                    이전
+                                </button>
+                                <span>
+                  {productPageInfo.page + 1} / {productPageInfo.totalPages}
+                </span>
+                                <button
+                                    onClick={() => handleProductPageChange(productPageInfo.page + 1)}
+                                    disabled={productPageInfo.page + 1 >= productPageInfo.totalPages}
+                                    className="like-btn-primary"
+                                    style={{ marginLeft: '12px' }}
+                                >
+                                    다음
+                                </button>
+                            </div>
+                        )}
+                    </>
+                )}
+
+                {/* 👍 좋아요한 중고거래 목록 */}
+                <div className="like-list-header" style={{ marginTop: '48px' }}>
+                    <h1 className="like-list-title">좋아요한 중고거래 목록</h1>
+                </div>
+                {likedPosts.length === 0 ? (
+                    <div className="like-empty-container">
+                        <div className="like-empty-content">
+                            <h3 className="like-empty-title">좋아요한 게시글이 없습니다</h3>
+                            <p className="like-empty-description">관심있는 게시글에 좋아요를 눌러보세요!</p>
+                        </div>
                     </div>
-                    <div className="like-card-badges">
-                      {post.categoryName && (
-                        <span className="like-card-badge category">
+                ) : (
+                    <>
+                        <div className="like-forms-grid">
+                            {likedPosts.map((post, idx) => (
+                                <Link
+                                    to={`/tradeDetail/${post.tradeId ?? idx}`}
+                                    key={post.tradeId ?? idx}
+                                    className="like-form-card"
+                                >
+                                    <div className="like-form-thumbnail">
+                                        <img
+                                            src={getImageUrl(post.thumbnailImage)}
+                                            alt={post.title}
+                                            className="like-thumbnail-img"
+                                            onError={(e) => {
+                                                e.target.onerror = null;
+                                                e.target.src = getImageUrl(null);
+                                            }}
+                                        />
+                                        <div className="like-thumbnail-overlay">
+                                            <div className="like-overlay-icon">
+                                                <div className="like-icon-circle">
+                                                    <ChevronRight className="like-icon-md" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="like-status-badge">
+                      <span
+                          className={`like-status ${post.tradeStatus === '판매중' ? 'public' : 'private'}`}
+                      >
+                        <Eye className="like-icon-xs" />
+                          {post.tradeStatus}
+                      </span>
+                                        </div>
+                                    </div>
+                                    <div className="like-card-content">
+                                        <div className="like-card-header">
+                                            <h3 className="like-card-title">{post.title}</h3>
+                                        </div>
+                                        <div className="like-card-badges">
+                                            {post.categoryName && (
+                                                <span className="like-card-badge category">
                           <Package className="like-icon-xs" />
-                          {post.categoryName}
+                                                    {post.categoryName}
                         </span>
-                      )}
-                      {post.createdAt && (
-                         <span className="like-card-badge date">
-                            <Calendar className="like-icon-xs" />
-                            {formatDate(post.createdAt)}
+                                            )}
+                                            {post.createdAt && (
+                                                <span className="like-card-badge date">
+                          <Calendar className="like-icon-xs" />
+                                                    {formatDate(post.createdAt)}
                         </span>
-                      )}
-                    </div>
-                  </div>
-                </Link>
-              ))}
+                                            )}
+                                        </div>
+                                    </div>
+                                </Link>
+                            ))}
+                        </div>
+
+                        {pageInfo.totalPages > 1 && (
+                            <div style={{ textAlign: 'center', marginTop: '32px' }}>
+                                <button
+                                    onClick={() => handlePageChange(pageInfo.page - 1)}
+                                    disabled={pageInfo.page === 0}
+                                    className="like-btn-primary"
+                                    style={{ marginRight: '12px' }}
+                                >
+                                    이전
+                                </button>
+                                <span>
+                  {pageInfo.page + 1} / {pageInfo.totalPages}
+                </span>
+                                <button
+                                    onClick={() => handlePageChange(pageInfo.page + 1)}
+                                    disabled={pageInfo.page + 1 >= pageInfo.totalPages}
+                                    className="like-btn-primary"
+                                    style={{ marginLeft: '12px' }}
+                                >
+                                    다음
+                                </button>
+                            </div>
+                        )}
+                    </>
+                )}
             </div>
-            
-            {/* 페이지네이션 */}
-            {pageInfo.totalPages > 1 && (
-              <div style={{ textAlign: 'center', marginTop: '32px' }}>
-                <button
-                  onClick={() => handlePageChange(pageInfo.page - 1)}
-                  disabled={pageInfo.page === 0}
-                  className="like-btn-primary"
-                  style={{ marginRight: '12px' }}
-                >
-                  이전
-                </button>
-                <span>{pageInfo.page + 1} / {pageInfo.totalPages}</span>
-                <button
-                  onClick={() => handlePageChange(pageInfo.page + 1)}
-                  disabled={pageInfo.page + 1 >= pageInfo.totalPages}
-                  className="like-btn-primary"
-                  style={{ marginLeft: '12px' }}
-                >
-                  다음
-                </button>
-              </div>
-            )}
-          </>
-        )}
-      </div>
-    </div>
-  );
+        </div>
+    );
 };
 
 export default Like;

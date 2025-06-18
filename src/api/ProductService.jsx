@@ -46,10 +46,20 @@ class ProductService {
         if (body) {
             config.body = isMultipart ? body : JSON.stringify(body);
         }
+
         try {
             const response = await fetch(url, config);
+
+            // 👉 실패 응답 처리
             if (!response.ok) {
                 const errorContent = await response.text();
+
+                // 🔍 404 + 특정 요청이면 false 리턴
+                if (response.status === 404 && endpoint.startsWith('/product-like/my-likes/')) {
+                    console.warn(`🤍 좋아요 안 되어 있음 (endpoint: ${endpoint})`);
+                    return false;
+                }
+
                 try {
                     const errorData = JSON.parse(errorContent);
                     throw new Error(errorData.message || `Request failed with status ${response.status}`);
@@ -57,13 +67,17 @@ class ProductService {
                     throw new Error(errorContent || `Request failed with status ${response.status}`);
                 }
             }
+
             const contentType = response.headers.get('content-type');
             if (contentType && contentType.includes('application/json')) {
                 return await response.json();
             }
             return await response.text();
         } catch (error) {
-            console.error(`API ${method} request to ${endpoint} failed:`, error);
+            // ❗ 기타 에러만 로그 출력
+            if (!(endpoint.startsWith('/product-like/my-likes/') && error.message.includes('404'))) {
+                console.error(`API ${method} request to ${endpoint} failed:`, error);
+            }
             throw new Error(error.message || 'Network request failed');
         }
     }
@@ -455,6 +469,22 @@ class ProductService {
         } catch (error) {
             console.error('좋아요한 게시물 조회 오류:', error);
             throw new Error(`좋아요한 게시물을 가져오는데 실패했습니다: ${error.message}`);
+        }
+    }
+
+    // 특정 좋아요 게시물 1건 조회
+    async getSingleLikedPost(id) {
+        try {
+            return await this.request(`/product-like/my-likes/${id}`, 'GET');
+        } catch (error) {
+            // 404면 좋아요 안 된 걸로 처리하고 false 반환
+            if (error.message.includes("404")) {
+                return false;
+            }
+
+            // 그 외는 진짜 에러
+            console.error(`ID ${id}에 해당하는 좋아요 게시물 조회 오류:`, error);
+            throw new Error(`게시물(ID: ${id}) 정보를 가져오는데 실패했습니다: ${error.message}`);
         }
     }
 
