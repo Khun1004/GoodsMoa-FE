@@ -11,32 +11,33 @@ const getFullImageUrl = (url) =>
         : '';
 
 const DemandDetail = () => {
-    const { id } = useParams(); // /demandDetail/:id
+    const { id } = useParams();
     const navigate = useNavigate();
 
     const [detail, setDetail] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    // 상품 옵션 관련 상태
     const [activeIndex, setActiveIndex] = useState(0);
     const [quantities, setQuantities] = useState([]);
-    const [selectedProducts, setSelectedProducts] = useState([]);
-
-    // 설명 탭 상태
     const [tab, setTab] = useState('desc');
 
-    // 데이터 패칭
     useEffect(() => {
         const fetchDetail = async () => {
             setLoading(true);
             setError(null);
             try {
-                const res = await fetch(`http://localhost:8080/demand/${id}`);
+                const res = await fetch(`http://localhost:8080/demand/${id}`, {
+                    credentials: "include",
+                });
                 if (!res.ok) throw new Error('서버 응답 에러');
                 const data = await res.json();
                 setDetail(data);
-                setQuantities(data.products ? data.products.map(() => 1) : []);
+                setQuantities(
+                    data.products
+                        ? data.products.map(product => product.defaultValue ?? 0)
+                        : []
+                );
             } catch (err) {
                 setError(err.message);
             } finally {
@@ -50,11 +51,9 @@ const DemandDetail = () => {
     if (error) return <div>에러 발생: {error}</div>;
     if (!detail) return <div>데이터 없음</div>;
 
-    // 상품 옵션
     const products = detail.products || [];
     const mainImage = getFullImageUrl(detail.imageUrl);
 
-    // 날짜 포맷
     const formatDate = (dateStr) => {
         if (!dateStr) return '';
         return dateStr.split(' ')[0];
@@ -62,59 +61,59 @@ const DemandDetail = () => {
 
     // 수량 변경
     const updateQuantity = (index, newQty) => {
-        if (newQty < 1) return;
+        if (newQty < 0) return; // 0개까지 허용
         const updated = [...quantities];
         updated[index] = newQty;
         setQuantities(updated);
-        setSelectedProducts((prev) =>
-            prev.map((p) =>
-                p.index === index ? { ...p, quantity: newQty } : p
-            )
-        );
     };
 
-    // 옵션 선택/해제
-    const handleCheckboxChange = (product, index) => {
-        const isSelected = selectedProducts.find((p) => p.index === index);
-        if (isSelected) {
-            setSelectedProducts((prev) => prev.filter((p) => p.index !== index));
-        } else {
-            setSelectedProducts((prev) => [
-                ...prev,
-                { ...product, index, quantity: quantities[index] || 1 },
-            ]);
+    // 주문글 아이디
+    const userOrderId = detail.userOrderId;
+    // 수정모드 여부
+    const isEditMode = userOrderId && products.some(item => (item.defaultValue ?? 0) > 0);
+
+    // 참여하기(POST)
+    const handleDemandBuy = async () => {
+        const productsPayload = products
+            .map((item, idx) => ({
+                postProductId: item.id,
+                quantity: quantities[idx]
+            }))
+            .filter(item => item.quantity > 0);
+
+        if (productsPayload.length === 0) {
+            alert('주문할 상품을 1개 이상 선택하세요!');
+            return;
         }
-    };
 
-    // 총 수량, 총 금액
-    const totalItems = selectedProducts.reduce((sum, p) => sum + p.quantity, 0);
-    const totalPrice = selectedProducts.reduce((sum, p) => sum + p.quantity * p.price, 0);
-
-    // 옵션 썸네일 클릭
-    const handleThumbnailClick = (index) => {
-        setActiveIndex(index);
-    };
-
-    // 참여하기 버튼
-    const handleDemandBuy = async() => {
         try {
-            const productsPayload = selectedProducts.map(item => ({
-                postProductId: item.id, // 상품 id
-                quantity: item.quantity // 선택한 수량
-            }));
             await DemandService.createOrder(id, productsPayload);
             alert('참여가 완료되었습니다!');
-            // 필요하다면 페이지 이동 등 추가 작업
         } catch (error) {
             alert(`참여 중 오류: ${error.message}`);
         }
-        // navigate('/demandDetailBuy', {
-        //     state: {
-        //         selectedProducts,
-        //         totalItems,
-        //         totalPrice,
-        //     }
-        // });
+    };
+
+    // 수정하기(PUT)
+    const handleDemandEdit = async () => {
+        const productsPayload = products
+            .map((item, idx) => ({
+                postProductId: item.id,
+                quantity: quantities[idx]
+            }))
+            .filter(item => item.quantity > 0);
+
+        if (productsPayload.length === 0) {
+            alert('수정할 상품을 1개 이상 선택하세요!');
+            return;
+        }
+
+        try {
+            await DemandService.updateOrder(userOrderId, productsPayload);
+            alert('수정이 완료되었습니다!');
+        } catch (error) {
+            alert(`수정 중 오류: ${error.message}`);
+        }
     };
 
     // 신고하기
@@ -131,6 +130,13 @@ const DemandDetail = () => {
         });
     };
 
+    // 합계 계산
+    const totalItems = quantities.reduce((sum, qty) => sum + (qty > 0 ? qty : 0), 0);
+    const totalPrice = products.reduce(
+        (sum, product, idx) => sum + (quantities[idx] > 0 ? quantities[idx] * product.price : 0),
+        0
+    );
+
     return (
         <div className='container'>
             <div className="DemandDetail-container">
@@ -142,9 +148,7 @@ const DemandDetail = () => {
                         className="DemandDetail-main-image"
                     />
                     <div className="DemandDetail-product-info">
-                        <h2 className="DemandDetail-title">
-                            {detail.title}
-                        </h2>
+                        <h2 className="DemandDetail-title">{detail.title}</h2>
                         <p className="DemandDetail-hashtag">
                             {detail.hashtag && detail.hashtag.split(' ').map((tag, i) =>
                                 <span key={i} className="DemandDetail-tag">#{tag}</span>
@@ -165,9 +169,15 @@ const DemandDetail = () => {
                                         key={i}
                                         src={getFullImageUrl(product.imageUrl)}
                                         alt={product.name}
-                                        onClick={() => handleThumbnailClick(i)}
+                                        onClick={() => setActiveIndex(i)}
                                         className={activeIndex === i ? 'active' : ''}
-                                        style={{ cursor: 'pointer', width: 60, height: 60, marginRight: 8, border: activeIndex === i ? '2px solid #3498db' : '1px solid #eee' }}
+                                        style={{
+                                            cursor: 'pointer',
+                                            width: 60,
+                                            height: 60,
+                                            marginRight: 8,
+                                            border: activeIndex === i ? '2px solid #3498db' : '1px solid #eee'
+                                        }}
                                     />
                                 ))}
                             </div>
@@ -178,6 +188,7 @@ const DemandDetail = () => {
                         </div>
                     </div>
                 </div>
+
                 {/* 상품 옵션 목록 */}
                 {products.length > 0 && (
                     <div className="DemandDetail-products-container">
@@ -190,23 +201,11 @@ const DemandDetail = () => {
                                         border: activeIndex === index ? '3px solid #3498db' : '1px solid #eee'
                                     }}
                                 >
-                                    <input
-                                        type="checkbox"
-                                        style={{
-                                            position: 'relative',
-                                            top: 10,
-                                            right: 10,
-                                            zIndex: 10,
-                                            backgroundColor: 'black'
-                                        }}
-                                        checked={!!selectedProducts.find(p => p.index === index)}
-                                        onChange={() => handleCheckboxChange(product, index)}
-                                    />
                                     <img
                                         src={getFullImageUrl(product.imageUrl)}
                                         alt={product.name}
                                         className="DemandDetailProduct-thumbnail"
-                                        onClick={() => handleThumbnailClick(index)}
+                                        onClick={() => setActiveIndex(index)}
                                         style={{ cursor: 'pointer' }}
                                     />
                                     <div className="DemandDetailProduct-info">
@@ -217,15 +216,15 @@ const DemandDetail = () => {
                                             <div className="demandDetailQuantity">
                                                 <button
                                                     onClick={() => {
-                                                        if ((quantities[index] || 1) > 1) {
-                                                            updateQuantity(index, (quantities[index] || 1) - 1);
+                                                        if ((quantities[index] || 0) > 0) {
+                                                            updateQuantity(index, (quantities[index] || 0) - 1);
                                                         }
                                                     }}
                                                 >-</button>
-                                                <span className='demandDetailQuntitySpan'>{quantities[index] || 1}</span>
+                                                <span className='demandDetailQuntitySpan'>{quantities[index] || 0}</span>
                                                 <button
                                                     onClick={() => {
-                                                        updateQuantity(index, (quantities[index] || 1) + 1);
+                                                        updateQuantity(index, (quantities[index] || 0) + 1);
                                                     }}
                                                 >+</button>
                                             </div>
@@ -236,29 +235,33 @@ const DemandDetail = () => {
                         </div>
                     </div>
                 )}
-                {/* 요약 정보 및 결제 버튼 */}
+
+                {/* 요약 정보 및 결제/수정 버튼 */}
                 <div className="DemandDetail-summary">
                     <div className="demandDetailCheck">
-                        {selectedProducts.length > 0 ? (
-                            selectedProducts.map((item, idx) => (
-                                <div key={idx} className="demandDetailCheck-item">
-                                    <img
-                                        src={getFullImageUrl(item.imageUrl)}
-                                        alt={item.name}
-                                        style={{ width: '60px', height: '60px', objectFit: 'cover', marginRight: '10px' }}
-                                    />
-                                    <div>
-                                        <p>{item.name}</p>
-                                        <p>{item.price.toLocaleString()}원 x {item.quantity}개</p>
-                                        <p>총액: {(item.price * item.quantity).toLocaleString()}원</p>
+                        {totalItems > 0 ? (
+                            products
+                                .map((item, idx) => ({ ...item, quantity: quantities[idx] }))
+                                .filter(item => item.quantity > 0)
+                                .map((item, idx) => (
+                                    <div key={idx} className="demandDetailCheck-item">
+                                        <img
+                                            src={getFullImageUrl(item.imageUrl)}
+                                            alt={item.name}
+                                            style={{ width: '60px', height: '60px', objectFit: 'cover', marginRight: '10px' }}
+                                        />
+                                        <div>
+                                            <p>{item.name}</p>
+                                            <p>{item.price.toLocaleString()}원 x {item.quantity}개</p>
+                                            <p>총액: {(item.price * item.quantity).toLocaleString()}원</p>
+                                        </div>
                                     </div>
-                                </div>
-                            ))
+                                ))
                         ) : (
-                            <p>선택된 상품이 없습니다.</p>
+                            <p>주문할 상품을 선택(수량 조절)하세요.</p>
                         )}
                     </div>
-                    {selectedProducts.length > 0 && (
+                    {totalItems > 0 && (
                         <>
                             <div className="DemandDetail-summary-row">
                                 <span className='DemandDetail-summary-rowTitle'>총 상품 갯수:</span>
@@ -273,13 +276,23 @@ const DemandDetail = () => {
 
                     <div className="DemandDetail-summary-buttons">
                         <button className="DemandDetail-like-btn">찜하기</button>
-                        <button
-                            className="DemandDetail-participate-btn"
-                            onClick={handleDemandBuy}
-                            disabled={selectedProducts.length === 0}
-                        >
-                            참여하기
-                        </button>
+                        {isEditMode ? (
+                            <button
+                                className="DemandDetail-participate-btn"
+                                onClick={handleDemandEdit}
+                                disabled={totalItems === 0}
+                            >
+                                수정하기
+                            </button>
+                        ) : (
+                            <button
+                                className="DemandDetail-participate-btn"
+                                onClick={handleDemandBuy}
+                                disabled={totalItems === 0}
+                            >
+                                참여하기
+                            </button>
+                        )}
                     </div>
                 </div>
 
@@ -287,9 +300,10 @@ const DemandDetail = () => {
                 <div className="DemandDetail-tab-box">
                     <div className="DemandDetail-tab-content">
                         {tab === 'desc' && (
-                            <p className="DemandDetail-description">
-                                {detail.description || '설명이 없습니다.'}
-                            </p>
+                            <div
+                                className="DemandDetail-description"
+                                dangerouslySetInnerHTML={{ __html: detail.description || '설명이 없습니다.' }}
+                            />
                         )}
                     </div>
                 </div>

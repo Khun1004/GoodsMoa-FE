@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useContext } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import DemandWrite from "../DemandWrite/DemandWrite.jsx";
 import { LoginContext } from "../../../contexts/LoginContext";
 import "./DemandForm.css";
 
@@ -14,14 +15,32 @@ const categoryOptions = [
     { id: 8, name: "웹툰" },
 ];
 
+const API_HOST = "http://localhost:8080/";
+
+const patchDescriptionToRelative = (html) =>
+    html
+        ? html.replace(
+            /(<img\s+[^>]*src=['"]?)https?:\/\/localhost:8080\/([^'">]+)(['"]?[^>]*>)/g,
+            (match, p1, p2, p3) => `${p1}${p2}${p3}`
+        )
+        : "";
+
+const stripHostFromUrl = (url) => {
+    if (!url) return "";
+    return url.replace(/^https?:\/\/localhost:8080\//, "");
+};
+
 const DemandForm = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const { userInfo } = useContext(LoginContext);
 
-    // location.state 구조 분해
-    const { formData, isEdit } = location.state || {};
-    const isEditMode = !!isEdit;
+    const [showDescriptionModal, setShowDescriptionModal] = useState(false);
+
+
+    // 등록/수정 모드 구분
+    const isEditMode = !!(location.state && location.state.isEdit === true);
+    const formData = location.state && location.state.formData ? location.state.formData : {};
 
     const [mainThumbnail, setMainThumbnail] = useState(null);
     const [mainThumbnailPreview, setMainThumbnailPreview] = useState(null);
@@ -39,110 +58,211 @@ const DemandForm = () => {
     const [descriptionImages, setDescriptionImages] = useState([]);
 
     useEffect(() => {
-        if (formData) {
-            // 날짜 변환 함수
+        if (location.state && location.state.formData) {
+            // 항상 formData 기반으로 상태 세팅!
+            const f = location.state.formData;
             const formatToDateInput = (dateStr) => {
                 if (!dateStr) return "";
-                return dateStr.split("T")[0] || dateStr.split(" ")[0];
+                if (dateStr.includes("T")) return dateStr.split("T")[0];
+                if (dateStr.includes(" ")) return dateStr.split(" ")[0];
+                return dateStr;
             };
 
-            setTitle(formData.title ?? "");
-            setStartDate(formatToDateInput(formData.startTime));
-            setEndDate(formatToDateInput(formData.endTime));
-            setIsAlwaysOnSale(!formData.startTime && !formData.endTime);
+            setTitle(f.title ?? "");
+            setStartDate(formatToDateInput(f.startTime));
+            setEndDate(formatToDateInput(f.endTime));
+            setIsAlwaysOnSale(!f.startTime && !f.endTime);
 
-            // categoryId(숫자) 또는 category(문자) 중에서 찾음
-            if (typeof formData.categoryId === "number") {
-                setCategoryId(formData.categoryId);
-            } else if (typeof formData.category === "number") {
-                setCategoryId(formData.category);
-            } else if (typeof formData.category === "string") {
-                // 카테고리 이름 -> id 변환
-                const found = categoryOptions.find(opt => opt.name === formData.category);
+            if (typeof f.categoryId === "number") {
+                setCategoryId(f.categoryId);
+            } else if (typeof f.category === "number") {
+                setCategoryId(f.category);
+            } else if (typeof f.category === "string") {
+                const found = categoryOptions.find(opt => opt.name === f.category);
                 setCategoryId(found ? found.id : categoryOptions[0].id);
             } else {
                 setCategoryId(categoryOptions[0].id);
             }
 
-            setDescription(formData.description ?? "");
-            setDescriptionImages(formData.descriptionImages ?? []);
+            setDescription(f.description ?? "");
+            setDescriptionImages(f.descriptionImages ?? []);
 
-            // 해시태그: 배열이 오면 그대로, 문자열 오면 파싱
             setHashtags(
-                Array.isArray(formData.hashtag)
-                    ? formData.hashtag
-                    : Array.isArray(formData.hashtags)
-                        ? formData.hashtags
-                        : typeof formData.hashtag === "string"
-                            ? formData.hashtag.split(/[\s,]+/).filter(Boolean)
+                Array.isArray(f.hashtag)
+                    ? f.hashtag
+                    : Array.isArray(f.hashtags)
+                        ? f.hashtags
+                        : typeof f.hashtag === "string"
+                            ? f.hashtag.split(/[\s,]+/).filter(Boolean)
                             : []
             );
 
-            // 메인 썸네일
-            if (formData.imageUrl) {
+            // 서버 주소는 수정모드(isEditMode)에서만 붙이기!
+            if (f.imageUrl) {
                 setMainThumbnailPreview(
-                    formData.imageUrl.startsWith("http")
-                        ? formData.imageUrl
-                        : `http://localhost:8080/${formData.imageUrl.replace(/^\/+/g, "")}`
+                    (location.state.isEdit === true && !f.imageUrl.startsWith("http"))
+                        ? `${API_HOST}${f.imageUrl.replace(/^\/+/g, "")}`
+                        : f.imageUrl
                 );
             } else {
                 setMainThumbnailPreview(null);
             }
 
-            // 상품들
-            if (formData.products?.length > 0) {
+            if (f.products?.length > 0) {
                 setProducts(
-                    formData.products.map((p) => ({
+                    f.products.map((p) => ({
                         name: p.name || "",
                         price: p.price || "",
                         targetCount: p.targetCount || "",
                         imageFile: null,
                         imagePreview: p.imageUrl
-                            ? p.imageUrl.startsWith("http")
-                                ? p.imageUrl
-                                : `http://localhost:8080/${p.imageUrl.replace(/^\/+/g, "")}`
+                            ? ((location.state.isEdit === true && !p.imageUrl.startsWith("http"))
+                                ? `${API_HOST}${p.imageUrl.replace(/^\/+/g, "")}`
+                                : p.imageUrl)
                             : null,
                     }))
                 );
             } else {
                 setProducts([{ name: "", price: "", imageFile: null, imagePreview: null, targetCount: "" }]);
             }
+        } else {
+            // 완전 새로 폼 진입(아무 state 없이 진입)일 때만 빈 폼으로 초기화
+            setMainThumbnailPreview(null);
+            setProducts([{ name: "", price: "", imageFile: null, imagePreview: null, targetCount: "" }]);
+            setTitle("");
+            setCategoryId(categoryOptions[0].id);
+            setStartDate("");
+            setEndDate("");
+            setIsAlwaysOnSale(false);
+            setHashtagInput("");
+            setHashtags([]);
+            setDescription("");
+            setDescriptionImages([]);
         }
-    }, [formData]);
+    }, [location.state]);
+
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        if (!isEditMode && !mainThumbnail) {
+            alert("썸네일 이미지는 필수입니다.");
+            return;
+        }
+
+        const productsForRequest = products.map((p) => ({
+            name: p.name,
+            price: Number(p.price),
+            targetCount: Number(p.targetCount),
+            imageUrl: stripHostFromUrl(p.imagePreview),
+            imageUpdated: true,
+        }));
+
+        const mainImageUrlForRequest = stripHostFromUrl(mainThumbnailPreview);
+        const descriptionForRequest = patchDescriptionToRelative(description);
+        const hashtagString = Array.isArray(hashtags) ? hashtags.join(",") : hashtags;
+
+        const startTime = startDate ? `${startDate}T09:00:00` : null;
+        const endTime = endDate ? `${endDate}T18:00:00` : null;
+
+        const payload = {
+            title,
+            description: descriptionForRequest,
+            startTime,
+            endTime,
+            imageUrl: mainImageUrlForRequest,
+            hashtag: hashtagString,
+            isSafePayment: false,
+            categoryId,
+            products: productsForRequest,
+        };
+
+        try {
+            let url, method, key;
+            let isUpdate = isEditMode && formData?.id;
+
+            if (isUpdate) {
+                url = `http://localhost:8080/demand/update/${formData.id}`;
+                method = "PUT";
+                key = "demandPostUpdateRequest";
+            } else {
+                url = "http://localhost:8080/demand/create";
+                method = "POST";
+                key = "demandPostCreateRequest";
+            }
+
+            const formDataToSend = new FormData();
+            formDataToSend.append(
+                key,
+                new Blob([JSON.stringify(payload)], { type: "application/json" })
+            );
+
+            if (mainThumbnail) {
+                formDataToSend.append(isUpdate ? "newThumbnailImage" : "thumbnailImage", mainThumbnail);
+            }
+
+            products.forEach((p) => {
+                if (p.imageFile) {
+                    formDataToSend.append(isUpdate ? "newProductImages" : "productImages", p.imageFile);
+                }
+            });
+
+            descriptionImages.forEach((file) => {
+                formDataToSend.append(isUpdate ? "newDescriptionImages" : "descriptionImages", file);
+            });
+
+            // ==== 서버 전송 데이터 로그 =====
+            console.log("====== [서버 전송 정보] ======");
+            console.log("[payload - JSON]", payload);
+            console.log("[메인 썸네일]", mainThumbnail);
+            console.log("[상품 이미지 리스트]", products.map((p) => p.imageFile));
+            console.log("[상세설명 이미지 리스트]", descriptionImages);
+            console.log("[FormData] imageUrl:", mainImageUrlForRequest);
+            console.log("[FormData] hashtag:", hashtagString);
+            console.log("[FormData] startTime, endTime:", startTime, endTime);
+            for (let [key, value] of formDataToSend.entries()) {
+                console.log(`[FormDataToSend] ${key}:`, value);
+            }
+            console.log("================================");
+            // =============================
+
+            const res = await fetch(url, {
+                method,
+                body: formDataToSend,
+                credentials: "include",
+            });
+
+            if (!res.ok) {
+                const errorText = await res.text();
+                throw new Error(`서버 오류: ${res.status} ${res.statusText} - ${errorText}`);
+            }
+
+            alert(isEditMode ? "수정 완료" : "등록 완료");
+            if (isEditMode) {
+                navigate("/mypage?page=demandFormManagement");
+            } else {
+                navigate("/demand");
+            }
+        } catch (err) {
+            alert("저장 중 오류 발생: " + err.message);
+        }
+    };
 
     const handleAddProduct = () => {
         setProducts([...products, { name: "", price: "", imageFile: null, imagePreview: null, targetCount: "" }]);
     };
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        alert(isEditMode ? "수정 완료" : "등록 완료");
-        // 실제 제출 로직은 별도 구현
+    const handleNavigateToWrite = () => {
+        setShowDescriptionModal(true);
     };
 
-    const handleNavigateToWrite = () => {
-        navigate("/demandWrite", {
-            state: {
-                id: formData?.id,
-                title,
-                categoryId,
-                startTime: startDate,
-                endTime: endDate,
-                hashtag: hashtags,
-                products,
-                description,
-                descriptionImages,
-                imageUrl: mainThumbnailPreview,
-                isEdit: isEditMode,
-            },
-        });
-    };
 
     return (
         <div className="container">
             <form className="demand-form" onSubmit={handleSubmit}>
                 <h2 className="demandFormTitle">수요조사 글 {isEditMode ? "수정" : "등록"}</h2>
 
+                {/* 썸네일 업로드 */}
                 <div className="thumbnail-upload">
                     <label htmlFor="main-thumbnail" className="thumbnail-box">
                         {mainThumbnailPreview ? (
@@ -226,6 +346,7 @@ const DemandForm = () => {
                     </div>
                 </div>
 
+                {/* 해시태그 입력 */}
                 <div className="demandForm-group">
                     <label>
                         해시 태그<span>({hashtags.length}/5)</span>(5개까지만 입력 가능합니다.)
@@ -362,13 +483,23 @@ const DemandForm = () => {
                         </button>
                     )}
                 </div>
-
                 <button type="submit" className="submit-btn">
                     {isEditMode ? "수정하기" : "등록하기"}
                 </button>
             </form>
+            {/* 모달은 여기! */}
+            {showDescriptionModal && (
+                <DemandWrite
+                    description={description}
+                    setDescription={setDescription}
+                    descriptionImages={descriptionImages}
+                    setDescriptionImages={setDescriptionImages}
+                    onClose={() => setShowDescriptionModal(false)}
+                />
+            )}
         </div>
     );
 };
+
 
 export default DemandForm;

@@ -95,14 +95,6 @@ const Demand = ({ showBanner = true }) => {
     return (
         <div className="container">
             <div className="demand-container">
-                {showBanner && (
-                    <div className="demand-banner">
-                        <video autoPlay loop muted playsInline className="demand-video" disablePictureInPicture onContextMenu={(e) => e.preventDefault()}>
-                            <source src={welcomeVideo} type="video/mp4" />
-                        </video>
-                    </div>
-                )}
-
                 <div className="search-bar-and-filters" style={{ marginTop: '20px', marginBottom: '30px', display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
                     <div className="filters" style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
                         {categoryOptions.map((option) => (

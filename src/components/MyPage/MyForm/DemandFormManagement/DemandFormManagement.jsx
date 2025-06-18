@@ -64,6 +64,24 @@ const DemandFormManagement = () => {
     });
   };
 
+  const handleDelete = async (id) => {
+    if (!window.confirm("정말 삭제하시겠습니까? 삭제 후 복구할 수 없습니다.")) return;
+
+    try {
+      const res = await fetch(`http://localhost:8080/demand/delete/${id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error("삭제 실패");
+      alert("삭제되었습니다.");
+      // 삭제 후 목록 새로고침
+      setDemandList(demandList.filter((item) => item.id !== id));
+      // 또는 setPage(0); // 페이지 초기화해도 됨
+    } catch (err) {
+      alert("삭제 중 오류 발생: " + err.message);
+    }
+  };
+
   return (
       <div className="demandFormMancontainer">
         <h1>내 수요조사 관리</h1>
@@ -134,6 +152,9 @@ const DemandFormManagement = () => {
                                         achievementRate: Number(product.achievementRate) || 0,
                                       }))
                                       : [],
+                                  // 🔴 이 두 줄 꼭 추가!
+                                  description: formData.description || "",
+                                  descriptionImages: formData.descriptionImages || [],
                                 };
 
                                 navigate("/demandform", {
@@ -146,7 +167,7 @@ const DemandFormManagement = () => {
                           >
                             수정
                           </button>
-                          <button onClick={() => alert("삭제 기능은 별도 구현 필요")}>삭제</button>
+                          <button onClick={() => handleDelete(formData.id)}>삭제</button>
                         </div>
                       </div>
                     </div>
