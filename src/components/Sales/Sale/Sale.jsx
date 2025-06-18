@@ -483,21 +483,6 @@ const Sale = ({ showBanner = true, showCustomProducts = true }) => {
                     <div className="sale-grid">
                         {(isSearching ? filteredPosts : posts).map((post) => (
                             <div key={post.id} className="sale-card">
-                                {/* 작성자 프로필 */}
-                                <div className="sale-profile-info">
-                                    {post.userImage ? (
-                                        <img
-                                            src={`http://localhost:8080/${post.userImage}`}
-                                            alt="작성자"
-                                            className="sale-profile-pic"
-                                            onError={(e) => { e.target.src = placeholderImage; }}
-                                        />
-                                    ) : (
-                                        <CgProfile className="sale-profile-pic" />
-                                    )}
-                                    <p className="sale-user-name">{post.userNickName}</p>
-                                </div>
-
                                 {/* 썸네일 이미지 클릭 시 상세로 */}
                                 <div onClick={() => handleProductClick(post)}>
                                     <img
@@ -510,10 +495,32 @@ const Sale = ({ showBanner = true, showCustomProducts = true }) => {
 
                                 {/* 좋아요 버튼 */}
                                 <span className="sale-label">판매</span>
-                                <LikeButton postId={post.id} liked={liked} handleLike={handleLike} />
-
-                                {/* 상품 제목 */}
-                                <p className="sale-product-name">{post.title}</p>
+                                <button
+                                    className={`sale-like-button ${liked[post.id] ? 'liked' : ''}`}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleLike(post.id);
+                                    }}
+                                >
+                                    <FaHeart size={18} />
+                                </button>
+                                {/* 프로필/유저명/상품명 */}
+                                <div className="sale-profile-block">
+                                    <div className="sale-profile-row">
+                                        {post.userImage ? (
+                                            <img
+                                                src={`http://localhost:8080/${post.userImage}`}
+                                                alt="작성자"
+                                                className="sale-profile-pic-mini"
+                                                onError={(e) => { e.target.src = placeholderImage; }}
+                                            />
+                                        ) : (
+                                            <CgProfile className="sale-profile-pic-mini" />
+                                        )}
+                                        <span className="sale-user-name-mini">{post.userNickName}</span>
+                                    </div>
+                                    <div className="sale-product-title">{post.title}</div>
+                                </div>
 
                                 {/* 해시태그 */}
                                 {post.hashtag && (
@@ -527,7 +534,7 @@ const Sale = ({ showBanner = true, showCustomProducts = true }) => {
                                 )}
                             </div>
                         ))}
-                    </div>
+                </div>
                 </div>
 
                 {showCustomProducts && filteredSaleFormData.length > 0 && (
