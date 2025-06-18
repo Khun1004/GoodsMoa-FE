@@ -29,7 +29,7 @@ export default function SalePurchasePerfect() {
     };
 
     const handleViewOrder = () => {
-        navigate("/mypage")
+        navigate("/mypage?page=purchaseHistory")
     };
 
 
@@ -96,7 +96,7 @@ export default function SalePurchasePerfect() {
                     <div className="summary-item">
                         <span className="salePurchasePerfectSpan">배송지</span>
                         <span className="salePurchasePerfectSpan">
-                            {orderInfo.formData?.mainAddress || "주소 정보 없음"}
+                            {orderInfo.mainAddress || "주소 정보 없음"}
                         </span>
                     </div>
                     <div className="summary-item">

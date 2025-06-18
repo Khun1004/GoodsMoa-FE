@@ -78,6 +78,39 @@ class OrderSaleDetail {
         return this.request(`/payment/success?paymentKey=${paymentKey}&orderCode=${orderCode}&amount=${amount}`, 'GET');
     }
 
+    // 주문 내역 조회
+    async listOrders(page = 0, size = 10, sort = 'id,DESC') {
+        console.log('listOrders 실행이다ㅏㅏㅏㅏㅏㅏㅏㅏㅏㅏㅏ');
+        try {
+            console.log('listOrders @@@@@@@@@@@@@@@@');
+            const endpoint = `/order/list?page=${page}&size=${size}&sort=${sort}`;
+            const response = await this.request(endpoint, 'GET');
+            console.log('response :::: ', response);
+            return response;
+        } catch (error) {
+            console.error('Order list fetch failed:', {
+                error: error.message,
+                page,
+                size,
+                sort,
+            });
+            throw error;
+        }
+    }
+
+    // 상품 주문 상세 조회
+    async getOrderDetail(id) {
+        try {
+            const endpoint = `/order/detail/${id}`;
+            const response = await this.request(endpoint, 'GET');
+            console.log('🧾 주문 상세 응답:', response);
+            return response;
+        } catch (error) {
+            console.error(`❌ 주문 상세 조회 실패 (ID: ${id})`, error);
+            throw error;
+        }
+    }
+
     async handleFailedPayment(errorCode, errorMessage, orderId) {
         return this.request(`/payment/fail?code=${errorCode}&message=${errorMessage}&orderId=${orderId}`, 'GET');
     }
