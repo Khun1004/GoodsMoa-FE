@@ -16,6 +16,7 @@ import Sale8 from '../../../assets/sales/sale8.jpg';
 import Sale9 from '../../../assets/sales/sale9.jpg';
 import { LoginContext } from "../../../contexts/LoginContext";
 import './Sale.css';
+import LikeButton from './LikeButton';
 
 const API_BASE_URL = 'http://localhost:8080';
 
@@ -64,6 +65,36 @@ const Sale = ({ showBanner = true, showCustomProducts = true }) => {
         const storedResponses = localStorage.getItem('apiResponseList');
         return storedResponses ? JSON.parse(storedResponses) : [];
     });
+
+    // 좋아요 버튼 초기값
+    useEffect(() => {
+        const fetchInitialLikes = async () => {
+            const token = localStorage.getItem('userInfo'); // 또는 쿠키에서 가져오기
+            if (!token) {
+                console.log('토큰 없음. 좋아요 요청 생략');
+                return;
+            }
+
+            try {
+                const res = await productService.getLikedPosts();
+                console.log('res  ::: ', res.content);
+                const likedMap = {}; // ✅ 먼저 선언
+                res.content.forEach(item => {
+                    console.log('item ::: ', item.postId);
+                    likedMap[String(item.postId)] = true;
+                });
+                setLiked(likedMap);
+            } catch (err) {
+                console.error('초기 좋아요 정보 로딩 실패:', err.message);
+            }
+        };
+
+        fetchInitialLikes();
+    }, []);
+
+    useEffect(() => {
+        console.log('Liked 상태 업데이트됨 :::', liked);
+    }, [liked]);
 
     // 서버에서 가져오는 상품들
     useEffect(() => {
@@ -182,26 +213,27 @@ const Sale = ({ showBanner = true, showCustomProducts = true }) => {
         }
     }, [location.state]);
 
-    const handleLike = (productId) => {
-        setLiked(prev => {
-            const newState = { ...prev, [productId]: !prev[productId] };
-            
-            const likedProducts = JSON.parse(localStorage.getItem('likedProducts')) || [];
-            const product = [...defaultProducts, ...saleFormDataList.flatMap(sale => sale.products || [])]
-                .find(p => p.id === productId);
-            
-            if (product) {
-                if (newState[productId]) {
-                    localStorage.setItem('likedProducts', 
-                        JSON.stringify([...likedProducts, product]));
-                } else {
-                    localStorage.setItem('likedProducts', 
-                        JSON.stringify(likedProducts.filter(p => p.id !== productId)));
-                }
+    // 찜 버튼 메서드
+    const handleLike = async (postId) => {
+        try {
+            const isLiked = liked[String(postId)];
+
+            // 서버 요청
+            if (isLiked) {
+                await productService.unlikeProduct(postId);
+            } else {
+                await productService.likeProduct(postId);
             }
-            
-            return newState;
-        });
+
+            // UI 상태만 바로 토글
+            setLiked(prev => ({
+                ...prev,
+                [String(postId)]: !isLiked,
+            }));
+        } catch (err) {
+            console.error('좋아요 처리 중 오류:', err);
+            alert(err.message);
+        }
     };
 
     const filteredPosts = posts.filter(post => {
@@ -268,7 +300,7 @@ const Sale = ({ showBanner = true, showCustomProducts = true }) => {
         }
     };
 
-    // 서버에서 product/post-detail/{id}로 불러온 값을 /person으로 보냄
+    // 서버에서 product/post-detail/{id}로 불러온 값을 /person으로 보냄`1
     const handleProductClick = async (post) => {
         try {
             // 1. 상세 정보 조회
@@ -478,15 +510,7 @@ const Sale = ({ showBanner = true, showCustomProducts = true }) => {
 
                                 {/* 좋아요 버튼 */}
                                 <span className="sale-label">판매</span>
-                                <button
-                                    className={`sale-like-button ${liked[post.id] ? 'liked' : ''}`}
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleLike(post.id);
-                                    }}
-                                >
-                                    <FaHeart size={18} />
-                                </button>
+                                <LikeButton postId={post.id} liked={liked} handleLike={handleLike} />
 
                                 {/* 상품 제목 */}
                                 <p className="sale-product-name">{post.title}</p>

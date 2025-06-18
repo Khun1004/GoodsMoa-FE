@@ -421,6 +421,43 @@ class ProductService {
         }
     }
 
+    // 좋아요 추가
+    async likeProduct(postId) {
+        if (isNaN(postId)) {
+            throw new Error('Invalid post ID');
+        }
+        try {
+            return await this.request(`/product-like/${postId}`, 'POST');
+        } catch (error) {
+            console.error('좋아요 추가 오류:', error);
+            throw new Error(`좋아요 추가에 실패했습니다: ${error.message}`);
+        }
+    }
+
+    // 좋아요 해제
+    async unlikeProduct(postId) {
+        if (isNaN(postId)) {
+            throw new Error('Invalid post ID');
+        }
+        try {
+            return await this.request(`/product-like/${postId}`, 'DELETE');
+        } catch (error) {
+            console.error('좋아요 취소 오류:', error);
+            throw new Error(`좋아요 취소에 실패했습니다: ${error.message}`);
+        }
+    }
+
+    // 좋아요 목록 불러오기
+    async getLikedPosts(page = 0) {
+        try {
+            const query = `?page=${page}&size=10&sort=id,DESC`;
+            return await this.request(`/product-like/likes${query}`, 'GET');
+        } catch (error) {
+            console.error('좋아요한 게시물 조회 오류:', error);
+            throw new Error(`좋아요한 게시물을 가져오는데 실패했습니다: ${error.message}`);
+        }
+    }
+
     formatPostData(data) {
         if (!data) {
             console.error('포맷할 데이터가 없습니다');
