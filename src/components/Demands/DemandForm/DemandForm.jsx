@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useContext } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import DemandWrite from "../DemandWrite/DemandWrite.jsx";
 import { LoginContext } from "../../../contexts/LoginContext";
 import "./DemandForm.css";
 
@@ -14,13 +15,32 @@ const categoryOptions = [
     { id: 8, name: "웹툰" },
 ];
 
+const API_HOST = "http://localhost:8080/";
+
+const patchDescriptionToRelative = (html) =>
+    html
+        ? html.replace(
+            /(<img\s+[^>]*src=['"]?)https?:\/\/localhost:8080\/([^'">]+)(['"]?[^>]*>)/g,
+            (match, p1, p2, p3) => `${p1}${p2}${p3}`
+        )
+        : "";
+
+const stripHostFromUrl = (url) => {
+    if (!url) return "";
+    return url.replace(/^https?:\/\/localhost:8080\//, "");
+};
+
 const DemandForm = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const { userInfo } = useContext(LoginContext);
 
-    const demandData = location.state || null;
-    const isEditMode = !!(demandData && demandData.id);
+    const [showDescriptionModal, setShowDescriptionModal] = useState(false);
+
+
+    // 등록/수정 모드 구분
+    const isEditMode = !!(location.state && location.state.isEdit === true);
+    const formData = location.state && location.state.formData ? location.state.formData : {};
 
     const [mainThumbnail, setMainThumbnail] = useState(null);
     const [mainThumbnailPreview, setMainThumbnailPreview] = useState(null);
@@ -38,214 +58,211 @@ const DemandForm = () => {
     const [descriptionImages, setDescriptionImages] = useState([]);
 
     useEffect(() => {
-        if (demandData) {
+        if (location.state && location.state.formData) {
+            // 항상 formData 기반으로 상태 세팅!
+            const f = location.state.formData;
             const formatToDateInput = (dateStr) => {
                 if (!dateStr) return "";
-                return dateStr.split("T")[0] || dateStr.split(" ")[0];
+                if (dateStr.includes("T")) return dateStr.split("T")[0];
+                if (dateStr.includes(" ")) return dateStr.split(" ")[0];
+                return dateStr;
             };
-            setTitle(demandData.title ?? "");
-            setStartDate(formatToDateInput(demandData.startDate || demandData.startTime));
-            setEndDate(formatToDateInput(demandData.endDate || demandData.endTime));
-            setIsAlwaysOnSale(demandData.isAlwaysOnSale ?? false);
-            setCategoryId(demandData.categoryId ?? demandData.category ?? categoryOptions[0].id);
-            setDescription(demandData.description ?? "");
-            setDescriptionImages(demandData.descriptionImages ?? []);
+
+            setTitle(f.title ?? "");
+            setStartDate(formatToDateInput(f.startTime));
+            setEndDate(formatToDateInput(f.endTime));
+            setIsAlwaysOnSale(!f.startTime && !f.endTime);
+
+            if (typeof f.categoryId === "number") {
+                setCategoryId(f.categoryId);
+            } else if (typeof f.category === "number") {
+                setCategoryId(f.category);
+            } else if (typeof f.category === "string") {
+                const found = categoryOptions.find(opt => opt.name === f.category);
+                setCategoryId(found ? found.id : categoryOptions[0].id);
+            } else {
+                setCategoryId(categoryOptions[0].id);
+            }
+
+            setDescription(f.description ?? "");
+            setDescriptionImages(f.descriptionImages ?? []);
+
             setHashtags(
-                Array.isArray(demandData.hashtags)
-                    ? demandData.hashtags
-                    : (demandData.hashtag ? demandData.hashtag.split(" ") : [])
+                Array.isArray(f.hashtag)
+                    ? f.hashtag
+                    : Array.isArray(f.hashtags)
+                        ? f.hashtags
+                        : typeof f.hashtag === "string"
+                            ? f.hashtag.split(/[\s,]+/).filter(Boolean)
+                            : []
             );
 
-            if (demandData.mainThumbnail) {
-                setMainThumbnail(demandData.mainThumbnail);
+            // 서버 주소는 수정모드(isEditMode)에서만 붙이기!
+            if (f.imageUrl) {
                 setMainThumbnailPreview(
-                    typeof demandData.mainThumbnail === "string"
-                        ? demandData.mainThumbnail
-                        : URL.createObjectURL(demandData.mainThumbnail)
+                    (location.state.isEdit === true && !f.imageUrl.startsWith("http"))
+                        ? `${API_HOST}${f.imageUrl.replace(/^\/+/g, "")}`
+                        : f.imageUrl
                 );
+            } else {
+                setMainThumbnailPreview(null);
             }
 
-            if (demandData.products && demandData.products.length > 0) {
+            if (f.products?.length > 0) {
                 setProducts(
-                    demandData.products.map((p) => ({
+                    f.products.map((p) => ({
                         name: p.name || "",
                         price: p.price || "",
-                        targetCount: p.targetCount || p.quantity || "",
-                        imageFile: p.imageFile || null,
-                        imagePreview: p.imageFile ? URL.createObjectURL(p.imageFile) : p.imagePreview || null,
+                        targetCount: p.targetCount || "",
+                        imageFile: null,
+                        imagePreview: p.imageUrl
+                            ? ((location.state.isEdit === true && !p.imageUrl.startsWith("http"))
+                                ? `${API_HOST}${p.imageUrl.replace(/^\/+/g, "")}`
+                                : p.imageUrl)
+                            : null,
                     }))
                 );
+            } else {
+                setProducts([{ name: "", price: "", imageFile: null, imagePreview: null, targetCount: "" }]);
             }
+        } else {
+            // 완전 새로 폼 진입(아무 state 없이 진입)일 때만 빈 폼으로 초기화
+            setMainThumbnailPreview(null);
+            setProducts([{ name: "", price: "", imageFile: null, imagePreview: null, targetCount: "" }]);
+            setTitle("");
+            setCategoryId(categoryOptions[0].id);
+            setStartDate("");
+            setEndDate("");
+            setIsAlwaysOnSale(false);
+            setHashtagInput("");
+            setHashtags([]);
+            setDescription("");
+            setDescriptionImages([]);
         }
-    }, [demandData]);
+    }, [location.state]);
 
-    const handleThumbnailChange = (e) => {
-        const file = e.target.files[0];
-        setMainThumbnail(file);
-        setMainThumbnailPreview(file ? URL.createObjectURL(file) : null);
-    };
 
-    const handleProductImageChange = (idx, file) => {
-        setProducts(products.map((p, i) =>
-            i === idx
-                ? { ...p, imageFile: file, imagePreview: file ? URL.createObjectURL(file) : null }
-                : p
-        ));
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        if (!isEditMode && !mainThumbnail) {
+            alert("썸네일 이미지는 필수입니다.");
+            return;
+        }
+
+        const productsForRequest = products.map((p) => ({
+            name: p.name,
+            price: Number(p.price),
+            targetCount: Number(p.targetCount),
+            imageUrl: stripHostFromUrl(p.imagePreview),
+            imageUpdated: true,
+        }));
+
+        const mainImageUrlForRequest = stripHostFromUrl(mainThumbnailPreview);
+        const descriptionForRequest = patchDescriptionToRelative(description);
+        const hashtagString = Array.isArray(hashtags) ? hashtags.join(",") : hashtags;
+
+        const startTime = startDate ? `${startDate}T09:00:00` : null;
+        const endTime = endDate ? `${endDate}T18:00:00` : null;
+
+        const payload = {
+            title,
+            description: descriptionForRequest,
+            startTime,
+            endTime,
+            imageUrl: mainImageUrlForRequest,
+            hashtag: hashtagString,
+            isSafePayment: false,
+            categoryId,
+            products: productsForRequest,
+        };
+
+        try {
+            let url, method, key;
+            let isUpdate = isEditMode && formData?.id;
+
+            if (isUpdate) {
+                url = `http://localhost:8080/demand/update/${formData.id}`;
+                method = "PUT";
+                key = "demandPostUpdateRequest";
+            } else {
+                url = "http://localhost:8080/demand/create";
+                method = "POST";
+                key = "demandPostCreateRequest";
+            }
+
+            const formDataToSend = new FormData();
+            formDataToSend.append(
+                key,
+                new Blob([JSON.stringify(payload)], { type: "application/json" })
+            );
+
+            if (mainThumbnail) {
+                formDataToSend.append(isUpdate ? "newThumbnailImage" : "thumbnailImage", mainThumbnail);
+            }
+
+            products.forEach((p) => {
+                if (p.imageFile) {
+                    formDataToSend.append(isUpdate ? "newProductImages" : "productImages", p.imageFile);
+                }
+            });
+
+            descriptionImages.forEach((file) => {
+                formDataToSend.append(isUpdate ? "newDescriptionImages" : "descriptionImages", file);
+            });
+
+            // ==== 서버 전송 데이터 로그 =====
+            console.log("====== [서버 전송 정보] ======");
+            console.log("[payload - JSON]", payload);
+            console.log("[메인 썸네일]", mainThumbnail);
+            console.log("[상품 이미지 리스트]", products.map((p) => p.imageFile));
+            console.log("[상세설명 이미지 리스트]", descriptionImages);
+            console.log("[FormData] imageUrl:", mainImageUrlForRequest);
+            console.log("[FormData] hashtag:", hashtagString);
+            console.log("[FormData] startTime, endTime:", startTime, endTime);
+            for (let [key, value] of formDataToSend.entries()) {
+                console.log(`[FormDataToSend] ${key}:`, value);
+            }
+            console.log("================================");
+            // =============================
+
+            const res = await fetch(url, {
+                method,
+                body: formDataToSend,
+                credentials: "include",
+            });
+
+            if (!res.ok) {
+                const errorText = await res.text();
+                throw new Error(`서버 오류: ${res.status} ${res.statusText} - ${errorText}`);
+            }
+
+            alert(isEditMode ? "수정 완료" : "등록 완료");
+            if (isEditMode) {
+                navigate("/mypage?page=demandFormManagement");
+            } else {
+                navigate("/demand");
+            }
+        } catch (err) {
+            alert("저장 중 오류 발생: " + err.message);
+        }
     };
 
     const handleAddProduct = () => {
         setProducts([...products, { name: "", price: "", imageFile: null, imagePreview: null, targetCount: "" }]);
     };
 
-    const handleProductChange = (idx, field, value) => {
-        setProducts(products.map((p, i) => i === idx ? { ...p, [field]: value } : p));
+    const handleNavigateToWrite = () => {
+        setShowDescriptionModal(true);
     };
 
-    const handleDeleteProduct = (idx) => {
-        setProducts(products.filter((_, i) => i !== idx));
-    };
-
-    const addHashtag = () => {
-        let tag = hashtagInput.trim().replace(/^#+/, "");
-        if (!tag || hashtags.includes(tag) || hashtags.length >= 5) {
-            setHashtagInput("");
-            return;
-        }
-        setHashtags(prev => [...prev, tag]);
-        setHashtagInput("");
-    };
-
-    const handleHashtagKeyDown = (e) => {
-        if (e.key === "Enter") {
-            e.preventDefault();
-            addHashtag();
-        }
-    };
-
-    const removeHashtag = (idx) => {
-        setHashtags(prev => prev.filter((_, i) => i !== idx));
-    };
-
-    const handleWriteClick = () => {
-        navigate("/demandWrite", {
-            state: {
-                id: demandData?.id,
-                title,
-                startDate,
-                endDate,
-                isAlwaysOnSale,
-                categoryId,
-                products,
-                mainThumbnail,
-                description,
-                descriptionImages,
-                hashtags,
-            },
-        });
-    };
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        if (!mainThumbnail && !mainThumbnailPreview) {
-            alert("메인 썸네일을 등록해주세요.");
-            return;
-        }
-        if (!title.trim()) {
-            alert("제목을 입력해주세요.");
-            return;
-        }
-        if (!isAlwaysOnSale && (!startDate || !endDate)) {
-            alert("수요조사 기간을 입력해주세요.");
-            return;
-        }
-        if (!categoryId) {
-            alert("카테고리를 선택해주세요.");
-            return;
-        }
-        if (!userInfo || !userInfo.id) {
-            alert("로그인이 필요합니다.");
-            return;
-        }
-
-        const missingImageIdx = products.findIndex(p => !p.imageFile);
-        if (missingImageIdx !== -1) {
-            alert(`상품 ${missingImageIdx + 1}의 이미지를 등록해주세요.`);
-            return;
-        }
-
-        const demandPostCreateRequest = {
-            ...(isEditMode ? { id: demandData.id } : {}),
-            title,
-            description,
-            startTime: isAlwaysOnSale ? null : new Date(startDate + "T09:00:00").toISOString(),
-            endTime: isAlwaysOnSale ? null : new Date(endDate + "T09:00:00").toISOString(),
-            imageUrl: mainThumbnail?.name || mainThumbnailPreview,
-            hashtag: hashtags.join(" "),
-            isSafePayment: false,
-            categoryId: Number(categoryId),
-            products: products.map((p) => ({
-                name: p.name,
-                price: Number(p.price),
-                imageUrl: p.imageFile ? p.imageFile.name : p.imagePreview || "",
-                targetCount: Number(p.targetCount),
-            })),
-            userId: userInfo.id,
-        };
-
-        let formData = null;
-        let headers = {};
-        let body = null;
-
-        if (mainThumbnail instanceof File || products.some(p => p.imageFile)) {
-            formData = new FormData();
-            formData.append(
-                "demandPostCreateRequest",
-                new Blob([JSON.stringify(demandPostCreateRequest)], { type: "application/json" })
-            );
-            if (mainThumbnail instanceof File) {
-                formData.append("thumbnailImage", mainThumbnail);
-            }
-            products.forEach((p) => {
-                if (p.imageFile) {
-                    formData.append("productImages", p.imageFile);
-                }
-            });
-            descriptionImages.forEach(file => {
-                formData.append("descriptionImages", file);
-            });
-            body = formData;
-        } else {
-            headers["Content-Type"] = "application/json";
-            body = JSON.stringify(demandPostCreateRequest);
-        }
-
-        try {
-            const apiUrl = isEditMode
-                ? "http://localhost:8080/demand/update"
-                : "http://localhost:8080/demand/create";
-            const method = isEditMode ? "PUT" : "POST";
-            const res = await fetch(apiUrl, {
-                method,
-                headers,
-                body,
-                credentials: "include",
-            });
-            const contentType = res.headers.get("content-type");
-            const data = contentType && contentType.includes("application/json")
-                ? await res.json()
-                : await res.text();
-            if (!res.ok) throw new Error((data && data.message) || (isEditMode ? "수정 실패" : "등록 실패"));
-            alert(isEditMode ? "수정 성공!" : "등록 성공!");
-            navigate("/demand");
-        } catch (err) {
-            alert("에러: " + err.message);
-        }
-    };
 
     return (
         <div className="container">
             <form className="demand-form" onSubmit={handleSubmit}>
                 <h2 className="demandFormTitle">수요조사 글 {isEditMode ? "수정" : "등록"}</h2>
+
+                {/* 썸네일 업로드 */}
                 <div className="thumbnail-upload">
                     <label htmlFor="main-thumbnail" className="thumbnail-box">
                         {mainThumbnailPreview ? (
@@ -257,9 +274,19 @@ const DemandForm = () => {
                             </>
                         )}
                     </label>
-                    <input type="file" id="main-thumbnail" accept="image/*" onChange={handleThumbnailChange}
-                           style={{ display: "none" }} />
+                    <input
+                        type="file"
+                        id="main-thumbnail"
+                        accept="image/*"
+                        onChange={(e) => {
+                            const file = e.target.files[0];
+                            setMainThumbnail(file);
+                            setMainThumbnailPreview(file ? URL.createObjectURL(file) : null);
+                        }}
+                        style={{ display: "none" }}
+                    />
                 </div>
+
                 <div className="demandForm-group">
                     <label>폼 제목</label>
                     <input
@@ -267,58 +294,59 @@ const DemandForm = () => {
                         type="text"
                         placeholder="제목을 입력해주세요."
                         value={title}
-                        onChange={e => setTitle(e.target.value)}
-                        required
+                        onChange={(e) => setTitle(e.target.value)}
                     />
                 </div>
+
                 <div className="demandForm-group">
                     <label>카테고리</label>
                     <select
                         className="demandFormSelect"
-                        value={categoryId ?? ""}
-                        onChange={e => setCategoryId(Number(e.target.value))}
+                        value={categoryId}
+                        onChange={(e) => setCategoryId(Number(e.target.value))}
                     >
-                        {categoryOptions.map(option => (
-                            <option key={option.id} value={option.id}>
-                                {option.name}
+                        {categoryOptions.map((opt) => (
+                            <option key={opt.id} value={opt.id}>
+                                {opt.name}
                             </option>
                         ))}
                     </select>
                 </div>
+
                 <div className="demandForm-group">
-                    <h2>수요조사 기간</h2>
+                    <label>수요조사 기간</label>
                     <div className="date-range-row">
                         <div className="date-field">
-                            <label>수요조사 시작일</label>
+                            <label>시작일</label>
                             <div className="date-input-wrapper">
                                 <input
                                     type="date"
                                     className="demandStartDate"
                                     value={startDate}
-                                    onChange={e => setStartDate(e.target.value)}
+                                    onChange={(e) => setStartDate(e.target.value)}
                                     disabled={isAlwaysOnSale}
-                                    required={!isAlwaysOnSale}
                                 />
                                 <span className="calendar-icon"></span>
                             </div>
                         </div>
                         <span className="demandFormSeparate">~</span>
                         <div className="date-field">
-                            <label>수요조사 마감일</label>
+                            <label>마감일</label>
                             <div className="date-input-wrapper">
                                 <input
                                     type="date"
                                     className="demandEndDate"
                                     value={endDate}
-                                    onChange={e => setEndDate(e.target.value)}
+                                    onChange={(e) => setEndDate(e.target.value)}
                                     disabled={isAlwaysOnSale}
-                                    required={!isAlwaysOnSale}
                                 />
                                 <span className="calendar-icon"></span>
                             </div>
                         </div>
                     </div>
                 </div>
+
+                {/* 해시태그 입력 */}
                 <div className="demandForm-group">
                     <label>
                         해시 태그<span>({hashtags.length}/5)</span>(5개까지만 입력 가능합니다.)
@@ -329,11 +357,26 @@ const DemandForm = () => {
                             type="text"
                             placeholder="해시 태그를 입력해주세요. ex) #애니"
                             value={hashtagInput}
-                            onChange={e => setHashtagInput(e.target.value)}
-                            onKeyDown={handleHashtagKeyDown}
+                            onChange={(e) => setHashtagInput(e.target.value)}
+                            onKeyDown={(e) => {
+                                if (e.key === "Enter") {
+                                    e.preventDefault();
+                                    const newTag = hashtagInput.trim();
+                                    if (newTag && !hashtags.includes(newTag)) {
+                                        setHashtags([...hashtags, newTag]);
+                                        setHashtagInput("");
+                                    }
+                                }
+                            }}
                             disabled={hashtags.length >= 5}
                         />
-                        <button type="button" onClick={addHashtag} disabled={hashtags.length >= 5}>
+                        <button type="button" onClick={() => {
+                            const newTag = hashtagInput.trim();
+                            if (newTag && !hashtags.includes(newTag)) {
+                                setHashtags([...hashtags, newTag]);
+                                setHashtagInput("");
+                            }
+                        }} disabled={hashtags.length >= 5}>
                             추가하기
                         </button>
                     </div>
@@ -344,7 +387,7 @@ const DemandForm = () => {
                                 <button
                                     type="button"
                                     className="demandDelete-tag"
-                                    onClick={() => removeHashtag(idx)}
+                                    onClick={() => setHashtags(hashtags.filter((_, i) => i !== idx))}
                                 >
                                     ×
                                 </button>
@@ -352,6 +395,7 @@ const DemandForm = () => {
                         ))}
                     </div>
                 </div>
+
                 <h2>상품 정보 입력</h2>
                 {products.map((p, idx) => (
                     <div key={idx} className="demandFormProduct-box">
@@ -369,7 +413,20 @@ const DemandForm = () => {
                             type="file"
                             id={`product-thumbnail-${idx}`}
                             accept="image/*"
-                            onChange={e => handleProductImageChange(idx, e.target.files[0])}
+                            onChange={(e) => {
+                                const file = e.target.files[0];
+                                setProducts(
+                                    products.map((prod, i) =>
+                                        i === idx
+                                            ? {
+                                                ...prod,
+                                                imageFile: file,
+                                                imagePreview: file ? URL.createObjectURL(file) : null,
+                                            }
+                                            : prod
+                                    )
+                                );
+                            }}
                             style={{ display: "none" }}
                         />
                         <div className="product-details">
@@ -378,27 +435,30 @@ const DemandForm = () => {
                                 type="text"
                                 placeholder="상품 이름을 입력해주세요."
                                 value={p.name}
-                                onChange={e => handleProductChange(idx, "name", e.target.value)}
+                                onChange={(e) =>
+                                    setProducts(products.map((prod, i) => (i === idx ? { ...prod, name: e.target.value } : prod)))
+                                }
                             />
                             <input
+                                className="demandText"
                                 type="number"
                                 placeholder="해당 상품의 예상 가격을 입력해주세요."
                                 value={p.price}
-                                onChange={e => handleProductChange(idx, "price", e.target.value)}
+                                onChange={(e) =>
+                                    setProducts(products.map((prod, i) => (i === idx ? { ...prod, price: e.target.value } : prod)))
+                                }
                             />
                             <input
+                                className="demandText"
                                 type="number"
                                 placeholder="실제 목표 수량보다 여유 있게 기입하는 것이 좋습니다."
                                 value={p.targetCount}
-                                onChange={e => handleProductChange(idx, "targetCount", e.target.value)}
+                                onChange={(e) =>
+                                    setProducts(products.map((prod, i) => (i === idx ? { ...prod, targetCount: e.target.value } : prod)))
+                                }
                             />
                         </div>
-                        <button
-                            type="button"
-                            className="delete-btn"
-                            onClick={() => handleDeleteProduct(idx)}
-                            style={{ marginTop: 8 }}
-                        >
+                        <button type="button" className="delete-btn" onClick={() => setProducts(products.filter((_, i) => i !== idx))}>
                             삭제
                         </button>
                     </div>
@@ -408,18 +468,17 @@ const DemandForm = () => {
                         상품 추가하기
                     </button>
                 </div>
-                <h2 className="demandFormDesTitle">상세설명</h2>
+
+                <h2 className="demandFormDesTitle">상세 설명</h2>
                 <div className="description-box">
                     {description ? (
                         <>
-                            <div className="description-preview hidden"
-                                 dangerouslySetInnerHTML={{ __html: description }} />
-                            <button type="button" className="demandFormEditBtn" onClick={handleWriteClick}>
+                            <button type="button" className="demandFormEditBtn" onClick={handleNavigateToWrite}>
                                 수정하기
                             </button>
                         </>
                     ) : (
-                        <button type="button" className="demandFormWriteBtn" onClick={handleWriteClick}>
+                        <button type="button" className="demandFormWriteBtn" onClick={handleNavigateToWrite}>
                             작성하기
                         </button>
                     )}
@@ -428,8 +487,19 @@ const DemandForm = () => {
                     {isEditMode ? "수정하기" : "등록하기"}
                 </button>
             </form>
+            {/* 모달은 여기! */}
+            {showDescriptionModal && (
+                <DemandWrite
+                    description={description}
+                    setDescription={setDescription}
+                    descriptionImages={descriptionImages}
+                    setDescriptionImages={setDescriptionImages}
+                    onClose={() => setShowDescriptionModal(false)}
+                />
+            )}
         </div>
     );
 };
+
 
 export default DemandForm;
