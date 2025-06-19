@@ -133,7 +133,7 @@ const Demand = ({ showBanner = true }) => {
                             <SlSocialDropbox className="demandbox-icon" />
                             <FaHeart className="heart-icon" />
                         </div>
-                        <h2 className="demand-heading">수요거래 제품</h2>
+                        <h2 className="demand-heading">수요조사</h2>
                     </div>
 
                     {loading && <div className="loading-box" style={{ textAlign: 'center', margin: '40px 0', fontSize: '18px', color: '#888' }}>🔄 로딩중입니다...</div>}
@@ -147,29 +147,82 @@ const Demand = ({ showBanner = true }) => {
                                         const globalIndex = frameIndex * 5 + index;
                                         return (
                                             <div key={item.id || globalIndex} className="demand-card">
+
+                                                <Link to={`/demandDetail/${item.id.replace(/^DEMAND_/, '')}`} state={{
+                                                    product: item,
+                                                    saleLabel: '수요거래',
+                                                    products: demandProducts
+                                                }}>
+                                                    <img src={getFullThumbnailUrl(item.thumbnailUrl)} alt={item.title}
+                                                         className="demand-image"/>
+                                                </Link>
+                                                <span className="demand-label">수요조사</span>
+                                                <button
+                                                    className={`demand-like-button ${liked[globalIndex] ? 'liked' : ''}`}
+                                                    onClick={() => {
+                                                        const newLiked = [...liked];
+                                                        newLiked[globalIndex] = !newLiked[globalIndex];
+                                                        setLiked(newLiked);
+                                                        localStorage.setItem('demandLiked', JSON.stringify(newLiked));
+                                                    }}>
+                                                    <FaHeart size={18}/>
+                                                </button>
+                                                <p
+                                                    className="demand-product-name"
+                                                    style={{
+                                                        fontWeight: "bold",
+                                                        fontSize: "1.5rem",
+                                                        margin: 0,
+                                                        lineHeight: 1.3,
+                                                        maxWidth: "13em",         // 글자 10~11자 정도 너비 (글꼴 따라 조정)
+                                                        overflow: "hidden",
+                                                        whiteSpace: "nowrap",
+                                                        textOverflow: "ellipsis",
+                                                        display: "block",         // 필요 시 명확히 block으로
+                                                    }}
+                                                    title={item.title} // 전체 제목 툴팁
+                                                >
+                                                    {item.title}
+                                                </p>
+
+
+                                                <div>
+                                                    {item.hashtag
+                                                        .split(',')
+                                                        .map(tag => tag.trim())
+                                                        .filter(tag => tag.length > 0)
+                                                        .map((tag, idx) => (
+                                                            <span
+                                                                key={idx}
+                                                                style={{
+                                                                    background: "#dedede",
+                                                                    display: "inline-block",
+                                                                    borderRadius: "20px",
+                                                                    padding: "2px 10px",
+                                                                    fontSize: "24px",
+                                                                    textAlign: "center",
+                                                                    minWidth: "80px",
+                                                                    marginRight: "8px",    // 태그끼리 간격
+                                                                    fontWeight: "400",
+                                                                }}
+                                                            >
+        #{tag}
+      </span>
+                                                        ))}
+                                                </div>
+
+
                                                 <div className="demand-profile-info">
                                                     {item.profileUrl ? (
-                                                        <img src={item.profileUrl} alt="profile" className="profile-pic" />
+                                                        <img src={item.profileUrl} alt="profile"
+                                                             className="profile-pic"/>
                                                     ) : (
-                                                        <CgProfile className="profile-pic" />
+                                                        <CgProfile className="profile-pic"/>
                                                     )}
-                                                    <p className="user-name">{item.nickname}</p>
+                                                    {item.nickname}
                                                 </div>
-                                                <Link to={`/demandDetail/${item.id.replace(/^DEMAND_/, '')}`} state={{ product: item, saleLabel: '수요거래', products: demandProducts }}>
-                                                    <img src={getFullThumbnailUrl(item.thumbnailUrl)} alt={item.title} className="demand-image" />
-                                                </Link>
-                                                <span className="demand-label">수요거래</span>
-                                                <button className={`demand-like-button ${liked[globalIndex] ? 'liked' : ''}`} onClick={() => {
-                                                    const newLiked = [...liked];
-                                                    newLiked[globalIndex] = !newLiked[globalIndex];
-                                                    setLiked(newLiked);
-                                                    localStorage.setItem('demandLiked', JSON.stringify(newLiked));
-                                                }}>
-                                                    <FaHeart size={18} />
-                                                </button>
-                                                <p className="demand-product-name">{item.title}</p>
-                                                <p>{item.hashtag}</p>
-                                                <p>조회수:{item.views}</p>
+
+
                                             </div>
                                         );
                                     })}
@@ -179,8 +232,8 @@ const Demand = ({ showBanner = true }) => {
                     )}
                 </div>
 
-                <div className="pagination" style={{ textAlign: 'center', marginTop: '30px' }}>
-                    {Array.from({ length: totalPages }, (_, i) => (
+                <div className="pagination" style={{textAlign: 'center', marginTop: '30px'}}>
+                    {Array.from({length: totalPages}, (_, i) => (
                         <button
                             key={i}
                             onClick={() => setPage(i)}
