@@ -390,7 +390,7 @@ const handleLikeToggle = async () => {
       <div className="person-details-tabs">
         <ul>
           <li className={activeTab === "상세 설명" ? "active" : ""} onClick={() => setActiveTab("상세 설명")}>상세 설명</li>
-          <li className={activeTab === "리뷰" ? "active" : ""} onClick={() => setActiveTab("리뷰")}>리뷰</li>
+          {/* <li className={activeTab === "리뷰" ? "active" : ""} onClick={() => setActiveTab("리뷰")}>리뷰</li> */}
         </ul>
       </div>
 
@@ -427,7 +427,7 @@ const handleLikeToggle = async () => {
        
         ) : (
           <div className="person-review">
-            <p>리뷰가 없습니다.</p>
+            {/* <p>리뷰가 없습니다.</p> */}
           </div>
         )}
       </div>
