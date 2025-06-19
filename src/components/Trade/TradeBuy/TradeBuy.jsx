@@ -7,35 +7,25 @@ const TradeBuy = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const { wantedProducts = [], saleLabel = "중고거래" } = location.state || {};
+  const { wantedProducts = [], saleLabel = "중고거래", isDirectTrade = false } = location.state || {};
   const item = wantedProducts[0];
   const [currentIndex, setCurrentIndex] = useState(0);
-
-  const isDirectTrade = item?.delivery === false;
-
-  const [deliveryAddress, setDeliveryAddress] = useState(
-    isDirectTrade ? item?.directTradeLocation || "" : ""
-  );
+  const [deliveryAddress, setDeliveryAddress] = useState(isDirectTrade ? item?.directTradeLocation || "" : "");
   const [detailAddress, setDetailAddress] = useState("");
   const [deliveryNote, setDeliveryNote] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("creditCard");
-
   const totalPrice = item ? item.price : 0;
 
   const getImageUrl = (path) => {
     if (!path || typeof path !== "string") return "/default-image.jpg";
-    return path.startsWith("http")
-      ? path
-      : `http://localhost:8080/${path.replace(/^\/?/, "")}`;
+    return path.startsWith("http") ? path : `http://localhost:8080/${path.replace(/^\/?/, "")}`;
   };
 
   const representativeImage = getImageUrl(item?.representativeImage || item?.image);
 
   const images =
     Array.isArray(item?.detailImages) && item.detailImages.length > 0
-      ? item.detailImages
-          .filter((img) => img?.imagePath && typeof img.imagePath === "string")
-          .map((img) => getImageUrl(img.imagePath))
+      ? item.detailImages.filter((img) => img?.imagePath && typeof img.imagePath === "string").map((img) => getImageUrl(img.imagePath))
       : [representativeImage];
 
   useEffect(() => {
@@ -68,21 +58,9 @@ const TradeBuy = () => {
       alert("배송지를 입력해 주세요.");
       return;
     }
-     const requestBody = {
-    tradePostId: item.id,
-    deliveryId: isDirectTrade ? 1 : 2,
-    recipientName: "홍길동",
-    phoneNumber: "010-1234-5678",
-    zipCode: "12345",
-    mainAddress: deliveryAddress,
-    postMemo: deliveryNote,
-    products: [{ productId: item.id, quantity: 1 }],
-  };
 
-      console.log("📦 주문 생성 요청 body:", requestBody); // ✅ 디버깅 로그
     try {
-      // 1. 주문 생성 요청
-      const orderResponse = await fetch("http://localhost:8080/order/trade/create", {
+      const response = await fetch("http://localhost:8080/order/trade/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -93,33 +71,28 @@ const TradeBuy = () => {
           phoneNumber: "010-1234-5678",
           zipCode: "12345",
           mainAddress: deliveryAddress,
-        
           postMemo: deliveryNote,
           products: [{ productId: item.id, quantity: 1 }],
         }),
       });
 
-      if (!orderResponse.ok) throw new Error("주문 생성 실패");
+      if (!response.ok) throw new Error("주문 생성 실패");
 
-      const { orderId, orderCode } = await orderResponse.json(); // ✅ orderCode: UUID
+      const { orderId, orderCode } = await response.json();
 
-      // 2. 결제 수단 TossPay 선택 시
       if (paymentMethod === "tossPay") {
         const tossPayments = await loadTossPayments("test_ck_AQ92ymxN342Zya29jK2KrajRKXvd");
-
         await tossPayments.requestPayment("카드", {
           amount: totalPrice,
-          orderId: orderCode, // ✅ Toss에는 UUID 기반 orderCode 전달
+          orderId: orderCode,
           orderName: item?.name || "중고 상품",
           customerName: "사용자",
           successUrl: `${window.location.origin}/payment/success?orderCode=${orderCode}&amount=${totalPrice}`,
           failUrl: `${window.location.origin}/payment/fail`,
         });
-
         return;
       }
 
-      // 3. 기타 결제 수단 (Toss 외) 처리
       alert("구매가 완료되었습니다!");
       navigate("/tradeBuyPerfect", {
         state: {
@@ -143,28 +116,17 @@ const TradeBuy = () => {
         <h1 className="tradeBuy-title">구매하기</h1>
         <div className="trade-buy-layout">
           <div className="trade-buy-slider">
-            <img
-              src={images[currentIndex]}
-              alt="상품 이미지"
-              className="trade-buy-slider-image"
-            />
+            <img src={images[currentIndex]} alt="상품 이미지" className="trade-buy-slider-image" />
           </div>
           <div className="trade-buy-info">
             <div className="trade-buy-summary">
-              <img
-                src={representativeImage}
-                alt="대표 이미지"
-                className="trade-buy-main-image"
-              />
+              <img src={representativeImage} alt="대표 이미지" className="trade-buy-main-image" />
               <div className="trade-buy-summary-details">
                 <h2 className="trade-buy-title">{item?.name}</h2>
                 <p className="trade-buy-price">{item?.price}원</p>
                 <p className="trade-buy-condition">상태: {item?.condition}</p>
                 <p className="trade-buy-location">
-                  거래 방식:{" "}
-                  {isDirectTrade
-                    ? `직접 거래 (${item?.directTradeLocation || item?.location})`
-                    : "택배 거래"}
+                  거래 방식: {isDirectTrade ? `직접 거래 (${item?.directTradeLocation || item?.location})` : "택배 거래"}
                 </p>
               </div>
             </div>
@@ -185,11 +147,7 @@ const TradeBuy = () => {
                       placeholder="주소를 입력하세요."
                       className="trade-buy-address-input"
                     />
-                    <button
-                      type="button"
-                      onClick={handleAddressSearch}
-                      className="trade-buy-address-button"
-                    >
+                    <button type="button" onClick={handleAddressSearch} className="trade-buy-address-button">
                       주소 검색
                     </button>
                   </div>
@@ -201,11 +159,7 @@ const TradeBuy = () => {
                     placeholder="상세 주소를 입력하세요."
                     className="trade-buy-detail-address-input"
                   />
-                </>
-              )}
 
-              {!isDirectTrade && (
-                <>
                   <label>배송 메모:</label>
                   <textarea
                     placeholder="요청 사항을 입력하세요."
@@ -235,24 +189,14 @@ const TradeBuy = () => {
                 </>
               )}
 
-              <h3 className="trade-buy-total-price">
-                총 결제 금액: {totalPrice}원
-              </h3>
+              <h3 className="trade-buy-total-price">총 결제 금액: {totalPrice}원</h3>
             </div>
 
             <div className="trade-buy-button-container">
-              <button
-                className="trade-buy-confirm-button"
-                onClick={handleConfirmPurchase}
-              >
+              <button className="trade-buy-confirm-button" onClick={handleConfirmPurchase}>
                 구매 확정
               </button>
-              <button
-                className="trade-buy-cancel-button"
-                onClick={() => navigate("/trade")}
-              >
-                취소
-              </button>
+              <button className="trade-buy-cancel-button" onClick={() => navigate("/trade")}>취소</button>
             </div>
           </div>
         </div>
