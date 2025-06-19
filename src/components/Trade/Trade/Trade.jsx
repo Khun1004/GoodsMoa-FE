@@ -223,16 +223,17 @@ const Trade = ({ showBanner = true }) => {
         )}
       </div>
 
-      {/* ✅ [수정] 좋아요 버튼을 카드 하단으로 이동 */}
-      <div className="card-footer-area">
-        <button
-          className={`sale-like-button ${likedServerPosts[item.id] ? 'liked' : ''}`}
-          onClick={() => handleServerLikeToggle(item.id)}
-        >
-          <FaHeart size={18} />
-        </button>
+      {/* ✅ 좋아요 버튼을 이미지 컨테이너 안으로 옮김 */}
+    <button
+      className={`sale-like-button ${likedServerPosts[item.id] ? 'liked' : ''}`}
+      onClick={(e) => {
+        e.preventDefault(); // 링크로 이동 막기
+        handleServerLikeToggle(item.id);
+      }}
+    >
+      <FaHeart size={18} />
+    </button>
       </div>
-    </div>
   ))}
           {/* 커스텀 상품(직접 등록) */}
           {isTradeSubmitted && savedTradeFormData && (
