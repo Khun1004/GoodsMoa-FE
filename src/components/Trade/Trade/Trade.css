@@ -17,20 +17,6 @@
     overflow: hidden;
 }
 
-.sale-banner-content {
-    text-align: center;
-    padding: 32px 24px;
-    color: #000000;
-    font-size: 1.5rem;
-    font-weight: 600;
-    border-radius: 12px;
-    background: rgba(255,255,255,0.10);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
-    backdrop-filter: blur(2px);
-    max-width: 90%;
-    margin: 0 auto;
-}
-
 .sale-title {
     font-size: 30px;
     font-weight: bold;
@@ -118,47 +104,6 @@
     transition: opacity 0.3s ease-in-out;
 }
 
-.profile-info {
-    position: absolute;
-    bottom: -20px;
-    top: 10px;
-    left: 50%;
-    transform: translateX(-50%);
-    opacity: 0;
-    visibility: hidden;
-    text-align: center;
-    transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
-    z-index: 2;
-    padding: 5px;
-    display: flex;
-    align-items: center;
-    gap: 0px;
-}
-
-.sale-card:hover .profile-info {
-    opacity: 1;
-    visibility: visible;
-}
-
-.profile-pic {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    margin-bottom: 5px;
-    border: 1px solid black;
-}
-
-.user-name {
-    font-size: 14px;
-    font-weight: bold;
-    color: black;
-    margin: 0;
-}
-
-.sale-card:hover .sale-image {
-    opacity: 0.7;
-}
-
 .sale-label {
     position: absolute;
     top: 10px;
@@ -189,11 +134,6 @@
     color: red;
 }
 
-.sale-product-name {
-    margin-top: 10px;
-    font-size: 14px;
-    font-weight: bold;
-}
 
 .go-to-order-btn {
     background-color: #ff6347;
@@ -211,10 +151,10 @@
         border-radius: 12px;
         margin-bottom: 18px;
     }
-    .sale-banner-content {
+    /* .sale-banner-content {
         font-size: 1rem;
         padding: 14px 6px;
-    }
+    } */
 }
 @media (max-width: 1200px) {
     .sale-grid,
@@ -250,5 +190,45 @@
     padding: 2px 8px;
     font-size: 13px;
     font-weight: 500;
+  }
+  
+  .profile-row-vertical {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    margin-top: 8px;
+    margin-bottom: 6px;
+  }
+  
+  .profile-mini {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-bottom: 2px;
+  }
+  
+  .profile-pic-mini {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 1px solid #ccc;
+    object-fit: cover;
+    background: #f5f5f5;
+  }
+  
+  .user-name-mini {
+    font-size: 12px;
+    color: #888;
+    font-weight: 400;
+    letter-spacing: 0.2px;
+  }
+  
+  .sale-product-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: #222;
+    margin-top: 2px;
+    word-break: break-all;
+    line-height: 1.2;
   }
   

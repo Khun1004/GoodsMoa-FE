@@ -506,7 +506,7 @@ const AppContent = ({
       {/* Footer will be hidden on /chat-app */}
       {!isChatPage && <Footer />}
     </div>
-    </TradeProvider>
+     </TradeProvider>
   );
 };
 

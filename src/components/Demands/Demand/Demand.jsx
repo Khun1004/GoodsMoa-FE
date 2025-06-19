@@ -7,6 +7,7 @@ import { SlSocialDropbox } from 'react-icons/sl';
 import { Link, useLocation } from 'react-router-dom';
 import welcomeVideo from '../../../assets/demandWelcome.mp4';
 import Demand1 from '../../../assets/demands/demand1.jpg';
+import SearchBanner from '../../Public/SearchBanner';
 import './Demand.css';
 
 const categoryOptions = [
@@ -94,13 +95,15 @@ const Demand = ({ showBanner = true }) => {
     return (
         <div className="container">
             <div className="demand-container">
-                {showBanner && (
+            {showBanner && (
                     <div className="demand-banner">
                         <video autoPlay loop muted playsInline className="demand-video" disablePictureInPicture onContextMenu={(e) => e.preventDefault()}>
                             <source src={welcomeVideo} type="video/mp4" />
                         </video>
                     </div>
                 )}
+
+
 
                 <div className="search-bar-and-filters" style={{ marginTop: '20px', marginBottom: '30px', display: 'flex', alignItems: 'center', gap: '20px' }}>
                     <div className="filters" style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
@@ -110,14 +113,17 @@ const Demand = ({ showBanner = true }) => {
                             </button>
                         ))}
                     </div>
-                    <input
-                        type="text"
-                        placeholder="원하는 상품 검색하기"
-                        className="demand-search-input"
-                        value={searchTerm}
-                        onChange={handleSearchChange}
-                        style={{ flexGrow: 1, padding: '8px 12px', fontSize: '14px' }}
-                    />
+                    <div style={{flexGrow: 1}}>
+                        <SearchBanner
+                            title=""
+                            placeholder="수요조사 검색하기:"
+                            searchQuery={searchTerm}
+                            setSearchQuery={setSearchTerm}
+                            handleSearchKeyPress={(e) => {
+                                if (e.key === 'Enter') console.log('검색어:', searchTerm);
+                            }}
+                        />
+                    </div>
                 </div>
 
                 <div className="demandProductFrame">
