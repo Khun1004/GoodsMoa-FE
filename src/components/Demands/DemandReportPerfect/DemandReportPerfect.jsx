@@ -5,7 +5,7 @@ import "./DemandReportPerfect.css";
 const DemandReportPerfect = () => {
     const location = useLocation();
     const navigate = useNavigate();
-    const { item = {}, representativeImage = "https://via.placeholder.com/120", email = "", reason = "", details = "", fileName = "" } = location.state || {};
+    const { item = {}, representativeImage = "https://via.placeholder.com/120", email = "", reason = "", content  = "", fileName = "" } = location.state || {};
     
     return (
         <div className="perfect-container">
@@ -36,7 +36,7 @@ const DemandReportPerfect = () => {
                 <div className="perfect-extra-info">
                     <p>📧 신고자 이메일: {email}</p>
                     <p>🚨 신고 사유: {reason}</p>
-                    <p>📝 상세 내용: {details}</p>
+                    <p>📝 상세 내용: {content }</p>
                     {fileName && <p>📎 첨부 파일: {fileName}</p>}
                 </div>
 
