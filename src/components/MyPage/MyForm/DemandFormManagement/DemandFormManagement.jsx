@@ -94,7 +94,7 @@ const DemandFormManagement = () => {
       navigate('/saleform', {
         state: {
           from: 'demand',
-          imageUrl,  // 썸네일 URL
+          image: imageUrl,
           productImageUrls, // 상품 이미지 URL 배열
           title: data.title || "",
           description: data.description || "",
@@ -214,50 +214,60 @@ const DemandFormManagement = () => {
                         </span>
                               ))}
                         </div>
-                        <div className="demandFormManbutton-group">
+                        <div className="demandFormManbutton-group"
+                             style={{display: "flex", gap: "10px", marginTop: "10px"}}>
                           <button
+                              style={{
+                                background: "#5288e3",
+                                color: "#fff",
+                                border: "none",
+                                borderRadius: "8px",
+                                padding: "8px 18px",
+                                fontSize: "16px",
+                                fontWeight: 500,
+                                cursor: "pointer",
+                                transition: "background 0.2s",
+                              }}
                               onClick={() => {
-                                const refinedData = {
-                                  id: formData.id,
-                                  title: formData.title || '',
-                                  category: formData.category || '',
-                                  hashtag: formData.hashtag
-                                      ? formData.hashtag.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0)
-                                      : [],
-                                  startTime: formData.startTime || null,
-                                  endTime: formData.endTime || null,
-                                  imageUrl: formData.imageUrl || null,
-                                  products: Array.isArray(formData.products)
-                                      ? formData.products.map((product) => ({
-                                        id: product.id,
-                                        name: product.name || '',
-                                        price: Number(product.price) || 0,
-                                        imageUrl: product.imageUrl || null,
-                                        targetCount: Number(product.targetCount) || 0,
-                                        achievementRate: Number(product.achievementRate) || 0,
-                                      }))
-                                      : [],
-                                  // 🔴 이 두 줄 꼭 추가!
-                                  description: formData.description || "",
-                                  descriptionImages: formData.descriptionImages || [],
-                                };
-
-                                navigate("/demandform", {
-                                  state: {
-                                    formData: refinedData,
-                                    isEdit: true,
-                                  },
-                                });
+                                // ...생략...
                               }}
                           >
                             수정
                           </button>
-                          <button onClick={() => handleConvert(formData.id)}>
+                          <button
+                              style={{
+                                background: "#26b37a",
+                                color: "#fff",
+                                border: "none",
+                                borderRadius: "8px",
+                                padding: "8px 18px",
+                                fontSize: "16px",
+                                fontWeight: 500,
+                                cursor: "pointer",
+                                transition: "background 0.2s",
+                              }}
+                              onClick={() => handleConvert(formData.id)}
+                          >
                             판매글 변환
                           </button>
-
-                          <button onClick={() => handleDelete(formData.id)}>삭제</button>
+                          <button
+                              style={{
+                                background: "#e05252",
+                                color: "#fff",
+                                border: "none",
+                                borderRadius: "8px",
+                                padding: "8px 18px",
+                                fontSize: "16px",
+                                fontWeight: 500,
+                                cursor: "pointer",
+                                transition: "background 0.2s",
+                              }}
+                              onClick={() => handleDelete(formData.id)}
+                          >
+                            삭제
+                          </button>
                         </div>
+
                       </div>
                     </div>
 

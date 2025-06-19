@@ -148,12 +148,39 @@ const DemandDetail = () => {
                         className="DemandDetail-main-image"
                     />
                     <div className="DemandDetail-product-info">
-                        <h2 className="DemandDetail-title">{detail.title}</h2>
-                        <p className="DemandDetail-hashtag">
+                        <h2
+                            className="DemandDetail-title"
+                            style={{
+                                fontSize: "2.2rem",     // h2 기본보다 크게 (보통 35px 정도)
+                                fontWeight: 600,        // 적당히 굵게 (700이 완전 bold)
+                                margin: 0,
+                                lineHeight: 1.25,
+                            }}
+                        >
+                            {detail.title}
+                        </h2>
+
+                        <p className="DemandDetail-hashtag" style={{margin: 0}}>
                             {detail.hashtag && detail.hashtag.split(' ').map((tag, i) =>
-                                <span key={i} className="DemandDetail-tag">#{tag}</span>
+                                    <span
+                                        key={i}
+                                        style={{
+                                            background: "#dedede",
+                                            display: "inline-block",
+                                            borderRadius: "16px",
+                                            padding: "4px 14px",
+                                            fontSize: "18px",
+                                            fontWeight: 400,
+                                            marginRight: "8px",
+                                            marginBottom: "4px",
+                                            verticalAlign: "middle",
+                                        }}
+                                    >
+      #{tag}
+    </span>
                             )}
                         </p>
+
                         <div className="DemandDetail-stock-info">
                             <span className='DemandDetailInfoName'>
                                 수요 조사 기간: {formatDate(detail.startTime)} ~ {formatDate(detail.endTime)}
