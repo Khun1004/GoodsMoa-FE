@@ -22,9 +22,7 @@
     object-fit: cover;
 }
 
-.demand-video::-webkit-media-controls-picture-in-picture-button {
-    display: none !important;
-}
+
 
 .demand-banner-content {
     text-align: center;
@@ -141,6 +139,7 @@
     display: grid;
     grid-template-columns: repeat(5, 1fr);
     gap: 20px;
+    padding-bottom: 10px;
 }
 
 .demand-card {
