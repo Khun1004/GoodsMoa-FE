@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import DemandWrite from "../DemandWrite/DemandWrite.jsx";
 import { LoginContext } from "../../../contexts/LoginContext";
@@ -35,10 +35,15 @@ const DemandForm = () => {
     const location = useLocation();
     const { userInfo } = useContext(LoginContext);
 
+    // ref for focus
+    const titleRef = useRef();
+    const startDateRef = useRef();
+    const endDateRef = useRef();
+    const hashtagInputRef = useRef();
+    const descButtonRef = useRef();
+
     const [showDescriptionModal, setShowDescriptionModal] = useState(false);
 
-
-    // 등록/수정 모드 구분
     const isEditMode = !!(location.state && location.state.isEdit === true);
     const formData = location.state && location.state.formData ? location.state.formData : {};
 
@@ -59,7 +64,6 @@ const DemandForm = () => {
 
     useEffect(() => {
         if (location.state && location.state.formData) {
-            // 항상 formData 기반으로 상태 세팅!
             const f = location.state.formData;
             const formatToDateInput = (dateStr) => {
                 if (!dateStr) return "";
@@ -97,7 +101,6 @@ const DemandForm = () => {
                             : []
             );
 
-            // 서버 주소는 수정모드(isEditMode)에서만 붙이기!
             if (f.imageUrl) {
                 setMainThumbnailPreview(
                     (location.state.isEdit === true && !f.imageUrl.startsWith("http"))
@@ -126,7 +129,6 @@ const DemandForm = () => {
                 setProducts([{ name: "", price: "", imageFile: null, imagePreview: null, targetCount: "" }]);
             }
         } else {
-            // 완전 새로 폼 진입(아무 state 없이 진입)일 때만 빈 폼으로 초기화
             setMainThumbnailPreview(null);
             setProducts([{ name: "", price: "", imageFile: null, imagePreview: null, targetCount: "" }]);
             setTitle("");
@@ -141,14 +143,88 @@ const DemandForm = () => {
         }
     }, [location.state]);
 
+    // ====== 유효성 검사 함수 ======
+    const validateForm = () => {
+        if (!title.trim()) {
+            alert("제목을 입력해주세요.");
+            titleRef.current?.focus();
+            return false;
+        }
+        if (!categoryId) {
+            alert("카테고리를 선택해주세요.");
+            return false;
+        }
+        if (!isAlwaysOnSale) {
+            if (!startDate) {
+                alert("수요조사 시작일을 입력해주세요.");
+                startDateRef.current?.focus();
+                return false;
+            }
+            if (!endDate) {
+                alert("수요조사 종료일을 입력해주세요.");
+                endDateRef.current?.focus();
+                return false;
+            }
+        }
+        if (hashtags.length === 0) {
+            alert("해시태그를 1개 이상 입력해주세요.");
+            hashtagInputRef.current?.focus();
+            return false;
+        }
+        if (hashtags.length > 5) {
+            alert("해시태그는 최대 5개까지 입력 가능합니다.");
+            hashtagInputRef.current?.focus();
+            return false;
+        }
+        for (let tag of hashtags) {
+            if (tag.length === 0) {
+                alert("빈 해시태그가 있습니다.");
+                hashtagInputRef.current?.focus();
+                return false;
+            }
+        }
+        if (!products.length) {
+            alert("상품 정보를 1개 이상 입력해주세요.");
+            return false;
+        }
+        for (let i = 0; i < products.length; i++) {
+            const p = products[i];
+            if (!p.name.trim()) {
+                alert(`상품 ${i + 1}의 이름을 입력해주세요.`);
+                return false;
+            }
+            if (!p.price || isNaN(p.price) || Number(p.price) <= 0) {
+                alert(`상품 ${i + 1}의 가격을 입력해주세요. (0보다 큰 숫자)`);
+                return false;
+            }
+            if (!p.targetCount || isNaN(p.targetCount) || Number(p.targetCount) <= 0) {
+                alert(`상품 ${i + 1}의 목표 수량을 입력해주세요. (0보다 큰 숫자)`);
+                return false;
+            }
+            // 등록 모드에서는 반드시 상품 이미지가 필요
+            if (!isEditMode && !p.imageFile) {
+                alert(`상품 ${i + 1}의 이미지를 등록해주세요.`);
+                return false;
+            }
+        }
+        // 등록 모드에서는 반드시 썸네일 필요
+        if (!isEditMode && !mainThumbnail) {
+            alert("메인 썸네일 이미지를 등록해주세요.");
+            return false;
+        }
+        if (!description || description.trim().length < 5) {
+            alert("상세 설명을 입력해주세요.");
+            descButtonRef.current?.focus();
+            return false;
+        }
+        return true;
+    };
 
+    // ====== submit ======
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        if (!isEditMode && !mainThumbnail) {
-            alert("썸네일 이미지는 필수입니다.");
-            return;
-        }
+        if (!validateForm()) return;
 
         const productsForRequest = products.map((p) => ({
             name: p.name,
@@ -200,31 +276,14 @@ const DemandForm = () => {
             if (mainThumbnail) {
                 formDataToSend.append(isUpdate ? "newThumbnailImage" : "thumbnailImage", mainThumbnail);
             }
-
             products.forEach((p) => {
                 if (p.imageFile) {
                     formDataToSend.append(isUpdate ? "newProductImages" : "productImages", p.imageFile);
                 }
             });
-
             descriptionImages.forEach((file) => {
                 formDataToSend.append(isUpdate ? "newDescriptionImages" : "descriptionImages", file);
             });
-
-            // ==== 서버 전송 데이터 로그 =====
-            console.log("====== [서버 전송 정보] ======");
-            console.log("[payload - JSON]", payload);
-            console.log("[메인 썸네일]", mainThumbnail);
-            console.log("[상품 이미지 리스트]", products.map((p) => p.imageFile));
-            console.log("[상세설명 이미지 리스트]", descriptionImages);
-            console.log("[FormData] imageUrl:", mainImageUrlForRequest);
-            console.log("[FormData] hashtag:", hashtagString);
-            console.log("[FormData] startTime, endTime:", startTime, endTime);
-            for (let [key, value] of formDataToSend.entries()) {
-                console.log(`[FormDataToSend] ${key}:`, value);
-            }
-            console.log("================================");
-            // =============================
 
             const res = await fetch(url, {
                 method,
@@ -255,7 +314,6 @@ const DemandForm = () => {
     const handleNavigateToWrite = () => {
         setShowDescriptionModal(true);
     };
-
 
     return (
         <div className="container">
@@ -294,6 +352,7 @@ const DemandForm = () => {
                         type="text"
                         placeholder="제목을 입력해주세요."
                         value={title}
+                        ref={titleRef}
                         onChange={(e) => setTitle(e.target.value)}
                     />
                 </div>
@@ -323,6 +382,7 @@ const DemandForm = () => {
                                     type="date"
                                     className="demandStartDate"
                                     value={startDate}
+                                    ref={startDateRef}
                                     onChange={(e) => setStartDate(e.target.value)}
                                     disabled={isAlwaysOnSale}
                                 />
@@ -337,6 +397,7 @@ const DemandForm = () => {
                                     type="date"
                                     className="demandEndDate"
                                     value={endDate}
+                                    ref={endDateRef}
                                     onChange={(e) => setEndDate(e.target.value)}
                                     disabled={isAlwaysOnSale}
                                 />
@@ -357,6 +418,7 @@ const DemandForm = () => {
                             type="text"
                             placeholder="해시 태그를 입력해주세요. ex) #애니"
                             value={hashtagInput}
+                            ref={hashtagInputRef}
                             onChange={(e) => setHashtagInput(e.target.value)}
                             onKeyDown={(e) => {
                                 if (e.key === "Enter") {
@@ -473,12 +535,12 @@ const DemandForm = () => {
                 <div className="description-box">
                     {description ? (
                         <>
-                            <button type="button" className="demandFormEditBtn" onClick={handleNavigateToWrite}>
+                            <button type="button" ref={descButtonRef} className="demandFormEditBtn" onClick={handleNavigateToWrite}>
                                 수정하기
                             </button>
                         </>
                     ) : (
-                        <button type="button" className="demandFormWriteBtn" onClick={handleNavigateToWrite}>
+                        <button type="button" ref={descButtonRef} className="demandFormWriteBtn" onClick={handleNavigateToWrite}>
                             작성하기
                         </button>
                     )}
@@ -487,7 +549,6 @@ const DemandForm = () => {
                     {isEditMode ? "수정하기" : "등록하기"}
                 </button>
             </form>
-            {/* 모달은 여기! */}
             {showDescriptionModal && (
                 <DemandWrite
                     description={description}
@@ -500,6 +561,5 @@ const DemandForm = () => {
         </div>
     );
 };
-
 
 export default DemandForm;

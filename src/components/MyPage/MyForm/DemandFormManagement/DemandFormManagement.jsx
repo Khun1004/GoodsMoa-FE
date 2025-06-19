@@ -64,6 +64,89 @@ const DemandFormManagement = () => {
     });
   };
 
+
+// id는 수요조사 게시글 id
+  async function urlToFile(url, filename = "image.jpg") {
+    const response = await fetch(url);
+    const blob = await response.blob();
+    return new File([blob], filename, { type: blob.type });
+  }
+
+  const handleConvert = async (id) => {
+    try {
+      const res = await fetch(`http://localhost:8080/demand/convert/${id}`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      if (!res.ok) throw new Error('변환 실패');
+      const data = await res.json();
+
+      // imageFile, productFiles 변환(다운로드) X!
+      // 그냥 URL만 넘김
+      const imageUrl = data.imageUrl ? `http://localhost:8080/${data.imageUrl.replace(/^\/+/, '')}` : null;
+      const productImageUrls = (data.products || []).map(
+          prod => prod.imageUrl ? `http://localhost:8080/${prod.imageUrl.replace(/^\/+/, '')}` : null
+      );
+
+      navigate('/saleform', {
+        state: {
+          from: 'demand',
+          image: imageUrl,
+          productImageUrls, // 상품 이미지 URL 배열
+          title: data.title || "",
+          description: data.description || "",
+          category: getCategoryName(data.category),
+          hashtag: typeof data.hashtag === "string"
+              ? data.hashtag.split(',').map(tag => tag.trim()).filter(Boolean)
+              : [],
+          products: (data.products || []).map((prod, i) => ({
+            id: `temp_${i + 1}`,
+            name: prod.name,
+            price: prod.price,
+            quantity: 1,
+            maxQuantity: 1,
+            image: prod.imageUrl ? `http://localhost:8080/${prod.imageUrl.replace(/^\/+/, '')}` : null,
+            images: prod.imageUrl ? [`http://localhost:8080/${prod.imageUrl.replace(/^\/+/, '')}`] : [],
+            imageUpdated: false,
+          })),
+          start_time: data.startTime ? data.startTime.split(' ')[0] : "",
+          end_time: data.endTime ? data.endTime.split(' ')[0] : "",
+          contentImages: [],
+          shippingMethods: [{ name: '택배', price: '3000' }],
+          isPublic: true,
+          privateCode: "",
+          isPermanent: false,
+          postId: data.id
+        }
+      });
+      console.log("✅ [handleConvert] SaleForm으로 URL만 전달 완료!");
+    } catch (err) {
+      alert("판매글 변환에 실패했습니다: " + err.message);
+      console.error("❌ [handleConvert] 에러 발생:", err);
+    }
+  };
+
+
+
+// category 번호 → 이름 변환 함수
+  const getCategoryName = (id) => {
+    const map = {
+      1: "애니메이션",
+      2: "아이돌",
+      3: "순수창작",
+      4: "게임",
+      5: "영화",
+      6: "드라마",
+      7: "웹소설",
+      8: "웹툰",
+    };
+    return map[id] || "";
+  };
+
+
   const handleDelete = async (id) => {
     if (!window.confirm("정말 삭제하시겠습니까? 삭제 후 복구할 수 없습니다.")) return;
 
@@ -81,6 +164,8 @@ const DemandFormManagement = () => {
       alert("삭제 중 오류 발생: " + err.message);
     }
   };
+
+
 
   return (
       <div className="demandFormMancontainer">
@@ -129,46 +214,60 @@ const DemandFormManagement = () => {
                         </span>
                               ))}
                         </div>
-                        <div className="demandFormManbutton-group">
+                        <div className="demandFormManbutton-group"
+                             style={{display: "flex", gap: "10px", marginTop: "10px"}}>
                           <button
+                              style={{
+                                background: "#5288e3",
+                                color: "#fff",
+                                border: "none",
+                                borderRadius: "8px",
+                                padding: "8px 18px",
+                                fontSize: "16px",
+                                fontWeight: 500,
+                                cursor: "pointer",
+                                transition: "background 0.2s",
+                              }}
                               onClick={() => {
-                                const refinedData = {
-                                  id: formData.id,
-                                  title: formData.title || '',
-                                  category: formData.category || '',
-                                  hashtag: formData.hashtag
-                                      ? formData.hashtag.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0)
-                                      : [],
-                                  startTime: formData.startTime || null,
-                                  endTime: formData.endTime || null,
-                                  imageUrl: formData.imageUrl || null,
-                                  products: Array.isArray(formData.products)
-                                      ? formData.products.map((product) => ({
-                                        id: product.id,
-                                        name: product.name || '',
-                                        price: Number(product.price) || 0,
-                                        imageUrl: product.imageUrl || null,
-                                        targetCount: Number(product.targetCount) || 0,
-                                        achievementRate: Number(product.achievementRate) || 0,
-                                      }))
-                                      : [],
-                                  // 🔴 이 두 줄 꼭 추가!
-                                  description: formData.description || "",
-                                  descriptionImages: formData.descriptionImages || [],
-                                };
-
-                                navigate("/demandform", {
-                                  state: {
-                                    formData: refinedData,
-                                    isEdit: true,
-                                  },
-                                });
+                                // ...생략...
                               }}
                           >
                             수정
                           </button>
-                          <button onClick={() => handleDelete(formData.id)}>삭제</button>
+                          <button
+                              style={{
+                                background: "#26b37a",
+                                color: "#fff",
+                                border: "none",
+                                borderRadius: "8px",
+                                padding: "8px 18px",
+                                fontSize: "16px",
+                                fontWeight: 500,
+                                cursor: "pointer",
+                                transition: "background 0.2s",
+                              }}
+                              onClick={() => handleConvert(formData.id)}
+                          >
+                            판매글 변환
+                          </button>
+                          <button
+                              style={{
+                                background: "#e05252",
+                                color: "#fff",
+                                border: "none",
+                                borderRadius: "8px",
+                                padding: "8px 18px",
+                                fontSize: "16px",
+                                fontWeight: 500,
+                                cursor: "pointer",
+                                transition: "background 0.2s",
+                              }}
+                              onClick={() => handleDelete(formData.id)}
+                          >
+                            삭제
+                          </button>
                         </div>
+
                       </div>
                     </div>
 
