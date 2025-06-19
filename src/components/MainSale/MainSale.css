@@ -20,11 +20,32 @@
     border: 1px solid black;
 }
 
-.divider {
+.divid {
     margin: 2rem auto 0 auto;         /* 위쪽 여백, 중앙 정렬 */
     border: none;                     /* 기본 hr 스타일 제거 */
     border-top: 2px solid #e5e7eb;    /* 윗줄만 2px */
-    width: 90%;                       /* 부모의 90%만 차지 */
-    max-width: 1200px;                /* 필요시 최대폭 제한 */
+    width:62%;                       /* 부모의 90%만 차지 */
+    max-width: 1500px;                /* 필요시 최대폭 제한 */
     box-sizing: border-box;
 }
+
+.sale-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.sale-title-group {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* 아이콘과 텍스트 사이 간격 */
+}
+
+.sale-icon {
+    display: flex;
+    align-items: center;
+    gap: 6px; /* 두 아이콘 간격 */
+}
+
+
+

@@ -7,9 +7,9 @@
 .categoryMain-section {
     position: relative;
     width: 100%;
-    max-width: 1400px;   /* 팜플렛과 동일하게 */
+    max-width: 1500px;   /* 팜플렛과 동일하게 */
     margin: 0 auto 20px auto;  /* 중앙 정렬, 아래 여백 */
-    padding: 0 28px;     /* 팜플렛과 동일한 좌우 패딩 */
+    padding: 0 7px;     /* 팜플렛과 동일한 좌우 패딩 */
 }
 
 
@@ -21,7 +21,7 @@
 .categoryMain-list {
     width: 100%;
     display: flex;
-    gap: 95px;
+    gap: 94px;
     overflow-x: auto;
     box-sizing: border-box;
     justify-content: flex-start;
@@ -43,28 +43,35 @@
 }
 
 .categoryMain-icon {
+    margin-top:0.5rem;
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: #f0f0f1;
-    width: 5rem;
-    height: 4rem;
+    background-color: #ffffff;
+    width: 6rem;
+    height: 6rem;
     border-radius: 0.5rem;
     transition: all 0.3s;
+    padding:2.5em;
+    padding-bottom: 2.7em;
+    border-width: 0.1em;
+    border-color: rgba(0, 0, 0, 0.14);
 }
 
 .categoryMain-icons {
-    font-size: 40px;
+    font-size: 50px;
 }
+
 
 .categoryMain-icon:hover {
     border: 1px solid #999;
 }
 
+
 .categoryMain-name {
-    font-size: 12px;
+    font-size: 15px;
     margin-top: 8px;
-    max-width: 80px;
+    max-width: 100px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;

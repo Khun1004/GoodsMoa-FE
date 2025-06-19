@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import './Category.css';
+import Divider from '../Public/Divider';
 
 const mainCategories = [
     { id: 1, name: "애니메이션", icon: "🎬", route: "/category/1" },
@@ -92,7 +93,7 @@ const Category = ({ title, categories = mainCategories }) => {
                         </button>
                     )}
                 </div>
-                <hr className="divider" />
+
             </div>
         </div>
     );

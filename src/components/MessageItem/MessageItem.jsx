@@ -17,7 +17,7 @@ const MessageItem = ({ msg, myUserId, showSenderInfo }) => {
     }
   };
 
-  const defaultProfileImg = "/profile.jpg";
+  const defaultProfileImg = "/profile.jpeg";
 
   return (
     <div className={`message-wrapper ${isMine ? 'me' : 'other'} ${!showSenderInfo ? 'consecutive' : ''}`}>

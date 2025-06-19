@@ -168,14 +168,14 @@
 .seeTrade {
     /* 1. display 속성을 block으로 변경 */
     display: block;
-    
+
     /* 2. margin 속성을 수정하여 중앙 정렬 */
     /* margin: top right bottom left; */
     /* 아래 코드는 위쪽 여백 20px, 좌우 여백은 자동으로, 아래쪽 여백은 0으로 설정합니다. */
     margin: 20px auto 0;
 
     width: 500px; /* 고정 너비는 그대로 유지 */
-    
+
     background-color: black;
     border: 1px solid black;
     color: white;
@@ -189,4 +189,12 @@
     background-color: white;
     color: black;
     border: 1px solid black;
+}
+
+
+.mainTradeHeaderRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px; /* 기존 margin 그대로 유지 */
 }

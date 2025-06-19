@@ -16,7 +16,7 @@ import Sale8 from '../../../assets/sales/sale8.jpg';
 import Sale9 from '../../../assets/sales/sale9.jpg';
 import CommissionIcon from '../../CommissionIcon/CommissionIcon';
 import './Commission.css';
-
+import SearchBanner from '../../Public/SearchBanner';
 const products1 = [
     { id: 1, src: Sale1, name: "상품 1" },
     { id: 2, src: Sale2, name: "상품 2" },
@@ -34,6 +34,7 @@ const products2 = [
 ];
 
 const Commission = () => {
+    const [searchQuery, setSearchQuery] = useState("");
     const userName = "사용자";
     const [registeredCommissions, setRegisteredCommissions] = useState([]);
     const [liked, setLiked] = useState(() => {
@@ -59,7 +60,7 @@ const Commission = () => {
         // localStorage에서 등록된 커미션 불러오기
         const savedCommissions = JSON.parse(localStorage.getItem('commissions')) || [];
         setRegisteredCommissions(savedCommissions);
-        
+
         // 좋아요 상태 저장
         localStorage.setItem('liked', JSON.stringify(liked));
         localStorage.setItem('selectedProducts', JSON.stringify(selectedProducts));
@@ -81,27 +82,17 @@ const Commission = () => {
         <div className='container'>
             <div className="commission-container">
 
-            <div className="commission-banner">
-                <video 
-                    autoPlay
-                    loop
-                    muted
-                    playsInline
-                    className="commission-video"
-                    disablePictureInPicture
-                    onContextMenu={(e) => e.preventDefault()}
-                >
-                    <source src={welcomeVideo} type="video/mp4" />
-                </video>
-                    <div className="commission-banner-content">
-                    <h1 className="commission-title">😊 원하는 상품을 검색해 보세요 😊</h1>
-                    <input
-                        type="text"
-                        placeholder="상품명 검색🎉🎉"
-                        className="commission-search-input"
+                {true && (
+                    <SearchBanner
+                        title="커미션 검색:"
+                        placeholder="상품명 검색"
+                        searchQuery={searchQuery}
+                        setSearchQuery={setSearchQuery}
+                        handleSearchKeyPress={(e) => {
+                            if (e.key === 'Enter') console.log('검색어:', searchQuery);
+                        }}
                     />
-                </div>
-            </div>
+                )}
 
                 {/* 카테고리 아이콘 섹션 */}
                 <div>
@@ -126,7 +117,7 @@ const Commission = () => {
                                         <CgProfile className="profile-pic" />
                                         <p className="user-name">{userName}</p>
                                     </div>
-                                    <Link to={`/commissionDetail`} 
+                                    <Link to={`/commissionDetail`}
                                         state={{ product, description: product.description }}>
                                         <img src={product.src} alt={product.name} className="commission-image" />
                                     </Link>
@@ -151,7 +142,7 @@ const Commission = () => {
                                         <CgProfile className="profile-pic" />
                                         <p className="user-name">{userName}</p>
                                     </div>
-                                    <Link to={`/commissionDetail`} 
+                                    <Link to={`/commissionDetail`}
                                         state={{ product, description: product.description }}>
                                         <img src={product.src} alt={product.name} className="commission-image" />
                                     </Link>
@@ -189,11 +180,11 @@ const Commission = () => {
                                                 <CgProfile className="profile-pic" />
                                                 <p className="user-name">{userName}</p>
                                             </div>
-                                            <Link to={`/commissionDetail`} 
+                                            <Link to={`/commissionDetail`}
                                                 state={{ commission,  description: commission.editorContent}}>
-                                                <img 
-                                                    src={commission.image} 
-                                                    alt={commission.title} 
+                                                <img
+                                                    src={commission.image}
+                                                    alt={commission.title}
                                                     className="commission-image"
                                                 />
                                             </Link>
@@ -218,7 +209,7 @@ const Commission = () => {
                 </div>
             </div>
         </div>
-        
+
     );
 };
 

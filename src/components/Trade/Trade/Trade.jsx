@@ -14,11 +14,11 @@ import Trade8 from '../../../assets/trades/trade8.jpg';
 import Trade9 from '../../../assets/trades/trade9.jpg';
 import Trade10 from '../../../assets/trades/trade10.jpg';
 import { LoginContext } from "../../../contexts/LoginContext";
+import SearchBanner from '../../Public/SearchBanner';
 import './Trade.css';
 
 const Trade = ({ showBanner = true }) => {
   const { userInfo } = useContext(LoginContext);
-
   const [likedServerPosts, setLikedServerPosts] = useState({});
   const [searchTerm, setSearchTerm] = useState("");
   const [fetchedTradePosts, setFetchedTradePosts] = useState([]);
@@ -39,7 +39,7 @@ const Trade = ({ showBanner = true }) => {
     return storedFormData ? JSON.parse(storedFormData) : null;
   });
   const [showDetails, setShowDetails] = useState(false);
-
+  // const [retryCount, setRetryCount] = useState(0);
   const products1 = [
     { id: 1, src: Trade1, name: "중고거래_1" },
     { id: 2, src: Trade2, name: "중고거래_2" },
@@ -153,19 +153,17 @@ const Trade = ({ showBanner = true }) => {
   return (
     <div className="sale-container">
       {showBanner && (
-        <div className="sale-banner">
-          <div className="sale-banner-content">
-            <h1 className="sale-title">원하는 상품을 검색해 보세요</h1>
-            <input
-              type="text"
+          <SearchBanner
+              title="중고거래 검색:"
               placeholder="상품명, #해시태그 검색"
-              className="sale-search-input"
-              value={searchTerm}
-              onChange={e => setSearchTerm(e.target.value)}
-            />
-          </div>
-        </div>
+              searchQuery={searchTerm}
+              setSearchQuery={setSearchTerm}
+              handleSearchKeyPress={(e) => {
+                if (e.key === 'Enter') console.log('검색어:', searchTerm);
+              }}
+          />
       )}
+
 
       <div className='saleProductFrame'>
         {showBanner && (
@@ -177,51 +175,65 @@ const Trade = ({ showBanner = true }) => {
             <h2 className="sale-heading">중고거래 제품</h2>
           </div>
         )}
-        <div className="sale-grid">
-        {filteredPosts.map((item) => (
-  <div key={item.id} className="sale-card">
-    {/* 프로필 정보 (hover 시 노출) */}
-    <div className="profile-info">
-      {/* 프로필 이미지가 있으면 사용, 없으면 기본 아이콘 */}
-      {item.userImage ? (
-        <img src={item.userImage} alt="유저 프로필" className="profile-pic" />
-      ) : (
-        <CgProfile className="profile-pic" />
-      )}
-       <p className="user-name">{item.userNickName || userName}</p>
-    </div>
-              <Link to={`/tradeDetail/${item.id}`} state={{ item }}>
-                {item.thumbnailImage ? (
-                  <img
-                    src={`http://localhost:8080${item.thumbnailImage.startsWith("/") ? "" : "/"}${item.thumbnailImage}`}
-                    alt={item.title}
-                    className="sale-image"
-                  />
-                ) : (
-                  <div className="no-image">이미지 없음</div>
-                )}
-              </Link>
-              <span className="sale-label">중고거래</span>
-              <button
-                className={`sale-like-button ${likedServerPosts[item.id] ? 'liked' : ''}`}
-                onClick={() => handleServerLikeToggle(item.id)}
-              >
-                <FaHeart size={18} />
-              </button>
-              <p className="sale-product-name">{item.title}</p>
-              {/* 해시태그 항상 보이게 */}
-              {item.hashtag && item.hashtag.trim() && (
-              <div className="tags-list">
-                {item.hashtag
-                  .split(" ")
-                  .filter(tag => tag.trim() !== "")
-                  .map((tag, idx) => (
-                    <span key={idx} className="tag-item">{tag}</span>
-                  ))}
-              </div>
+       <div className="sale-grid">
+  {filteredPosts.map((item) => (
+    <div key={item.id} className="sale-card">
+      {/* 썸네일 이미지를 감싸는 링크 */}
+      <Link to={`/tradeDetail/${item.id}`} state={{ item }}>
+        <div className="card-image-container">
+        {item.thumbnailImage ? (
+          <img
+            src={
+              item.thumbnailImage?.startsWith("http")
+                ? item.thumbnailImage
+                : `http://localhost:8080${item.thumbnailImage}?v=${Date.now()}`
+            }
+            alt={item.title}
+            className="sale-image"
+            onError={e => { e.target.src = "/placeholder.jpg"; }}
+          />
+        ) : (
+          <div className="no-image">이미지 없음</div>
+        )}
+
+          <span className="sale-label">중고거래</span>
+        </div>
+      </Link>
+      
+      {/* ✅ [수정] 텍스트 정보를 담는 컨테이너 추가 */}
+      <div className="card-content-area">
+        <div className="profile-row-vertical">
+          <div className="profile-mini">
+            {item.userImage ? (
+              <img src={item.userImage} alt="프로필" className="profile-pic-mini" />
+            ) : (
+              <CgProfile className="profile-pic-mini" />
             )}
+            <span className="user-name-mini">{item.userNickName || '작성자'}</span>
           </div>
-          ))}
+          <span className="sale-product-title">{item.title}</span>
+        </div>
+        {/* 해시태그 */}
+        {item.hashtag && item.hashtag.trim() && (
+          <div className="tags-list">
+            {item.hashtag.split(" ").filter(tag => tag.trim() !== "").map((tag, idx) => (
+              <span key={idx} className="tag-item">{tag}</span>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* ✅ [수정] 좋아요 버튼을 카드 하단으로 이동 */}
+      <div className="card-footer-area">
+        <button
+          className={`sale-like-button ${likedServerPosts[item.id] ? 'liked' : ''}`}
+          onClick={() => handleServerLikeToggle(item.id)}
+        >
+          <FaHeart size={18} />
+        </button>
+      </div>
+    </div>
+  ))}
           {/* 커스텀 상품(직접 등록) */}
           {isTradeSubmitted && savedTradeFormData && (
             <div className="customProductFrame">

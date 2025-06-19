@@ -298,7 +298,7 @@ export default function ChatApp() {
               onClick={() => setCurrentRoomId(room.id)}
             >
               <img
-                src={room.sellerProfileImage || "/profile.jpg"}
+                src={room.sellerProfileImage || "/profile.jpeg"}
                 className="chatroom-avatar"
               />
               <div className="chatroom-info">

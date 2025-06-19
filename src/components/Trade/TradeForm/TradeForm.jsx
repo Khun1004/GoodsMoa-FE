@@ -1,7 +1,8 @@
-import React, { useContext, useEffect, useState } from "react"; // useContext 추가
+import React, { useEffect, useState, useContext } from "react";  // useContext 추가
 import { useLocation, useNavigate } from "react-router-dom";
-import { LoginContext } from "../../../contexts/LoginContext"; // 경로 수정
 import "./TradeForm.css";
+import { LoginContext } from "../../../contexts/LoginContext"; // 경로 수정
+import { TradeContext } from "../../../contexts/TradeContext";
 
 const TradeForm = () => {
   const { userInfo, isLogin } = useContext(LoginContext);  // useContext로 로그인 정보 가져오기
@@ -13,27 +14,16 @@ const TradeForm = () => {
   const [marker, setMarker] = useState(null);
   const [tagInput, setTagInput] = useState("");
   const [category, setCategory] = useState("");
+  const { formTradeData, setFormTradeData } = useContext(TradeContext);
+
+  
+
+  
   const contentImageFiles = location.state?.formTradeData?.contentImageFiles || [];
 
 
 
-  const [formTradeData, setFormTradeData] = useState({
-    title: "",
-    categoryId: "", // ✅ 추가
-    tags: [],
-     description: [],
-    price: "",
-    condition: "중고",
-    shipping: "사용",
-    directTrade: "직거래",
-    directTradeLocation: "",
-    representativeImage: null,
-    detailImages: [],
-    contentImageFiles: [],
-    representativeImageFile: null, // ✅ 필수
-  detailImageFiles: [], // ✅ 필수
-  userId: userInfo?.id, 
-  });
+ 
 
   const categoryOptions = [
     { id: 1, name: "애니메이션" },
@@ -48,50 +38,87 @@ const TradeForm = () => {
   
   
 
-useEffect(() => {
-  if (location.state?.formTradeData) {
-    const incoming = location.state.formTradeData;
-    const isEdit = location.state?.isEditMode ?? !!incoming?.id;
+ useEffect(() => {
+  const incoming = location.state?.formTradeData;
+  const isEdit = location.state?.isEditMode ?? !!incoming?.id;
 
-    console.log("📷 incoming.imageUrl:", incoming.imageUrl);
+  if (incoming) {
+  const isDescriptionOnly = Object.keys(incoming).every((key) =>
+    ["description", "contentImageFiles"].includes(key)
+  );
 
-    const detailImages = incoming.imageUrl?.map(img =>
-      img.imagePath.startsWith("http")
-        ? img.imagePath
-        : `http://localhost:8080${img.imagePath}`
-    ) || [];
-
-    const representativeImage = incoming.thumbnailImage?.startsWith("http")
-      ? incoming.thumbnailImage
-      : `http://localhost:8080${incoming.thumbnailImage}`;
-
-    const mergedData = {
-      ...formTradeData,
-      ...incoming,
-      tags: Array.isArray(incoming.tags)
-        ? incoming.tags
-        : incoming.hashtag?.split(",") || [],
-      detailImages, // ✅ 이미지 미리보기용 URL
-      detailImageFiles: [], // ✅ 업로드용 File 객체는 따로 초기화
-      imageUrl: incoming.imageUrl || [], // ✅ 이미지 ID 추적용 원본 객체 유지
-      representativeImage: representativeImage || null,
-      representativeImageFile: null,
-      deleteProductImageIds: [],
-      condition: incoming.conditionStatus === "새상품" ? "새상품" : "중고",
-      shipping: incoming.delivery === false ? "비사용" : "사용",
-      directTrade: incoming.direct === false ? "택배" : "직거래",
-      price: incoming.productPrice?.toString() || "",
-      categoryId: incoming.categoryId?.toString() || "",
-    };
-
-    console.log("📦 mergedData (setFormTradeData):", mergedData);
-    console.log("🧩 detailImages:", detailImages);
-    console.log("🧩 imageUrl:", incoming.imageUrl); 
-    console.log("✅ formTradeData.detailImages:", formTradeData.detailImages);
-    setFormTradeData(mergedData);
-    setIsEditMode(isEdit);
+  if (isDescriptionOnly) {
+    setFormTradeData((prev) => ({
+      ...prev,
+      description: incoming.description,
+      contentImageFiles: incoming.contentImageFiles || [],
+    }));
+    return;
   }
-}, [location.state?.formTradeData]);
+
+  setFormTradeData((prev) => ({
+    ...prev,
+    ...incoming,
+    tags: Array.isArray(incoming.tags)
+      ? incoming.tags
+      : incoming.hashtag?.split(",") || prev.tags,
+    detailImages: incoming.detailImages ?? prev.detailImages, // 🔥 수정
+    detailImageFiles: incoming.detailImageFiles ?? prev.detailImageFiles, // 🔥 수정
+    imageUrl: incoming.imageUrl ?? prev.imageUrl,
+   representativeImage: incoming.representativeImage
+  ? incoming.representativeImage
+  : incoming.thumbnailImage
+    ? (incoming.thumbnailImage.startsWith("http")
+        ? incoming.thumbnailImage
+        : `http://localhost:8080${incoming.thumbnailImage}`)
+    : prev.representativeImage,
+
+    representativeImageFile: incoming.representativeImageFile ?? prev.representativeImageFile,
+    deleteProductImageIds: [],
+    condition: incoming.conditionStatus
+      ? (incoming.conditionStatus === "새상품" ? "새상품" : "중고")
+      : prev.condition,
+    shipping: incoming.delivery !== undefined
+      ? (incoming.delivery === false ? "비사용" : "사용")
+      : prev.shipping,
+   directTrade: isEdit ? "직거래" : (
+  incoming.direct !== undefined
+    ? (incoming.direct === false ? "택배" : "직거래")
+    : prev.directTrade
+),
+
+    price: incoming.productPrice?.toString() ?? prev.price,
+    categoryId: incoming.categoryId?.toString() ?? prev.categoryId,
+  }));
+
+
+
+    setIsEditMode(isEdit);
+  } else {
+    // 새 글 작성
+    setFormTradeData({
+      title: "",
+      price: "",
+      condition: "중고",
+      shipping: "사용",
+      directTrade: "직거래",
+      directTradeLocation: "",
+      representativeImage: null,
+      representativeImageFile: null,
+      detailImages: [],
+      detailImageFiles: [],
+      imageUrl: [],
+      deleteProductImageIds: [],
+      tags: [],
+      categoryId: "",
+      description: [],
+      contentImageFiles: [],
+    });
+    setIsEditMode(false);
+  }
+}, [location.state]);
+
+
 
 
 
@@ -148,8 +175,9 @@ useEffect(() => {
   }, [map, marker]);
 
   useEffect(() => {
-    const loadKakaoMap = () => {
-      if (window.kakao && window.kakao.maps) {
+  const loadKakaoMap = () => {
+    if (window.kakao && window.kakao.maps) {
+      setTimeout(() => {  // 💡 DOM 렌더링 이후에 실행되도록 delay
         const container = document.getElementById("map");
         if (!container) return;
 
@@ -160,18 +188,19 @@ useEffect(() => {
 
         const newMap = new window.kakao.maps.Map(container, options);
         setMap(newMap);
-      } else {
-        setTimeout(loadKakaoMap, 1000);
-      }
-    };
-
-    if (document.readyState === "complete") {
-      loadKakaoMap();
+      }, 300); // 딜레이
     } else {
-      window.addEventListener("load", loadKakaoMap);
-      return () => window.removeEventListener("load", loadKakaoMap);
+      setTimeout(loadKakaoMap, 1000);
     }
-  }, []);
+  };
+
+  if (document.readyState === "complete") {
+    loadKakaoMap();
+  } else {
+    window.addEventListener("load", loadKakaoMap);
+    return () => window.removeEventListener("load", loadKakaoMap);
+  }
+}, []);
 
   // useEffect(() => {
   //   console.log("Location state changed:", location.state);
@@ -385,9 +414,13 @@ const handleSubmit = async (e) => {
       new Blob([JSON.stringify(tradePostData)], { type: "application/json" })
     );
 
-    if (repImageFile) {
-      formData.append(isEditMode ? "newThumbnailImage" : "thumbnailImage", repImageFile);
-    }
+   if (repImageFile) {
+  formData.append(isEditMode ? "newThumbnailImage" : "thumbnailImage", repImageFile);
+} else if (isEditMode && formTradeData.representativeImage) {
+  // 썸네일을 새로 업로드하지 않았다면, 기존 경로를 서버에 전달
+  formData.append("thumbnailImagePath", formTradeData.representativeImage);
+}
+
 
     detailImageFiles.forEach((file) =>
       formData.append(isEditMode ? "newProductImages" : "productImages", file)
@@ -434,6 +467,7 @@ console.log(
 console.log("description 길이 (바이트):", new Blob([formTradeData.description]).size);
 console.log("✅ 로그인 상태:", isLogin);
 console.log("👤 로그인된 사용자 정보:", userInfo);
+console.log("✅ shipping 원본 값:", formTradeData.shipping);
 
 
   return (
@@ -511,54 +545,51 @@ console.log("👤 로그인된 사용자 정보:", userInfo);
           </div>
 
           {/* 상세 설명 */}
-          <div>
-            <label className="form-label">상세설명</label>
-           <div className="description-box">
-  {formTradeData.description ? (
-    <>
-      <div 
-        className="description-display hidden" 
-        dangerouslySetInnerHTML={{ __html: Array.isArray(formTradeData.description)
-          ? formTradeData.description.map(desc =>
-              desc.type === "IMAGE"
-                ? `<img src="${desc.value}" alt="image" />`
-                : `<p>${desc.value}</p>`
-            ).join("")
-          : ""
-        }} 
-      />
-      <button 
+<div>
+  <label className="form-label">상세설명</label>
+  <div className="description-box">
+    {Array.isArray(formTradeData.description) && formTradeData.description.length > 0 ? (
+      <>
+        <div
+          className="description-display hidden"
+          dangerouslySetInnerHTML={{
+            __html: formTradeData.description
+              .map((desc) =>
+                desc.type === "IMAGE"
+                  ? `<img src="${desc.value}" alt="image" />`
+                  : `<p>${desc.value}</p>`
+              )
+              .join("")
+          }}
+        />
+        <button
+          type="button"
+          className="edited-button"
+          onClick={() =>
+            navigate("/tradeWrite", {
+              state: { formTradeData: { ...formTradeData } }
+            })
+          }
+        >
+          수정하기
+        </button>
+      </>
+    ) : (
+      <button
         type="button"
-        className="edited-button" 
-        onClick={() => navigate("/tradeWrite", {
-          state: {
-            formTradeData: {
-              ...formTradeData
-            }
-          }
-        })}
-      >
-        수정하기
-      </button>
-    </>
-  ) : (
-    <button 
-      type="button"
-      className="saleFormWriteBtn" 
-      onClick={() => navigate("/tradeWrite", {
-        state: {
-          formTradeData: {
-            ...formTradeData
-          }
+        className="saleFormWriteBtn"
+        onClick={() =>
+          navigate("/tradeWrite", {
+            state: { formTradeData: { ...formTradeData } }
+          })
         }
-      })}
-    >
-      작성하기
-    </button>
-  )}
+      >
+        작성하기
+      </button>
+    )}
+  </div>
 </div>
 
-          </div>
 
           {/* 가격 입력 */}
           <div className="form-group">

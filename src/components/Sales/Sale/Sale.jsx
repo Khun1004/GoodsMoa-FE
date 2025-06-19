@@ -15,6 +15,7 @@ import Sale7 from '../../../assets/sales/sale7.jpg';
 import Sale8 from '../../../assets/sales/sale8.jpg';
 import Sale9 from '../../../assets/sales/sale9.jpg';
 import { LoginContext } from "../../../contexts/LoginContext";
+import SearchBanner from '../../Public/SearchBanner';
 import './Sale.css';
 import LikeButton from './LikeButton';
 
@@ -452,21 +453,16 @@ const Sale = ({ showBanner = true, showCustomProducts = true }) => {
     return (
         <div className='container'>
             <div className="sale-container">
-                {showBanner && (
-                    <div className="sales-banner">
-                        <div className="sale-banner-content">
-                            <h1 className="sales-title">원하는 상품을 검색해 보세요</h1>
-                            <input 
-                                type="text" 
-                                placeholder="제목, 해시태그 검색" 
-                                className="sale-search-input" 
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                onKeyPress={handleSearchKeyPress}
-                            />
-                        </div>
-                    </div>
+            {showBanner && (
+                    <SearchBanner
+                        title="판매 상품 검색:"
+                        placeholder="제목, 해시태그 검색"
+                        searchQuery={searchQuery}
+                        setSearchQuery={setSearchQuery}
+                        handleSearchKeyPress={handleSearchKeyPress}
+                    />
                 )}
+
 
                 <div className='saleProductFrame'>
                     {/* 검색 중이 아닐 때만 헤더 표시 */}

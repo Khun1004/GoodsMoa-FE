@@ -28,3 +28,10 @@
     max-width: 1200px;                /* 필요시 최대폭 제한 */
     box-sizing: border-box;
 }
+
+.demand-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}

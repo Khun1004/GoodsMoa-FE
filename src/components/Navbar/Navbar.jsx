@@ -4,7 +4,7 @@ import { FaCartShopping } from "react-icons/fa6";
 import { IoMdSearch } from "react-icons/io";
 import { MdMonochromePhotos } from "react-icons/md";
 import { Link, useNavigate } from "react-router-dom";
-import Logo from "../../assets/logo.png";
+import Logo from "../../assets/GoodsmoaLogo.png";
 import NavbarHeaderVideo from '../../assets/navbar1.mp4';
 import { LoginContext } from "../../contexts/LoginContext";
 import DarkMode from "./DarkMode";
@@ -41,20 +41,20 @@ const Navbar = () => {
             const products = storedProducts ? JSON.parse(storedProducts) : [];
             setCartCount(products.length);
         };
-    
+
         updateCartCount();
-    
+
         const handleStorageChange = () => {
             updateCartCount();
         };
-    
+
         window.addEventListener("storage", handleStorageChange);
-    
+
         return () => {
             window.removeEventListener("storage", handleStorageChange);
         };
     }, []);
-    
+
     useEffect(() => {
         const storedProducts = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
         setCartCount(storedProducts.length);
@@ -78,6 +78,7 @@ const Navbar = () => {
         );
         setIsMobileMenuOpen(false);
     };
+
 
     const toggleFormMenu = (e) => {
         e.stopPropagation();
@@ -132,7 +133,7 @@ const Navbar = () => {
                     <Link to="/" className="navbar__logo">
                         <img src={Logo} alt="Logo" className="navbar__logo-img" />
                         <span className="navbar__bouncing-text">
-                            <span>굿</span><span>즈</span><span>모</span><span>아</span>
+
                         </span>
                     </Link>
 
@@ -154,7 +155,7 @@ const Navbar = () => {
                             </div>
                         </button>
 
-                        <DarkMode />
+               {/*         <DarkMode />*/}
 
                         {/* 로그인 여부로 분기 */}
                         <div className="relative form-menu-container">
