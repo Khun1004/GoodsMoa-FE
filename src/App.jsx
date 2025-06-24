@@ -24,6 +24,7 @@ import DemandForm from "./components/Demands/DemandForm/DemandForm.jsx";
 import DemandReportPage from "./components/Demands/DemandReportPage/DemandReportPage";
 import DemandReportPerfect from "./components/Demands/DemandReportPerfect/DemandReportPerfect";
 import DemandWrite from "./components/Demands/DemandWrite/DemandWrite";
+import HomeDemandList from "./components/Demands/HomeDemandList/HomeDemandList"
 import Footer from "./components/Footer/Footer";
 import Hero from "./components/Hero/Hero";
 import Like from "./components/Like/Like";
@@ -222,6 +223,16 @@ const AppContent = ({
         />
 
         {/* Demand Page */}
+
+          <Route
+              path="/HomeDemandList"
+              element={
+                  <div className="pt-[130px]">
+                      <HomeDemandList />
+                  </div>
+              }
+          />
+
         <Route
           path="/demand"
           element={

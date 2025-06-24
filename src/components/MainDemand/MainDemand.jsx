@@ -2,7 +2,7 @@ import React from 'react';
 import { FaHeart } from 'react-icons/fa';
 import { SlSocialDropbox } from "react-icons/sl";
 import { useNavigate } from 'react-router-dom';
-import Sale from '../Demands/Demand/Demand';
+import Sale from '../Demands/HomeDemandList/HomeDemandList';
 import './MainDemand.css';
 import SeeMoreButton from '../Public/seeMoreButton.jsx'; // 버튼 컴포넌트 추가!
 import Divider from '../Public/Divider';
