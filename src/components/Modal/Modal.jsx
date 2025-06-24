@@ -156,7 +156,8 @@ const Modal = ({ closeModal }) => {
                 closeModal();
             }
         };
-        
+        window.scrollTo(0, 0); // 화면 상단으로
+
         window.addEventListener("keydown", handleEscKey);
         
         // Prevent body scrolling when modal is open
