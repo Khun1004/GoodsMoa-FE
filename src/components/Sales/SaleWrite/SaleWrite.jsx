@@ -206,7 +206,13 @@ const SaleWrite = () => {
                                     className="delete-image-button"
                                     onClick={() => {
                                         setImages(images.filter((_, i) => i !== index));
-                                        setContent(content.replace(img.url, ''));
+
+                                        const newContent = content.replace(
+                                            new RegExp(`<img[^>]+src=["']${img.url}["'][^>]*>`, 'g'),
+                                            ''
+                                        );
+
+                                        setContent(newContent);
                                     }}
                                     aria-label="Delete image"
                                 >
