@@ -1,3 +1,5 @@
+import api from '../api/api'; // Assuming this is the path to your axios instance
+
 const API_BASE_URL = 'http://localhost:8080';
 
 class ProductService {
@@ -30,52 +32,85 @@ class ProductService {
 
     async request(endpoint, method, body = null, isMultipart = false) {
         const url = `${API_BASE_URL}${endpoint}`;
-        const token = localStorage.getItem('auth_token');
-        const headers = {};
-        if (!isMultipart && !headers['Content-Type']) {
-            headers['Content-Type'] = 'application/json';
-        }
-        if (token) {
-            headers['Authorization'] = `Bearer ${token}`;
-        }
         const config = {
-            method,
-            headers,
-            credentials: 'include',
+            headers: {},
+            withCredentials: true,
         };
-        if (body) {
-            config.body = isMultipart ? body : JSON.stringify(body);
+
+        // Only set Content-Type for non-multipart JSON requests
+        if (!isMultipart) {
+            config.headers['Content-Type'] = 'application/json';
         }
+        // For multipart requests, explicitly avoid setting Content-Type
+        // Axios will automatically set Content-Type: multipart/form-data with boundary
+
+        let data = body;
+        // Only stringify body for non-multipart JSON requests
+        if (body && !isMultipart) {
+            data = JSON.stringify(body);
+        }
+        // For multipart, pass FormData directly
 
         try {
-            const response = await fetch(url, config);
+            // Log request details for debugging
+            console.log('Request URL:', url);
+            console.log('Request Method:', method);
+            console.log('Request Data:', body);
+            console.log('Is Multipart:', isMultipart);
+            console.log('Request Config:', config);
 
-            // 👉 실패 응답 처리
-            if (!response.ok) {
-                const errorContent = await response.text();
+            const response = await api({
+                method,
+                url,
+                data,
+                ...config,
+            });
 
-                // 🔍 404 + 특정 요청이면 false 리턴
-                if (response.status === 404 && endpoint.startsWith('/product-like/my-likes/')) {
-                    console.warn(`🤍 좋아요 안 되어 있음 (endpoint: ${endpoint})`);
-                    return false;
-                }
+            // Log response headers for debugging
+            console.log('Response Headers:', response.headers);
 
-                try {
-                    const errorData = JSON.parse(errorContent);
-                    throw new Error(errorData.message || `Request failed with status ${response.status}`);
-                } catch {
-                    throw new Error(errorContent || `Request failed with status ${response.status}`);
-                }
-            }
-
-            const contentType = response.headers.get('content-type');
+            // Return response data
+            const contentType = response.headers['content-type'];
             if (contentType && contentType.includes('application/json')) {
-                return await response.json();
+                return response.data;
             }
-            return await response.text();
+            return response.data;
+
         } catch (error) {
-            // ❗ 기타 에러만 로그 출력
-            if (!(endpoint.startsWith('/product-like/my-likes/') && error.message.includes('404'))) {
+            // Log error details for debugging
+            console.error('Request Error:', error);
+            if (error.response) {
+                console.error('Error Response Data:', error.response.data);
+                console.error('Error Response Headers:', error.response.headers);
+            }
+
+            // Special handling for 404 on like checks
+            if (error.response && error.response.status === 404 && endpoint.startsWith('/product-like/my-likes/')) {
+                console.warn(`🤍 좋아요 안 되어 있음 (endpoint: ${endpoint})`);
+                return false;
+            }
+
+            // Handle error response
+            if (error.response) {
+                const errorContent = error.response.data;
+                let errorMessage = `Request failed with status ${error.response.status}`;
+
+                if (typeof errorContent === 'string') {
+                    try {
+                        const errorData = JSON.parse(errorContent);
+                        errorMessage = errorData.message || errorMessage;
+                    } catch {
+                        errorMessage = errorContent || errorMessage;
+                    }
+                } else if (errorContent && errorContent.message) {
+                    errorMessage = errorContent.message;
+                }
+
+                throw new Error(errorMessage);
+            }
+
+            // Log non-404 errors for non-like endpoints
+            if (!(endpoint.startsWith('/product-like/my-likes/') && error.message?.includes('404'))) {
                 console.error(`API ${method} request to ${endpoint} failed:`, error);
             }
             throw new Error(error.message || 'Network request failed');
@@ -92,7 +127,7 @@ class ProductService {
 
         if (typeof image === 'string' && image.startsWith('blob:')) {
             try {
-                const response = await fetch(image);
+                const response = await fetch(image); // Keep fetch here as it's for blob conversion
                 const blob = await response.blob();
                 const matches = image.match(/^data:(image\/\w+);base64,/);
                 const type = matches ? matches[1] : blob.type || 'image/jpeg';
@@ -136,7 +171,7 @@ class ProductService {
                     return {
                         file: result.file,
                         extension: result.extension || 'png',
-                        index: product.imageIndex || index + 1, // 이미지 인덱스 사용
+                        index: product.imageIndex || index + 1,
                         productId: product.id,
                     };
                 })
@@ -251,7 +286,7 @@ class ProductService {
                     return {
                         file: isNewImage ? result.file : null,
                         extension: result.extension || 'png',
-                        index: product.imageIndex || index + 1, // 이미지 인덱스 사용
+                        index: product.imageIndex || index + 1,
                         productId: product.id,
                         existingUrl: !isNewImage && product.image ? product.image : null
                     };
@@ -334,7 +369,6 @@ class ProductService {
                         let imageUrl = product.image;
 
                         if (productImage.file) {
-                            // 변경: postId와 productId를 조합한 파일명 사용
                             imageUrl = `${API_BASE_URL}/productPost/product/${response.id}_${product.id}.${ext}`;
                             console.log(`Assigned new product image URL: ${imageUrl}`);
                         } else if (productImage.existingUrl) {
@@ -403,25 +437,17 @@ class ProductService {
 
     async deletePost(postId) {
         try {
-            const response = await fetch(`${API_BASE_URL}/product/post-delete/${postId}`, {
-                method: 'DELETE',
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
-                    'Content-Type': 'application/json',
-                },
-                credentials: 'include',
+            const response = await api.delete(`/product/post-delete/${postId}`, {
+                withCredentials: true,
             });
-            if (!response.ok) {
-                const errorData = await response.json();
-                if (errorData.message.includes('foreign key constraint')) {
-                    throw new Error('이 게시물은 배송 정보와 연결되어 있어 삭제할 수 없습니다. 관리자에게 문의하세요.');
-                }
-                throw new Error(errorData.message || `게시물 삭제 실패 (상태 코드: ${response.status})`);
-            }
-            return {};
+
+            return response.data;
         } catch (error) {
             console.error('Delete post error:', error);
-            throw new Error(`게시물 삭제 실패: ${error.message}`);
+            if (error.response?.data?.message?.includes('foreign key constraint')) {
+                throw new Error('이 게시물은 배송 정보와 연결되어 있어 삭제할 수 없습니다. 관리자에게 문의하세요.');
+            }
+            throw new Error(`게시물 삭제 실패: ${error.response?.data?.message || error.message}`);
         }
     }
 
@@ -435,7 +461,6 @@ class ProductService {
         }
     }
 
-    // 좋아요 추가
     async likeProduct(postId) {
         if (isNaN(postId)) {
             throw new Error('Invalid post ID');
@@ -448,7 +473,6 @@ class ProductService {
         }
     }
 
-    // 좋아요 해제
     async unlikeProduct(postId) {
         if (isNaN(postId)) {
             throw new Error('Invalid post ID');
@@ -461,7 +485,6 @@ class ProductService {
         }
     }
 
-    // 좋아요 목록 불러오기
     async getLikedPosts(page = 0) {
         try {
             const query = `?page=${page}&size=10&sort=id,DESC`;
@@ -472,17 +495,14 @@ class ProductService {
         }
     }
 
-    // 특정 좋아요 게시물 1건 조회
     async getSingleLikedPost(id) {
         try {
             return await this.request(`/product-like/my-likes/${id}`, 'GET');
         } catch (error) {
-            // 404면 좋아요 안 된 걸로 처리하고 false 반환
             if (error.message.includes("404")) {
                 return false;
             }
 
-            // 그 외는 진짜 에러
             console.error(`ID ${id}에 해당하는 좋아요 게시물 조회 오류:`, error);
             throw new Error(`게시물(ID: ${id}) 정보를 가져오는데 실패했습니다: ${error.message}`);
         }
@@ -575,7 +595,7 @@ class ProductService {
                         )),
                         image: product.image,
                         available: '판매중',
-                            imageUpdated: !!product.imageUpdated
+                        imageUpdated: !!product.imageUpdated
                     };
                 })
                 .filter(product => product !== null);

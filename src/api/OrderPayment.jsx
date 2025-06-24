@@ -1,3 +1,5 @@
+import api from '../api/api';
+
 const API_BASE_URL = 'http://localhost:8080';
 
 class OrderPayment {
@@ -33,35 +35,54 @@ class OrderPayment {
             userInfo: this.userInfo,
             hasToken: !!this.userInfo?.token
         });
+
+        const url = `${API_BASE_URL}${endpoint}`;
+        const config = {
+            headers: {
+                'Content-Type': 'application/json',
+                ...(this.userInfo?.token && {
+                    'Authorization': `Bearer ${this.userInfo.token}`
+                })
+            },
+            withCredentials: true,
+        };
+
+        let data = body;
+        if (body) {
+            data = JSON.stringify(body);
+        }
+
         try {
-            const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+            const response = await api({
                 method,
-                headers: {
-                    'Content-Type': 'application/json',
-                    ...(this.userInfo?.token && {
-                        'Authorization': `Bearer ${this.userInfo.token}`
-                    })
-                },
-                credentials: 'include',
-                body: body ? JSON.stringify(body) : null
+                url,
+                data,
+                ...config,
             });
 
-            // 인증 실패 시 로그인 페이지로 리디렉션
-            if (response.status === 401) {
+            // Log response headers for debugging
+            console.log('Response Headers:', response.headers);
+
+            // Return response data
+            return response.data;
+
+        } catch (error) {
+            console.error(`API request error: ${method} ${endpoint}`, error);
+
+            // Handle 401 Unauthorized
+            if (error.response?.status === 401) {
                 console.error('Unauthorized request. Redirecting to login.');
                 window.location.href = '/login?expired=true';
                 throw new Error('Authentication expired');
             }
 
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}));
-                throw new Error(errorData.message || `Request failed with status ${response.status}`);
+            // Handle other errors
+            if (error.response) {
+                const errorData = error.response.data || {};
+                throw new Error(errorData.message || `Request failed with status ${error.response.status}`);
             }
 
-            return await response.json();
-        } catch (error) {
-            console.error(`API request error: ${method} ${endpoint}`, error);
-            throw error;
+            throw new Error(error.message || 'Network request failed');
         }
     }
 
@@ -166,7 +187,7 @@ class OrderPayment {
             const userId = this.getUserId();
             console.log('Processing payment for user:', userId);
 
-            const orderData = this.prepareOrderData(
+            const orderData = await this.prepareOrderData(
                 products,
                 formData,
                 selectedDelivery,
@@ -209,8 +230,8 @@ class OrderPayment {
             if (error.message.includes('User') || error.message.includes('user')) {
                 return {
                     success: false,
-                    error: '로그인이 필요합니다',
-                    userError: true
+                    error: '로그인이 필요합니다.',
+                    userError: true,
                 };
             }
 
@@ -219,7 +240,7 @@ class OrderPayment {
                 return {
                     success: false,
                     error: '상품 정보가 잘못되었습니다. 장바구니를 다시 확인해주세요.',
-                    productError: true
+                    productError: true,
                 };
             }
 
