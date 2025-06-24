@@ -45,7 +45,7 @@ const Demand = ({ showBanner = true }) => {
     const [includeScheduled, setIncludeScheduled] = useState(true);
     const [page, setPage] = useState(0);
     const [totalPages, setTotalPages] = useState(0);
-    const pageSize = 8;
+    const pageSize = 10;
 
     const fetchDemandProducts = useCallback(
         _.debounce(async () => {
