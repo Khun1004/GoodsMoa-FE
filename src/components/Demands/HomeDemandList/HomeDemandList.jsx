@@ -6,10 +6,10 @@ import { SlSocialDropbox } from 'react-icons/sl';
 import { Link, useLocation } from 'react-router-dom';
 import welcomeVideo from '../../../assets/demandWelcome.mp4';
 import Demand1 from '../../../assets/demands/demand1.jpg';
-import './Demand.css';
+import '../Demand/Demand.css';
 
 // 새로 만든 컴포넌트 import
-import DemandSearchBar from '../DemandSearchBar/DemandSearchBar';
+// import DemandSearchBar from '../DemandSearchBar/DemandSearchBar.jsx';
 
 const categoryOptions = [
     { id: 0, name: '전체' },
@@ -99,29 +99,29 @@ const Demand = ({ showBanner = true }) => {
         <div className="container">
             <div className="demand-container">
                 {/* 검색/필터 컴포넌트 분리 */}
-                <DemandSearchBar
-                    category={category}
-                    setCategory={setCategory}
-                    searchTerm={searchTerm}
-                    setSearchTerm={setSearchTerm}
-                    orderBy={orderBy}
-                    setOrderBy={setOrderBy}
-                    includeExpired={includeExpired}
-                    setIncludeExpired={setIncludeExpired}
-                    includeScheduled={includeScheduled}
-                    setIncludeScheduled={setIncludeScheduled}
-                    categoryOptions={categoryOptions}
-                />
+                {/*<DemandSearchBar*/}
+                {/*    category={category}*/}
+                {/*    setCategory={setCategory}*/}
+                {/*    searchTerm={searchTerm}*/}
+                {/*    setSearchTerm={setSearchTerm}*/}
+                {/*    orderBy={orderBy}*/}
+                {/*    setOrderBy={setOrderBy}*/}
+                {/*    includeExpired={includeExpired}*/}
+                {/*    setIncludeExpired={setIncludeExpired}*/}
+                {/*    includeScheduled={includeScheduled}*/}
+                {/*    setIncludeScheduled={setIncludeScheduled}*/}
+                {/*    categoryOptions={categoryOptions}*/}
+                {/*/>*/}
 
                 {/* 이하 기존 코드 동일! */}
                 <div className="demandProductFrame">
-                    <div className="demand-header">
-                        <div className="demand-icon">
-                            <SlSocialDropbox className="demandbox-icon"/>
-                            <FaHeart className="heart-icon"/>
-                        </div>
-                        <h2 className="demand-heading">수요조사</h2>
-                    </div>
+                    {/*<div className="demand-header">*/}
+                    {/*    <div className="demand-icon">*/}
+                    {/*        <SlSocialDropbox className="demandbox-icon"/>*/}
+                    {/*        <FaHeart className="heart-icon"/>*/}
+                    {/*    </div>*/}
+                    {/*    <h2 className="demand-heading">수요조사</h2>*/}
+                    {/*</div>*/}
 
                     {loading && <div className="loading-box"
                                      style={{textAlign: 'center', margin: '40px 0', fontSize: '18px', color: '#888'}}>🔄
@@ -226,25 +226,25 @@ const Demand = ({ showBanner = true }) => {
                     )}
                 </div>
 
-                <div className="pagination" style={{textAlign: 'center', marginTop: '30px'}}>
-                    {Array.from({length: totalPages}, (_, i) => (
-                        <button
-                            key={i}
-                            onClick={() => setPage(i)}
-                            style={{
-                                margin: '0 5px',
-                                padding: '6px 10px',
-                                backgroundColor: i === page ? '#333' : '#eee',
-                                color: i === page ? '#fff' : '#000',
-                                border: 'none',
-                                borderRadius: '4px',
-                                cursor: 'pointer'
-                            }}
-                        >
-                            {i + 1}
-                        </button>
-                    ))}
-                </div>
+                {/*<div className="pagination" style={{textAlign: 'center', marginTop: '30px'}}>*/}
+                {/*    {Array.from({length: totalPages}, (_, i) => (*/}
+                {/*        <button*/}
+                {/*            key={i}*/}
+                {/*            onClick={() => setPage(i)}*/}
+                {/*            style={{*/}
+                {/*                margin: '0 5px',*/}
+                {/*                padding: '6px 10px',*/}
+                {/*                backgroundColor: i === page ? '#333' : '#eee',*/}
+                {/*                color: i === page ? '#fff' : '#000',*/}
+                {/*                border: 'none',*/}
+                {/*                borderRadius: '4px',*/}
+                {/*                cursor: 'pointer'*/}
+                {/*            }}*/}
+                {/*        >*/}
+                {/*            {i + 1}*/}
+                {/*        </button>*/}
+                {/*    ))}*/}
+                {/*</div>*/}
             </div>
         </div>
     );
