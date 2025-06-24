@@ -1,3 +1,5 @@
+import api from '../api/api'; // Assuming this is the path to your axios instance
+
 const API_BASE_URL = 'http://localhost:8080';
 
 class OrderSaleDetail {
@@ -21,43 +23,77 @@ class OrderSaleDetail {
         return userId;
     }
 
-
     async request(endpoint, method, body = null, isMultipart = false) {
         const url = `${API_BASE_URL}${endpoint}`;
-        const token = localStorage.getItem('auth_token');
-        const headers = {};
-        if (!isMultipart && !headers['Content-Type']) {
-            headers['Content-Type'] = 'application/json';
-        }
-        if (token) {
-            headers['Authorization'] = `Bearer ${token}`;
-        }
         const config = {
-            method,
-            headers,
-            credentials: 'include',
+            headers: {},
+            withCredentials: true,
         };
-        if (body) {
-            config.body = isMultipart ? body : JSON.stringify(body);
-        }
-        try {
-            const response = await fetch(url, config);
-            if (!response.ok) {
-                const errorContent = await response.text();
-                try {
-                    const errorData = JSON.parse(errorContent);
-                    throw new Error(errorData.message || `Request failed with status ${response.status}`);
-                } catch {
-                    throw new Error(errorContent || `Request failed with status ${response.status}`);
-                }
-            }
-            const contentType = response.headers.get('content-type');
 
+        // Only set Content-Type for non-multipart JSON requests
+        if (!isMultipart) {
+            config.headers['Content-Type'] = 'application/json';
+        }
+        // For multipart, let axios set Content-Type: multipart/form-data with boundary
+
+        let data = body;
+        // Only stringify body for non-multipart JSON requests
+        if (body && !isMultipart) {
+            data = JSON.stringify(body);
+        }
+
+        try {
+            // Log request details for debugging
+            console.log('Request URL:', url);
+            console.log('Request Method:', method);
+            console.log('Request Data:', body);
+            console.log('Is Multipart:', isMultipart);
+            console.log('Request Config:', config);
+
+            const response = await api({
+                method,
+                url,
+                data,
+                ...config,
+            });
+
+            // Log response headers for debugging
+            console.log('Response Headers:', response.headers);
+
+            // Return response data
+            const contentType = response.headers['content-type'];
             if (contentType && contentType.includes('application/json')) {
-                return await response.json();
+                return response.data;
             }
-            return await response.text();
+            return response.data;
+
         } catch (error) {
+            // Log error details for debugging
+            console.error('Request Error:', error);
+            if (error.response) {
+                console.error('Error Response Data:', error.response.data);
+                console.error('Error Response Headers:', error.response.headers);
+            }
+
+            // Handle error response
+            if (error.response) {
+                const errorContent = error.response.data;
+                let errorMessage = `Request failed with status ${error.response.status}`;
+
+                if (typeof errorContent === 'string') {
+                    try {
+                        const errorData = JSON.parse(errorContent);
+                        errorMessage = errorData.message || errorMessage;
+                    } catch {
+                        errorMessage = errorContent || errorMessage;
+                    }
+                } else if (errorContent && errorContent.message) {
+                    errorMessage = errorContent.message;
+                }
+
+                throw new Error(errorMessage);
+            }
+
             console.error(`API ${method} request to ${endpoint} failed:`, error);
             throw new Error(error.message || 'Network request failed');
         }
@@ -66,7 +102,7 @@ class OrderSaleDetail {
     async requestTossPayment(orderData) {
         try {
             const response = await this.request('/payment/toss', 'POST', orderData);
-            console.log('/payment/toss 후에 나온 값 :::',response);
+            console.log('/payment/toss 후에 나온 값 :::', response);
             return response;
         } catch (error) {
             console.error('결제 요청 실패:', error);

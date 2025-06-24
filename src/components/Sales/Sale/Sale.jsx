@@ -17,7 +17,6 @@ import Sale9 from '../../../assets/sales/sale9.jpg';
 import { LoginContext } from "../../../contexts/LoginContext";
 import SearchBanner from '../../Public/SearchBanner';
 import './Sale.css';
-import LikeButton from './LikeButton';
 
 const API_BASE_URL = 'http://localhost:8080';
 
@@ -453,7 +452,7 @@ const Sale = ({ showBanner = true, showCustomProducts = true }) => {
     return (
         <div className='container'>
             <div className="sale-container">
-            {showBanner && (
+                {showBanner && (
                     <SearchBanner
                         title="판매 상품 검색:"
                         placeholder="제목, 해시태그 검색"
@@ -462,7 +461,6 @@ const Sale = ({ showBanner = true, showCustomProducts = true }) => {
                         handleSearchKeyPress={handleSearchKeyPress}
                     />
                 )}
-
 
                 <div className='saleProductFrame'>
                     {/* 검색 중이 아닐 때만 헤더 표시 */}
@@ -477,64 +475,95 @@ const Sale = ({ showBanner = true, showCustomProducts = true }) => {
                     )}
 
                     <div className="sale-grid">
-                        {(isSearching ? filteredPosts : posts).map((post) => (
-                            <div key={post.id} className="sale-card">
-                                {/* 썸네일 이미지 클릭 시 상세로 */}
-                                <div onClick={() => handleProductClick(post)}>
+                        {defaultProducts.map((product) => (
+                            <div key={product.id} className="sale-card">
+                                <div onClick={() => handleProductClick(product)}>
                                     <img
-                                        src={`http://localhost:8080/${post.thumbnailImage}`}
-                                        alt={post.title}
+                                        src={product.src}
+                                        alt={product.name}
                                         className="sale-image"
                                         onError={(e) => { e.target.src = placeholderImage; }}
                                     />
                                 </div>
-
-                                {/* 좋아요 버튼 */}
                                 <span className="sale-label">판매</span>
                                 <button
-                                    className={`sale-like-button ${liked[post.id] ? 'liked' : ''}`}
+                                    className={`sale-like-button ${liked[product.id] ? 'liked' : ''}`}
                                     onClick={(e) => {
                                         e.stopPropagation();
-                                        handleLike(post.id);
+                                        handleLike(product.id);
                                     }}
                                 >
                                     <FaHeart size={18} />
                                 </button>
-                                {/* 프로필/유저명/상품명 */}
                                 <div className="sale-profile-block">
                                     <div className="sale-profile-row">
-                                        {post.userImage ? (
-                                            <img
-                                                src={`http://localhost:8080/${post.userImage}`}
-                                                alt="작성자"
-                                                className="sale-profile-pic-mini"
-                                                onError={(e) => { e.target.src = placeholderImage; }}
-                                            />
-                                        ) : (
-                                            <CgProfile className="sale-profile-pic-mini" />
-                                        )}
-                                        <span className="sale-user-name-mini">{post.userNickName}</span>
+                                        <CgProfile className="sale-profile-pic-mini" />
+                                        <span className="sale-user-name-mini">{userName}</span>
                                     </div>
-                                    <div className="sale-product-title">{post.title}</div>
+                                    <div className="sale-product-title">{product.name}</div>
                                 </div>
-
-                                {/* 해시태그 */}
-                                {post.hashtag && (
-                                    <div className="tags-container">
-                                        <div className="tags-list">
-                                            {post.hashtag.split(",").map((tag, idx) => (
-                                                <span key={idx} className="tag-item">#{tag.trim()}</span>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
                             </div>
                         ))}
-                </div>
+                    </div>
                 </div>
 
                 {showCustomProducts && filteredSaleFormData.length > 0 && (
                     <div className="customProductFrame">
+                        <div className="sale-grid">
+                            {(isSearching ? filteredPosts : posts).map((post) => (
+                                <div key={post.id} className="sale-card">
+                                    {/* 썸네일 이미지 클릭 시 상세로 */}
+                                    <div onClick={() => handleProductClick(post)}>
+                                        <img
+                                            src={`http://localhost:8080/${post.thumbnailImage}`}
+                                            alt={post.title}
+                                            className="sale-image"
+                                            onError={(e) => { e.target.src = placeholderImage; }}
+                                        />
+                                    </div>
+
+                                    {/* 좋아요 버튼 */}
+                                    <span className="sale-label">판매</span>
+                                    <button
+                                        className={`sale-like-button ${liked[post.id] ? 'liked' : ''}`}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleLike(post.id);
+                                        }}
+                                    >
+                                        <FaHeart size={18} />
+                                    </button>
+                                    {/* 프로필/유저명/상품명 */}
+                                    <div className="sale-profile-block">
+                                        <div className="sale-profile-row">
+                                            {post.userImage ? (
+                                                <img
+                                                    src={`http://localhost:8080/${post.userImage}`}
+                                                    alt="작성자"
+                                                    className="sale-profile-pic-mini"
+                                                    onError={(e) => { e.target.src = placeholderImage; }}
+                                                />
+                                            ) : (
+                                                <CgProfile className="sale-profile-pic-mini" />
+                                            )}
+                                            <span className="sale-user-name-mini">{post.userNickName}</span>
+                                        </div>
+                                        <div className="sale-product-title">{post.title}</div>
+                                    </div>
+
+                                    {/* 해시태그 */}
+                                    {post.hashtag && (
+                                        <div className="tags-container">
+                                            <div className="tags-list">
+                                                {post.hashtag.split(",").map((tag, idx) => (
+                                                    <span key={idx} className="tag-item">#{tag.trim()}</span>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
                         {/* 검색 중이 아닐 때만 헤더 표시 */}
                         {!isSearching && (
                             <div className='sale-header'>
