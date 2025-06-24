@@ -1,4 +1,5 @@
 import React, { createContext, useEffect, useState } from "react";
+import api from "../api/api"; // axios 인스턴스 import
 
 export const LoginContext = createContext();
 
@@ -15,7 +16,7 @@ const LoginContextProvider = ({ children }) => {
       console.error('User data missing ID:', userData);
       throw new Error('Invalid user data - missing ID');
     }
-    
+        
     const userWithToken = {
       ...userData,
       id: String(userData.id),
@@ -24,7 +25,7 @@ const LoginContextProvider = ({ children }) => {
     setUserInfo(userWithToken);
     localStorage.setItem("userInfo", JSON.stringify(userWithToken));
     setIsLogin(true);
-    
+        
     // 프로필 이미지가 있으면 로드
     if (userData.profileImage) {
       setProfileImage(userData.profileImage);
@@ -39,7 +40,7 @@ const LoginContextProvider = ({ children }) => {
       localStorage.removeItem('profileImage');
     }
   };
-  
+    
   // 초기 상태 로드 시 localStorage에서 프로필 이미지 가져오기
   useEffect(() => {
     const storedProfileImage = localStorage.getItem('profileImage');
@@ -60,30 +61,24 @@ const LoginContextProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      await fetch("http://localhost:8080/users/auth/logout", {
-        method: "POST",
-        credentials: "include",
+      await api.post("/users/auth/logout", {}, {
+        withCredentials: true
       });
     } catch (err) {
       console.error("❌ 로그아웃 실패", err);
     }
     clearUserState();
   };
-
-  
-
+      
   useEffect(() => {
     const fetchUserInfo = async () => {
       try {
-        const res = await fetch("http://localhost:8080/users/info", {
-          credentials: "include",
+        const res = await api.get("/users/info", {
+          withCredentials: true
         });
-  
-        if (!res.ok) throw new Error("인증 실패");
-  
-        const data = await res.json();
-        console.log("받아온 사용자 정보:", data);
-        updateUserState(data);
+          
+        console.log("받아온 사용자 정보:", res.data);
+        updateUserState(res.data);
         console.log("✅ 자동 로그인 성공");
       } catch (err) {
         console.log("❌ 자동 로그인 실패", err);
@@ -93,7 +88,7 @@ const LoginContextProvider = ({ children }) => {
         setIsLoading(false);
       }
     };
-  
+      
     fetchUserInfo();
   }, []);
 
