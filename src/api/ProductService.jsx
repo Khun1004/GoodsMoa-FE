@@ -508,6 +508,44 @@ class ProductService {
         }
     }
 
+    // 리뷰 작성
+    async createReview(postId, reviewData) {
+        try {
+            const formData = new FormData();
+
+            // 1. JSON 본문 데이터
+            const reviewRequest = {
+                postId,
+                rating: reviewData.rating,
+                content: reviewData.content
+            };
+            const jsonBlob = new Blob([JSON.stringify(reviewRequest)], {
+                type: 'application/json'
+            });
+            formData.append('request', jsonBlob);
+
+            // 2. reviewImages가 이미 File 객체일 경우
+            (reviewData.reviewImages || []).forEach((file, index) => {
+                if (file instanceof File) {
+                    formData.append('reviewImages', file);
+                } else {
+                    console.warn(`리뷰 이미지가 File 객체가 아닙니다 (index ${index}):`, file);
+                }
+            });
+
+            // 3. 디버깅 로그
+            for (const [key, val] of formData.entries()) {
+                console.log('🧾 FormData Entry:', key, val);
+            }
+
+            return await this.request(`/product-review/create`, 'POST', formData, true);
+
+        } catch (error) {
+            console.error('리뷰 작성 실패:', error);
+            throw new Error('리뷰 작성 중 오류가 발생했습니다');
+        }
+    }
+
     formatPostData(data) {
         if (!data) {
             console.error('포맷할 데이터가 없습니다');

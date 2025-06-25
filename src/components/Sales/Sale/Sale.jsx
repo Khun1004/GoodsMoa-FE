@@ -305,7 +305,7 @@ const Sale = ({ showBanner = true, showCustomProducts = true }) => {
         try {
             // 1. 상세 정보 조회
             const detailedPost = await productService.getPostDetail(post.id);
-            const imageUrl = `http://localhost:8080/${detailedPost.thumbnailImage}`;
+            const imageUrl = `${detailedPost.thumbnailImage}`;
             const shippingMethods = detailedPost.delivers || [];
 
             // 2. 이동
@@ -515,7 +515,7 @@ const Sale = ({ showBanner = true, showCustomProducts = true }) => {
                                     {/* 썸네일 이미지 클릭 시 상세로 */}
                                     <div onClick={() => handleProductClick(post)}>
                                         <img
-                                            src={`http://localhost:8080/${post.thumbnailImage}`}
+                                            src={`${post.thumbnailImage}`}
                                             alt={post.title}
                                             className="sale-image"
                                             onError={(e) => { e.target.src = placeholderImage; }}

@@ -1,11 +1,13 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./ReviewForm.css";
+import productService from "../../api/ProductService.jsx";
 
 const ReviewForm = ({ selectedPurchase, onClose }) => {
     const [rating, setRating] = useState(0);
     const [hover, setHover] = useState(null);
     const [reviewText, setReviewText] = useState("");
     const [uploadedImages, setUploadedImages] = useState([]);
+
 
     const ratingTexts = ["별로예요", "그저 그래요", "괜찮아요", "좋아요", "최고예요"];
 
@@ -19,44 +21,48 @@ const ReviewForm = ({ selectedPurchase, onClose }) => {
         setUploadedImages(uploadedImages.filter((_, i) => i !== index));
     };
 
-    const handleSubmit = () => {
-        // Ensure we have all necessary data
+    const handleSubmit = async () => {
         if (rating === 0) {
             alert("별점을 선택해주세요.");
             return;
         }
-        
+
         if (reviewText.trim() === "") {
             alert("리뷰 내용을 입력해주세요.");
             return;
         }
 
-        const productId = selectedPurchase.products[0]?.id;
+        const postId = selectedPurchase.products?.[0]?.postId;
+        if (!postId) {
+            alert("상품 ID를 찾을 수 없습니다.");
+            return;
+        }
+        console.log('업로드 이미지 목록11111111111111:', uploadedImages);
+        try {
+            // blob URL → File 객체 변환
+            const filePromises = uploadedImages.map(async (url, index) => {
+                const response = await fetch(url);
+                const blob = await response.blob();
+                return new File([blob], `review_${index + 1}.jpg`, { type: blob.type });
+            });
 
-        const newReview = {
-            purchase: selectedPurchase,
-            rating,
-            reviewText,
-            uploadedImages,
-            productImages: selectedPurchase.products.map(product => product.image),
-            date: new Date().toISOString().split("T")[0],
-            productId, // 상품 ID 반드시 포함
-            nickname: localStorage.getItem('userName') || "익명",
-            profileImage: null
-        };
+            const reviewImages = await Promise.all(filePromises);
 
-        // Add review to localStorage
-        const existingReviews = JSON.parse(localStorage.getItem("reviews")) || [];
-        localStorage.setItem("reviews", JSON.stringify([...existingReviews, newReview]));
+            await productService.createReview(postId, {
+                rating,
+                content: reviewText,
+                reviewImages,
+            });
 
-        // Trigger storage event for other components to detect the change
-        window.dispatchEvent(new Event("storage"));
-        
-        // Close the form and provide feedback
-        alert("리뷰가 성공적으로 등록되었습니다!");
-        onClose();
+            alert("리뷰가 성공적으로 등록되었습니다!");
+            onClose();
+
+        } catch (error) {
+            console.error("리뷰 등록 실패:", error);
+            alert("리뷰 등록에 실패했습니다.");
+        }
     };
-    
+
     return (
         <div className="reviewForm-container">
             <h2 className="reviewForm-Title">리뷰 작성</h2>
@@ -65,7 +71,7 @@ const ReviewForm = ({ selectedPurchase, onClose }) => {
                 {selectedPurchase && selectedPurchase.products.map((product, index) => (
                     <div key={index} className="review-product-item">
                         <img 
-                            src={product.image} 
+                            src={product.imageUrl}
                             alt={product.name} 
                             className="review-product-image" 
                         />

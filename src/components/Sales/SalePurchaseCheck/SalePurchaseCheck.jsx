@@ -56,7 +56,6 @@ export function SalePurchaseCheck() {
         return deliveryMethod ? Number(deliveryMethod.price) : 0;
     };
 
-    const safetyPaymentFee = 2400;
     const totalProductPrice = calculateTotalProductPrice();
     const deliveryCost = getDeliveryCost();
     const totalAmount = totalProductPrice + deliveryCost;
@@ -109,7 +108,6 @@ export function SalePurchaseCheck() {
                     memo: formData.deliveryMemo
                 },
                 deliveryFee: deliveryCost,  // 배송비 명시적으로 포함
-                selectedDelivery: selectedDelivery, // 배송 방법 정보 포함
                 tracking: {
                     number: "",
                     company: ""
