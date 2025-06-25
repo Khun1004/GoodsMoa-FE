@@ -17,6 +17,7 @@ import Sale9 from '../../../assets/sales/sale9.jpg';
 import CommissionIcon from '../../CommissionIcon/CommissionIcon';
 import './Commission.css';
 import SearchBanner from '../../Public/SearchBanner';
+import Category from '../../public/Category/Category';
 const products1 = [
     { id: 1, src: Sale1, name: "상품 1" },
     { id: 2, src: Sale2, name: "상품 2" },
@@ -83,21 +84,23 @@ const Commission = () => {
             <div className="commission-container">
 
                 {true && (
-                    <SearchBanner
-                        title="커미션 검색:"
-                        placeholder="상품명 검색"
-                        searchQuery={searchQuery}
-                        setSearchQuery={setSearchQuery}
-                        handleSearchKeyPress={(e) => {
-                            if (e.key === 'Enter') console.log('검색어:', searchQuery);
-                        }}
-                    />
+                    <>
+                        <SearchBanner
+                            placeholder="커미션 검색"
+                            searchQuery={searchQuery}
+                            setSearchQuery={setSearchQuery}
+                            handleSearchKeyPress={(e) => {
+                                if (e.key === 'Enter') console.log('검색어:', searchQuery);
+                            }}
+                        />
+                        {/*  카테고리 아이콘 (판매처럼) */}
+                        <CommissionIcon />
+
+                        {/*  가로 구분선 */}
+                        <hr className="sale-divider" />
+                    </>
                 )}
 
-                {/* 카테고리 아이콘 섹션 */}
-                <div>
-                    <CommissionIcon />
-                </div>
 
                 {/* 커미션 상품 목록 */}
                 <div className='commissionProductFrame'>

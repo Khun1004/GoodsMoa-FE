@@ -16,7 +16,7 @@ const CommissionIcon = () => {
     };
 
     return (
-        
+
         <div className="commission-icon-container">
             <div className="category-list">
                 {categories.map((category) => (
@@ -32,9 +32,8 @@ const CommissionIcon = () => {
                     </div>
                 ))}
             </div>
-            <hr className="divider" />
         </div>
-        
+
     );
 };
 

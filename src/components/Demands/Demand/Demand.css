@@ -1,5 +1,7 @@
 .demand-container {
     width: 100%;
+    max-width: 1470px !important;
+    margin: 0 0;
 }
 
 .demand-banner {

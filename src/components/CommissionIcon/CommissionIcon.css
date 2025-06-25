@@ -1,36 +1,21 @@
-/* Divider */
-.divider {
-    margin-top: 2rem;
-    border-color: #e5e7eb;
-}
-
-.category-container {
-    width: 100%;
-    background-color: white;
-    padding: 16px 0;
+.commission-icon-container {
     position: relative;
-    margin-left: 0;
-}
-
-.category-wrapper {
-    display: flex;
-    flex-direction: column;
-    gap: 32px;
     width: 100%;
-    margin-left: 0;
-}
-
-.category-section {
-    position: relative;
+    padding: 20;
 }
 
 .category-list {
+    width: 100%;
     display: flex;
-    gap: 5px;
+    gap: 94px; /* 👉 Category와 통일 */
     overflow-x: auto;
-    max-width: 100%;
-    padding: 8px 0;
+    box-sizing: border-box;
     justify-content: flex-start;
+    padding: 0;
+}
+
+.category-list::-webkit-scrollbar {
+    display: none;
 }
 
 .category-item {
@@ -38,21 +23,42 @@
     flex-direction: column;
     align-items: center;
     text-align: center;
-    min-width: 80px;
+    min-width: 70px;
     flex-shrink: 0;
 }
 
 .category-icon {
+    margin-top: 0.5rem;
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: #f0f0f1;
-    width: 4rem;
-    height: 4rem;
+    background-color: #ffffff;
+    width: 6rem;
+    height: 6rem;
     border-radius: 0.5rem;
     transition: all 0.3s;
+    padding: 2.5em;
+    padding-bottom: 2.7em;
+    border-width: 0.1em;
+    border-color: rgba(0, 0, 0, 0.14);
+    border-style: solid;
 }
 
 .category-icon:hover {
     border: 1px solid #999;
+}
+
+.category-name {
+    font-size: 16px;
+    margin-top: 8px;
+    max-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Divider 스타일도 동일하게 */
+.divider {
+    margin-top: 0rem;
+    border-color: #e5e7eb;
 }

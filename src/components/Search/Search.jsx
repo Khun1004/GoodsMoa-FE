@@ -7,7 +7,7 @@ import CommImage1 from '../../assets/commission/comm.png';
 import CommImage2 from '../../assets/commission/comm2.png';
 import CommImage3 from '../../assets/commission/comm3.png';
 import CommImage4 from '../../assets/commission/comm4.png';
-import Category from "../Category/Category";
+import Category from "../public/Category/Category";
 import CommissionIcon from "../CommissionIcon/CommissionIcon";
 import './Search.css';
 
@@ -34,13 +34,13 @@ const Search = () => {
         "영화": "/category/10",
         "드라마": "/category/11",
         "공연/행사": "/category/12",
-    
+
         // From CommissionIcon
         "그림": "/paint",
         "글": "/writing",
         "기타": "/other",
     };
-    
+
     const [searchQuery, setSearchQuery] = useState('');
     const [noResultsFound, setNoResultsFound] = useState(false);
     const navigate = useNavigate();
@@ -92,7 +92,7 @@ const Search = () => {
                     </li>
                     <li className="search-input-container">
                         <IoMdSearch className="search-icon" />
-                        <input 
+                        <input
                             type="text"
                             value={searchQuery}
                             onChange={handleSearchChange}
@@ -137,12 +137,12 @@ const Search = () => {
                 <h1 className="title">품 구경하기</h1>
                 <Category />
             </div>
-            
+
             <div className="commissionVisit">
                 <h1 className="title">커미션 구경하기</h1>
                 <CommissionIcon />
             </div>
-            
+
         </div>
     );
 };

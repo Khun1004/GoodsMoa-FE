@@ -4,7 +4,7 @@ import React, { useContext, useEffect, useState } from "react";
 import { Route, Routes, useLocation } from "react-router-dom";
 import { LoginContext } from "./contexts/LoginContext";
 
-import Category from "./components/Category/Category";
+import Category from "./components/public/Category/Category";
 import ChatApp from "./components/ChatApp/ChatApp";
 import ChatOther from "./components/ChatOther/ChatOther";
 import Chatting from "./components/Chatting/Chatting";
@@ -91,20 +91,28 @@ const AppContent = ({
         <Route
           path="/"
           element={
-            <div className="pt-[120px]">
-              <Hero handleOrderPopup={handleOrderPopup} />
-              <Category />
-              {/* <Products /> */}
-              <MainSale />
-              <MainTrade />
-              <MainDemand />
-            </div>
+              <div className="pt-[120px]">
+                  <Hero handleOrderPopup={handleOrderPopup}/>
+
+                  <div style={{display: "flex", justifyContent: "center", width: "100%"}}>
+                      <div style={{maxWidth: "1430px", width: "100%"}}>
+                          <Category/>
+                          <hr className="sale-divider"/>
+                      </div>
+
+                  </div>
+
+                  {/* <Products /> */}
+                  <MainSale/>
+                  <MainTrade/>
+                  <MainDemand/>
+              </div>
           }
         />
 
-        {/* Commission Page */}
-        <Route
-          path="/commission"
+          {/* Commission Page */}
+          <Route
+              path="/commission"
           element={
             <div className="pt-[130px]">
               <Commission />

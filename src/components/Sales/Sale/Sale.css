@@ -1,10 +1,8 @@
 .sale-container {
     width: 100%;
-    /* max-width: 1300px;
-    margin: 0 auto;
-    padding: 20px; */
+    max-width: 1487px !important;
+    margin: 0 0;
 }
-
 .sales-banner {
     position: relative;
     width: 100%;
@@ -26,7 +24,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background-image: 
+    background-image:
         radial-gradient(circle at 25% 25%, rgba(255,255,255,0.1) 2px, transparent 2px),
         radial-gradient(circle at 75% 75%, rgba(255,255,255,0.1) 2px, transparent 2px),
         linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.05) 30%, rgba(255,255,255,0.05) 70%, transparent 70%);
@@ -36,14 +34,14 @@
 }
 
 @keyframes geometricFloat {
-    0% { 
+    0% {
         transform: rotate(0deg) translateX(0);
         opacity: 0.3;
     }
     50% {
         opacity: 0.1;
     }
-    100% { 
+    100% {
         transform: rotate(360deg) translateX(20px);
         opacity: 0.3;
     }
@@ -385,4 +383,10 @@
     margin-top: 2px;
     word-break: break-all;
     line-height: 1.2;
+}
+.sale-divider {
+    margin: 37px 0;
+    border: none;
+    border-top: 1px solid #ccc;
+    width: 100%;
 }

@@ -1,15 +1,14 @@
 /* Divider */
 .divider {
-    margin-top: 2rem;
+    margin-top: 0rem;
     border-color: #e5e7eb;
 }
 
 .categoryMain-section {
     position: relative;
     width: 100%;
-    max-width: 1500px;   /* 팜플렛과 동일하게 */
-    margin: 0 auto 20px auto;  /* 중앙 정렬, 아래 여백 */
-    padding: 0 7px;     /* 팜플렛과 동일한 좌우 패딩 */
+    margin: 0 auto 0px auto;  /* 중앙 정렬, 아래 여백 */
+    padding: 0 0px;     /* 팜플렛과 동일한 좌우 패딩 */
 }
 
 
@@ -59,7 +58,7 @@
 }
 
 .categoryMain-icons {
-    font-size: 50px;
+    font-size: 43px;
 }
 
 
@@ -69,7 +68,7 @@
 
 
 .categoryMain-name {
-    font-size: 15px;
+    font-size: 16px;
     margin-top: 8px;
     max-width: 100px;
     overflow: hidden;

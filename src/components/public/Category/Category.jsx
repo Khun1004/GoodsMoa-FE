@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import './Category.css';
-import Divider from '../Public/Divider';
+import Divider from '../Divider.jsx';
 
 const mainCategories = [
     { id: 1, name: "애니메이션", icon: "🎬", route: "/category/1" },
@@ -15,7 +15,11 @@ const mainCategories = [
     { id: 8, name: "웹툰", icon: "💬", route: "/category/8" },
 ];
 
-const Category = ({ title, categories = mainCategories }) => {
+const Category = ({
+                      title,
+                      categories = mainCategories,
+                      gap = 94 // 🧡 기본값 설정
+                  }) => {
     const navigate = useNavigate();
     const containerRef = useRef(null);
     const [showLeftArrow, setShowLeftArrow] = useState(false);
@@ -61,7 +65,7 @@ const Category = ({ title, categories = mainCategories }) => {
     }, []);
 
     return (
-        <div className='container'>
+
             <div className="categoryMain-section">
                 <div className="scroll-container">
                     {showLeftArrow && (
@@ -71,7 +75,11 @@ const Category = ({ title, categories = mainCategories }) => {
                             </div>
                         </button>
                     )}
-                    <div className="categoryMain-list" ref={containerRef}>
+                    <div
+                        className="categoryMain-list"
+                        ref={containerRef}
+                        style={{ gap: `${gap}px` }}  // ✅ 여기!
+                    >
                         {categories.map((category) => (
                             <div
                                 key={category.id}
@@ -93,9 +101,8 @@ const Category = ({ title, categories = mainCategories }) => {
                         </button>
                     )}
                 </div>
-
             </div>
-        </div>
+
     );
 };
 

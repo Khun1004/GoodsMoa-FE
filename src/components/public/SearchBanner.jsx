@@ -2,27 +2,46 @@ import React from 'react';
 import { IoMdSearch } from "react-icons/io";
 
 const SearchBanner = ({
-                          title = "판매 제품 검색",
+                          placeholder = "검색어를 입력하세요",
                           searchQuery,
                           setSearchQuery,
-                          handleSearchKeyPress
+                          handleSearchKeyPress,
+                          selectedOption,
+                          setSelectedOption,
+                          selectOptions = ["제목", "해시태그", "내용"] // 🔹 기본값 설정
                       }) => {
     return (
         <div style={styles.banner}>
-            <div style={styles.row}>
-                <h1 style={styles.title}>{title}</h1>
+            <div style={styles.searchBox}>
+                {/* 🔽 드롭다운 */}
+                <select
+                    value={selectedOption}
+                    onChange={(e) => setSelectedOption(e.target.value)}
+                    style={styles.select}
+                >
+                    {selectOptions.map((option, index) => (
+                        <option key={index} value={option.toLowerCase()}>
+                            {option}
+                        </option>
+                    ))}
+                </select>
 
+                {/* 🔍 검색 인풋 */}
                 <div style={styles.inputWrapper}>
-                    <IoMdSearch style={styles.icon}/>
                     <input
                         type="text"
-                        placeholder="제목, 해시태그 검색"
+                        placeholder={placeholder}
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         onKeyPress={handleSearchKeyPress}
                         style={styles.input}
                     />
                 </div>
+
+                {/* 🔘 돋보기 버튼 */}
+                <button style={styles.searchButton} onClick={() => handleSearchKeyPress({ key: 'Enter' })}>
+                    <IoMdSearch />
+                </button>
             </div>
         </div>
     );
@@ -32,57 +51,60 @@ const styles = {
     banner: {
         width: '100%',
         backgroundColor: 'rgba(255,255,255,0.25)',
-        textAlign: 'left', // 왼쪽 정렬
+        textAlign: 'left',
         borderRadius: '10px',
-        marginBottom: '30px',
+        marginBottom: '20px',
         padding: '0px',
-
     },
-    content: {
-        maxWidth: '800px',
-        padding: '20px',
-
-    },
-    row: {
+    searchBox: {
         display: 'flex',
         alignItems: 'center',
-        gap: '24px', // 텍스트와 input 사이 간격
+        gap: '11px',
+        width: '100%',
+        maxWidth: '1400px',
+        padding: '0px 0px',
     },
-    title: {
-        fontSize: '22px',
-        color: '#333',
-        fontWeight: 370,
+    select: {
+        padding: '10px 7px',
+        fontSize: '15px',
+        borderRadius: '8px',
+        border: '1px solid rgba(0,0,0,0.3)',
+        backgroundColor: '#fff',
         fontFamily: 'Noto Sans KR, sans-serif',
-        margin: 0, // 줄 간격 없애기
-        whiteSpace: 'nowrap',
-        marginLeft: '27px',
     },
     inputWrapper: {
         position: 'relative',
-        width: '100%',
-        maxWidth: '400px',
-        flexShrink: 0
+        flex: 1,
     },
     icon: {
         position: 'absolute',
         top: '50%',
         left: '12px',
         transform: 'translateY(-50%)',
-        fontSize: '22px',
-        color: 'rgba(0,0,0,0.7)',
-        zIndex: 2
+        fontSize: '20px',
+        color: 'rgba(0,0,0,0.6)',
+        zIndex: 2,
     },
     input: {
         width: '100%',
-        padding: '10px 18px 10px 42px', // 아이콘 공간
-        fontSize: '16px',
-    /*    border: '2px solid #000000',*/
+        padding: '10px 4px 10px 17px',
+        fontSize: '15px',
         borderRadius: '8px',
-        borderColor: 'rgba(0,0,0,0.17)',
+        border: '1px solid rgba(0,0,0,0.2)',
         fontFamily: 'Noto Sans KR, sans-serif',
+        backgroundColor: 'rgba(82,82,82,0.07)',
         outline: 'none',
-        transition: 'all 0.3s ease',
-        backgroundColor:'rgba(82,82,82,0.07)',
+    },
+    searchButton: {
+        padding: '10px 12px',
+        borderRadius: '8px',
+        border: '1px solid rgba(0,0,0,0.2)',
+        backgroundColor: '#fff',
+        cursor: 'pointer',
+        fontSize: '24px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
     },
 };
 

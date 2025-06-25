@@ -10,6 +10,9 @@ import './Demand.css';
 
 // 새로 만든 컴포넌트 import
 import DemandSearchBar from '../DemandSearchBar/DemandSearchBar';
+import Category from '../../public/Category/Category';
+import SearchBanner from "../../public/SearchBanner.jsx";
+import Spacer from "../../public/Spacer.jsx";
 
 const categoryOptions = [
     { id: 0, name: '전체' },
@@ -99,19 +102,18 @@ const Demand = ({ showBanner = true }) => {
         <div className="container">
             <div className="demand-container">
                 {/* 검색/필터 컴포넌트 분리 */}
-                <DemandSearchBar
-                    category={category}
-                    setCategory={setCategory}
-                    searchTerm={searchTerm}
-                    setSearchTerm={setSearchTerm}
-                    orderBy={orderBy}
-                    setOrderBy={setOrderBy}
-                    includeExpired={includeExpired}
-                    setIncludeExpired={setIncludeExpired}
-                    includeScheduled={includeScheduled}
-                    setIncludeScheduled={setIncludeScheduled}
-                    categoryOptions={categoryOptions}
+                <Spacer height={20} />
+                <SearchBanner
+                    title="수요조사 검색:"
+                    placeholder="수요조사 검색"
+                    searchQuery={searchTerm}
+                    setSearchQuery={setSearchTerm}
+                    handleSearchKeyPress={(e) => {
+                        if (e.key === 'Enter') console.log('검색어:', searchTerm);
+                    }}
                 />
+                <Category gap={90} />
+                <hr className="sale-divider" />
 
                 {/* 이하 기존 코드 동일! */}
                 <div className="demandProductFrame">

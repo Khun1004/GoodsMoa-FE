@@ -16,6 +16,7 @@ import Trade10 from '../../../assets/trades/trade10.jpg';
 import { LoginContext } from "../../../contexts/LoginContext";
 import SearchBanner from '../../Public/SearchBanner';
 import './Trade.css';
+import Category from '../../public/Category/Category';
 
 const Trade = ({ showBanner = true }) => {
   const { userInfo } = useContext(LoginContext);
@@ -149,19 +150,23 @@ const Trade = ({ showBanner = true }) => {
       );
     return !searchTerm || titleMatch || tagMatch;
   });
-  
+
   return (
     <div className="sale-container">
       {showBanner && (
-          <SearchBanner
-              title="중고거래 검색:"
-              placeholder="상품명, #해시태그 검색"
-              searchQuery={searchTerm}
-              setSearchQuery={setSearchTerm}
-              handleSearchKeyPress={(e) => {
-                if (e.key === 'Enter') console.log('검색어:', searchTerm);
-              }}
-          />
+          <>
+            <SearchBanner
+                title="중고거래 검색:"
+                placeholder="중고거래 검색"
+                searchQuery={searchTerm}
+                setSearchQuery={setSearchTerm}
+                handleSearchKeyPress={(e) => {
+                  if (e.key === 'Enter') console.log('검색어:', searchTerm);
+                }}
+            />
+            <Category gap={90} /> {/* ✅ 카테고리 추가 */}
+            <hr className="sale-divider" />
+          </>
       )}
 
 
@@ -199,7 +204,7 @@ const Trade = ({ showBanner = true }) => {
           <span className="sale-label">중고거래</span>
         </div>
       </Link>
-      
+
       {/* ✅ [수정] 텍스트 정보를 담는 컨테이너 추가 */}
       <div className="card-content-area">
         <div className="profile-row-vertical">

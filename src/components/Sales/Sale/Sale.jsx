@@ -19,7 +19,7 @@ import SearchBanner from '../../Public/SearchBanner';
 import './Sale.css';
 
 const API_BASE_URL = 'http://localhost:8080';
-
+import Category from '../../public/Category/Category';
 // List of supported image extensions
 const SUPPORTED_IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
 
@@ -116,12 +116,12 @@ const Sale = ({ showBanner = true, showCustomProducts = true }) => {
             const storedReviews = JSON.parse(localStorage.getItem("reviews")) || [];
             setReviews(storedReviews);
         };
-        
+
         loadReviews();
-        
+
         const handleStorageChange = () => loadReviews();
         window.addEventListener('storage', handleStorageChange);
-        
+
         return () => {
             window.removeEventListener('storage', handleStorageChange);
         };
@@ -135,18 +135,18 @@ const Sale = ({ showBanner = true, showCustomProducts = true }) => {
                 return [...defaultProducts, ...saleFormDataList.flatMap(sale => sale.products || [])]
                     .some(p => p.id === review.productId);
             }
-            
+
             // 구매 데이터가 있는 경우 구매한 상품과 비교
             if (review.purchase?.products) {
                 const allProducts = [
                     ...defaultProducts,
                     ...saleFormDataList.flatMap(sale => sale.products || [])
                 ];
-                return review.purchase.products.some(p => 
+                return review.purchase.products.some(p =>
                     allProducts.some(sp => sp.id === p.id)
                 );
             }
-            
+
             return false;
         });
     }, [reviews, saleFormDataList]);
@@ -172,7 +172,7 @@ const Sale = ({ showBanner = true, showCustomProducts = true }) => {
         if (location.state?.formData && location.state?.from === 'saleForm') {
             const newFormData = location.state.formData;
             const newApiResponse = location.state.apiResponse || null;
-    
+
             setSaleFormDataList(prev => {
                 const existingIndex = prev.findIndex(data => data.id === newFormData.id);
                 let updatedList;
@@ -185,7 +185,7 @@ const Sale = ({ showBanner = true, showCustomProducts = true }) => {
                 localStorage.setItem('saleFormDataList', JSON.stringify(updatedList));
                 return updatedList;
             });
-    
+
             setApiResponseList(prev => {
                 const existingIndex = prev.findIndex(res => res?.id === newApiResponse?.id);
                 let updatedResponses;
@@ -238,16 +238,16 @@ const Sale = ({ showBanner = true, showCustomProducts = true }) => {
 
     const filteredPosts = posts.filter(post => {
         const query = searchQuery.toLowerCase();
-        
+
         // title 검색
         const titleMatch = post.title?.toLowerCase().includes(query);
-        
+
         // hashtag 검색
         const hashtagMatch = post.hashtag?.toLowerCase().includes(query);
-        
+
         // 작성자 이름 검색
         const authorMatch = post.userNickName?.toLowerCase().includes(query);
-        
+
         return titleMatch || hashtagMatch || authorMatch;
     });
 
@@ -275,21 +275,21 @@ const Sale = ({ showBanner = true, showCustomProducts = true }) => {
     // 커스텀 상품 검색 기능: title과 hashtag 포함
     const filteredSaleFormData = saleFormDataList.filter(saleData => {
         const query = searchQuery.toLowerCase();
-        
+
         // title 검색
         const titleMatch = saleData.title?.toLowerCase().includes(query);
-        
+
         // hashtag 검색
         const hashtags = formatHashtags(saleData.hashtag);
-        const hashtagMatch = hashtags.some(tag => 
+        const hashtagMatch = hashtags.some(tag =>
             tag.toLowerCase().includes(query)
         );
-        
+
         // 상품명 검색 (products 배열 내)
         const productNameMatch = saleData.products?.some(product =>
             product.name?.toLowerCase().includes(query)
         );
-        
+
         return titleMatch || hashtagMatch || productNameMatch;
     });
 
@@ -359,17 +359,17 @@ const Sale = ({ showBanner = true, showCustomProducts = true }) => {
 
     const getProductImageUrl = (image, postId, index) => {
         if (!image || !postId) return placeholderImage;
-    
+
         if (typeof image === 'string') {
             if (image.startsWith('http') || image.startsWith('blob:')) {
                 return image;
             }
         }
-    
+
         if (typeof image === 'object' && image.preview) {
             return image.preview;
         }
-    
+
         const extension = getImageExtension(image) || 'png';
         return `${API_BASE_URL}/productPost/product/${postId}_${index + 1}.${extension}`;
     };
@@ -395,7 +395,7 @@ const Sale = ({ showBanner = true, showCustomProducts = true }) => {
         if (!saleFormData) return;
 
         const thumbnailImageUrl = getThumbnailImageUrl(saleFormData.thumbnailImage, saleFormData.id);
-    
+
         const formattedProducts = saleFormData.products?.map((product, index) => ({
             ...product,
             id: product.id,
@@ -406,19 +406,19 @@ const Sale = ({ showBanner = true, showCustomProducts = true }) => {
             quantity: product.quantity,
             maxQuantity: product.maxQuantity
         }));
-    
+
         // 해당 상품과 관련된 리뷰만 필터링
         const relatedReviews = productReviews.filter(review => {
             if (review.productId) {
                 return saleFormData.products?.some(p => p.id === review.productId);
             }
             if (review.purchase?.products) {
-                return review.purchase.products.some(p => 
+                return review.purchase.products.some(p =>
                     saleFormData.products?.some(sp => sp.id === p.id))
             }
             return false;
         });
-    
+
         navigate('/person', {
             state: {
                 product: {
@@ -453,22 +453,27 @@ const Sale = ({ showBanner = true, showCustomProducts = true }) => {
         <div className='container'>
             <div className="sale-container">
                 {showBanner && (
-                    <SearchBanner
-                        title="판매 상품 검색:"
-                        placeholder="제목, 해시태그 검색"
-                        searchQuery={searchQuery}
-                        setSearchQuery={setSearchQuery}
-                        handleSearchKeyPress={handleSearchKeyPress}
-                    />
+                    <>
+                        <SearchBanner
+                            title="판매 상품 검색:"
+                            placeholder=" 판매상품 검색"
+                            searchQuery={searchQuery}
+                            setSearchQuery={setSearchQuery}
+                            handleSearchKeyPress={handleSearchKeyPress}
+                        />
+                        <Category gap={90}/>
+                    </>
                 )}
+
+                <hr className="sale-divider"/>
 
                 <div className='saleProductFrame'>
                     {/* 검색 중이 아닐 때만 헤더 표시 */}
                     {showBanner && !isSearching && (
                         <div className='sale-header'>
                             <div className='sale-icon'>
-                                <SlSocialDropbox className='salebox-icon' />
-                                <FaHeart className='heart-icon' />
+                                <SlSocialDropbox className='salebox-icon'/>
+                                <FaHeart className='heart-icon'/>
                             </div>
                             <h2 className="sale-heading">판매 제품</h2>
                         </div>
@@ -482,7 +487,9 @@ const Sale = ({ showBanner = true, showCustomProducts = true }) => {
                                         src={product.src}
                                         alt={product.name}
                                         className="sale-image"
-                                        onError={(e) => { e.target.src = placeholderImage; }}
+                                        onError={(e) => {
+                                            e.target.src = placeholderImage;
+                                        }}
                                     />
                                 </div>
                                 <span className="sale-label">판매</span>
@@ -493,11 +500,11 @@ const Sale = ({ showBanner = true, showCustomProducts = true }) => {
                                         handleLike(product.id);
                                     }}
                                 >
-                                    <FaHeart size={18} />
+                                    <FaHeart size={18}/>
                                 </button>
                                 <div className="sale-profile-block">
                                     <div className="sale-profile-row">
-                                        <CgProfile className="sale-profile-pic-mini" />
+                                        <CgProfile className="sale-profile-pic-mini"/>
                                         <span className="sale-user-name-mini">{userName}</span>
                                     </div>
                                     <div className="sale-product-title">{product.name}</div>
@@ -518,7 +525,9 @@ const Sale = ({ showBanner = true, showCustomProducts = true }) => {
                                             src={`http://localhost:8080/${post.thumbnailImage}`}
                                             alt={post.title}
                                             className="sale-image"
-                                            onError={(e) => { e.target.src = placeholderImage; }}
+                                            onError={(e) => {
+                                                e.target.src = placeholderImage;
+                                            }}
                                         />
                                     </div>
 
@@ -531,7 +540,7 @@ const Sale = ({ showBanner = true, showCustomProducts = true }) => {
                                             handleLike(post.id);
                                         }}
                                     >
-                                        <FaHeart size={18} />
+                                        <FaHeart size={18}/>
                                     </button>
                                     {/* 프로필/유저명/상품명 */}
                                     <div className="sale-profile-block">
@@ -541,10 +550,12 @@ const Sale = ({ showBanner = true, showCustomProducts = true }) => {
                                                     src={`http://localhost:8080/${post.userImage}`}
                                                     alt="작성자"
                                                     className="sale-profile-pic-mini"
-                                                    onError={(e) => { e.target.src = placeholderImage; }}
+                                                    onError={(e) => {
+                                                        e.target.src = placeholderImage;
+                                                    }}
                                                 />
                                             ) : (
-                                                <CgProfile className="sale-profile-pic-mini" />
+                                                <CgProfile className="sale-profile-pic-mini"/>
                                             )}
                                             <span className="sale-user-name-mini">{post.userNickName}</span>
                                         </div>
@@ -568,8 +579,8 @@ const Sale = ({ showBanner = true, showCustomProducts = true }) => {
                         {!isSearching && (
                             <div className='sale-header'>
                                 <div className='sale-icon'>
-                                    <SlSocialDropbox className='salebox-icon' />
-                                    <FaHeart className='heart-icon' />
+                                    <SlSocialDropbox className='salebox-icon'/>
+                                    <FaHeart className='heart-icon'/>
                                 </div>
                                 <h2 className="sale-heading">내 판매 제품</h2>
                             </div>
@@ -579,14 +590,16 @@ const Sale = ({ showBanner = true, showCustomProducts = true }) => {
                                 <div key={saleFormData.id} className="sale-card">
                                     <div className="sale-profile-info">
                                         {userInfo?.profileImage || profileImage ? (
-                                            <img 
-                                            src={userInfo?.profileImage || profileImage} 
-                                            alt="Profile" 
-                                            className="sale-profile-pic" 
-                                            onError={(e) => { e.target.src = placeholderImage; }}
+                                            <img
+                                                src={userInfo?.profileImage || profileImage}
+                                                alt="Profile"
+                                                className="sale-profile-pic"
+                                                onError={(e) => {
+                                                    e.target.src = placeholderImage;
+                                                }}
                                             />
                                         ) : (
-                                            <CgProfile className="sale-profile-pic" />
+                                            <CgProfile className="sale-profile-pic"/>
                                         )}
                                         <p className="sale-user-name">{userInfo?.nickname || userName}</p>
                                     </div>
@@ -596,39 +609,43 @@ const Sale = ({ showBanner = true, showCustomProducts = true }) => {
                                                 src={getThumbnailImageUrl(saleFormData.thumbnailImage, saleFormData.id)}
                                                 alt={saleFormData.title}
                                                 className="sale-image"
-                                                onError={(e) => { e.target.src = placeholderImage; }}
+                                                onError={(e) => {
+                                                    e.target.src = placeholderImage;
+                                                }}
                                             />
                                         )}
                                     </div>
                                     <span className="sale-label">판매</span>
                                     {saleFormData.products && saleFormData.products[0] && (
-                                        <button 
-                                            className={`sale-like-button ${liked[saleFormData.products[0].id] ? 'liked' : ''}`} 
+                                        <button
+                                            className={`sale-like-button ${liked[saleFormData.products[0].id] ? 'liked' : ''}`}
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 handleLike(saleFormData.products[0].id);
                                             }}
                                         >
-                                            <FaHeart size={18} />
+                                            <FaHeart size={18}/>
                                         </button>
                                     )}
                                     <p className="sale-product-name">{saleFormData.title}</p>
-                                    
+
                                     {showDetails[saleFormData.id] && (
                                         <div className="product-details">
-                                            <div dangerouslySetInnerHTML={{ 
-                                                __html: saleFormData.content 
-                                            }} />
-                                            
+                                            <div dangerouslySetInnerHTML={{
+                                                __html: saleFormData.content
+                                            }}/>
+
                                             <h4>상품 목록</h4>
                                             {saleFormData.products?.map((product, index) => (
                                                 <div key={product.id} className="product-detail-item">
                                                     <h3>{product.name}</h3>
-                                                    <img 
-                                                        src={getProductImageUrl(product.image, saleFormData.id, index)} 
-                                                        alt={product.name} 
-                                                        className="product-image" 
-                                                        onError={(e) => { e.target.src = placeholderImage; }}
+                                                    <img
+                                                        src={getProductImageUrl(product.image, saleFormData.id, index)}
+                                                        alt={product.name}
+                                                        className="product-image"
+                                                        onError={(e) => {
+                                                            e.target.src = placeholderImage;
+                                                        }}
                                                     />
                                                     <p>가격: {Number(product.price).toLocaleString()}원</p>
                                                     <p>재고: {product.quantity}</p>
@@ -648,16 +665,18 @@ const Sale = ({ showBanner = true, showCustomProducts = true }) => {
                                                                 <span className="review-date">{review.date}</span>
                                                             </div>
                                                             <p className="review-text">{review.reviewText}</p>
-                                                            
+
                                                             {review.uploadedImages && review.uploadedImages.length > 0 && (
                                                                 <div className="review-images">
                                                                     {review.uploadedImages.map((img, imgIndex) => (
-                                                                        <img 
-                                                                            key={imgIndex} 
-                                                                            src={img} 
-                                                                            alt={`리뷰 이미지 ${imgIndex + 1}`} 
+                                                                        <img
+                                                                            key={imgIndex}
+                                                                            src={img}
+                                                                            alt={`리뷰 이미지 ${imgIndex + 1}`}
                                                                             className="review-image"
-                                                                            onError={(e) => { e.target.src = placeholderImage; }}
+                                                                            onError={(e) => {
+                                                                                e.target.src = placeholderImage;
+                                                                            }}
                                                                         />
                                                                     ))}
                                                                 </div>
@@ -666,7 +685,7 @@ const Sale = ({ showBanner = true, showCustomProducts = true }) => {
                                                     ))}
                                                 </div>
                                             )}
-                                            <p>판매 기간: 
+                                            <p>판매 기간:
                                                 {saleFormData.isPermanent ? (
                                                     " 상시판매"
                                                 ) : saleFormData.startTime && saleFormData.endTime ? (
@@ -675,7 +694,7 @@ const Sale = ({ showBanner = true, showCustomProducts = true }) => {
                                                     " 판매 기간 없음"
                                                 )}
                                             </p>
-                                            
+
                                             <h4>배송 방법</h4>
                                             {saleFormData.delivers?.map((method, index) => (
                                                 <div key={index} className="shipping-method-item">
@@ -703,7 +722,7 @@ const Sale = ({ showBanner = true, showCustomProducts = true }) => {
                 {/* 검색 결과가 없을 때 표시 */}
                 {searchQuery && filteredProducts.length === 0 && filteredSaleFormData.length === 0 && filteredPosts.length === 0 && (
                     <div className="no-search-results">
-                        <p style={{ textAlign: 'center', marginTop: '50px', fontSize: '18px', color: '#666' }}>
+                        <p style={{textAlign: 'center', marginTop: '50px', fontSize: '18px', color: '#666'}}>
                             "{searchQuery}"에 대한 검색 결과가 없습니다.
                         </p>
                     </div>

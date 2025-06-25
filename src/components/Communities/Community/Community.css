@@ -1,6 +1,6 @@
 .community {
     width: 100%;
-    padding: 20px;
+    padding: 0px;
     font-family: 'Arial', sans-serif;
     height: 100%;
     min-height: 300px;
@@ -16,10 +16,9 @@
 
 .community-header {
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 20px;
-    margin-bottom: 20px;
 }
 
 .community-logo {
@@ -254,12 +253,12 @@
 
 @keyframes fadeIn {
     from {
-    opacity: 0;
-    transform: translateY(10px);
+        opacity: 0;
+        transform: translateY(10px);
     }
     to {
-    opacity: 1;
-    transform: translateY(0);
+        opacity: 1;
+        transform: translateY(0);
     }
 }
 
@@ -268,33 +267,42 @@
     position: relative;
 }
 
+.category-wrapper {
+    width: 100%;
+    max-width: 1500px;
+    margin: 0 auto;
+    padding: 0 0px;
+    box-sizing: border-box;
+}
+
 /* 태블릿 */
 @media screen and (min-width: 768px) and (max-width: 1024px) {
     .community {
         padding: 15px;
     }
-    
+
     .communityPopularTitle {
         font-size: 22px;
     }
-    
+
     .communitySearch-bar input {
         width: 40%;
     }
-    
+
     .community-logo {
         width: 60px;
     }
-    
+
     .board-button-horizontal {
         padding: 8px 14px;
         font-size: 13px;
     }
-    
+
     .thumbnail {
         width: 70px;
         height: 50px;
     }
+
 }
 
 /* 모바일 */
@@ -302,59 +310,61 @@
     .community {
         padding: 10px;
     }
-    
+
     .community-header {
         flex-direction: column;
         gap: 15px;
     }
-    
+
     .communityPopularTitle {
         font-size: 20px;
         padding: 8px;
     }
-    
+
     .communitySearch-bar {
         flex-wrap: wrap;
         justify-content: center;
     }
-    
+
     .communitySearch-bar select,
     .communitySearch-bar input {
         width: 100%;
         margin-bottom: 10px;
         height: 40px;
     }
-    
+
     .communitySearch-button {
         width: 100%;
         height: 40px;
     }
-    
+
     .board-button-horizontal {
         padding: 6px 12px;
         font-size: 12px;
     }
-    
+
     .post-item {
         flex-direction: column;
         align-items: flex-start;
     }
-    
+
     .post-text {
         width: 100%;
         margin-right: 0;
         margin-bottom: 10px;
     }
-    
+
     .thumbnail {
         width: 100%;
         height: auto;
         max-height: 150px;
     }
-    
+
     .notification-dropdown {
         width: 100%;
         right: 0;
         left: 0;
     }
+
+
 }
