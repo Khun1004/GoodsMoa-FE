@@ -108,8 +108,10 @@ const PurchaseHistory = () => {
         }
     };
 
-    const handleStatusSelect = (status) => {
-        setSelectedStatus(status);
+    const handleStatusSelect = (statusLabel) => {
+        const dbStatus = statusLabel === '전체' ? '전체' : statusMap[statusLabel];
+
+        setSelectedStatus(dbStatus);
         setCurrentPage(1);
     };
 
@@ -139,10 +141,21 @@ const PurchaseHistory = () => {
         );
     });
 
-    const getStatusCount = (status) => {
-        return purchaseHistory.filter(purchase => purchase.status === status).length;
+    // 상태 매핑: 프론트 표시 → DB 저장값
+    const statusMap = {
+        '상품 준비 중': '상품준비중',
+        '배송 준비': '배송준비',
+        '배송 중': '배송중',
+        '배송 완료': '배송완료'
     };
 
+// 상태별 개수 세는 함수
+    const getStatusCount = (statusLabel) => {
+        const dbStatus = statusMap[statusLabel];
+        if (!dbStatus) return 0;
+
+        return purchaseHistory.filter(purchase => purchase.status === dbStatus).length;
+    };
     // 날짜 포맷팅
     const formatDateTime = (dateString) => {
         const date = new Date(dateString);
@@ -201,21 +214,27 @@ const PurchaseHistory = () => {
                     </form>
 
                     <div className="status-buttons">
-                        {['전체', '상품 준비 중', '배송 중', '배송 완료'].map((status, idx) => (
+                        {['전체', '상품 준비 중', '배송 준비', '배송 중', '배송 완료'].map((status, idx) => (
                             <div
                                 key={status}
                                 className="btnClr"
                                 style={{
-                                    "--clr": ["#78fd61", "#2dd9fe", "#FF53cd", "#FF53cd"][idx],
-                                    "--clr-glow": ["#4003e6", "#00a3d5", "#e10361", "#e10361"][idx]
+                                    "--clr": ["#78fd61", "#FF53cd", "#2dd9fe", "#FF53cd", "#FF53cd"][idx],
+                                    "--clr-glow": ["#4003e6", "#78fd61", "#00a3d5", "#e10361", "#e10361"][idx]
                                 }}
                                 onClick={() => handleStatusSelect(status)}
                             >
-                                <div className="status-circle">{status === '전체' ? purchaseHistory.length : getStatusCount(status)}</div>
+                                <div className="status-circle">
+                                    {status === '전체'
+                                        ? purchaseHistory.length
+                                        : getStatusCount(status)
+                                    }
+                                </div>
                                 <a href="#">{status}</a>
                             </div>
                         ))}
                     </div>
+
 
                     <table className="history-table">
                         <thead>
@@ -244,7 +263,7 @@ const PurchaseHistory = () => {
                                         {purchase.products.map((product) => (
                                             <div key={product.name}>
                                                 <img
-                                                    src={`${BASE_URL}${product.imageUrl}`}
+                                                    src={`${product.imageUrl}`}
                                                     alt={product.name}
                                                     className="ph-product-img"
                                                     onClick={() => handleImageClick(purchase)}
@@ -275,7 +294,7 @@ const PurchaseHistory = () => {
                                                     </button>
                                                 </>
                                             )}
-                                            {purchase.status === '배송 완료' && (
+                                            {purchase.status === '배송완료' && (
                                                 <>
                                                     <button className="btn" onClick={() => handlePurchaseConfirmation(purchase)}>
                                                         구매 확정

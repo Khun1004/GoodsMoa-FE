@@ -116,13 +116,9 @@ class OrderSaleDetail {
 
     // 주문 내역 조회
     async listOrders(page = 0, size = 10, sort = 'id,DESC') {
-        console.log('listOrders 실행이다ㅏㅏㅏㅏㅏㅏㅏㅏㅏㅏㅏ');
         try {
-            console.log('listOrders @@@@@@@@@@@@@@@@');
             const endpoint = `/order/list?page=${page}&size=${size}&sort=${sort}`;
-            const response = await this.request(endpoint, 'GET');
-            console.log('response :::: ', response);
-            return response;
+            return await this.request(endpoint, 'GET');
         } catch (error) {
             console.error('Order list fetch failed:', {
                 error: error.message,

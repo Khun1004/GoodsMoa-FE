@@ -16,6 +16,7 @@ const SaleWrite = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const quillRef = useRef(null);
+    const fileInputRef = useRef(null); // Ref for hidden file input
 
     useEffect(() => {
         console.log("SaleWrite location.state:", location.state);
@@ -29,36 +30,46 @@ const SaleWrite = () => {
         if (location.state?.postId) {
             setPostId(String(location.state.postId));
         }
+
+        // Initialize custom image handler for ReactQuill
+        const quill = quillRef.current?.getEditor();
+        if (quill) {
+            const toolbar = quill.getModule("toolbar");
+            toolbar.addHandler("image", () => {
+                // Trigger the hidden file input click
+                fileInputRef.current?.click();
+            });
+        }
     }, [location.state]);
 
     const handleImageUpload = async (e) => {
         const files = Array.from(e.target.files);
         if (files.length === 0) return;
-    
+
         // File size limit check (5MB)
         const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
         const oversizedFiles = files.filter(file => file.size > MAX_FILE_SIZE);
-        
+
         if (oversizedFiles.length > 0) {
             setError(`Some files are too large. Maximum size is ${MAX_FILE_SIZE / 1024 / 1024}MB.`);
             return;
         }
-    
+
         setLoading(true);
         try {
             const currentPostId = postId && !String(postId).startsWith('temp_')
                 ? postId
                 : `temp_${Date.now()}`;
-    
+
             // Find the highest index among existing images
             const maxIndex = images.reduce((max, img) => {
                 const match = img.url.match(/_(\d+)\./);
                 return match ? Math.max(max, parseInt(match[1], 10)) : max;
             }, 0);
-    
+
             const validExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'];
             const uploadPromises = [];
-    
+
             // Upload images in batches of 3
             const batchSize = 3;
             for (let i = 0; i < files.length; i += batchSize) {
@@ -68,14 +79,14 @@ const SaleWrite = () => {
                         try {
                             const fileObj = await ProductService.processImageForUpload({ file });
                             if (!fileObj?.file) return null;
-    
-                            const extension = validExtensions.includes(fileObj.extension?.toLowerCase()) 
-                                ? fileObj.extension.toLowerCase() 
+
+                            const extension = validExtensions.includes(fileObj.extension?.toLowerCase())
+                                ? fileObj.extension.toLowerCase()
                                 : 'jpg';
-                            
+
                             const imageIndex = maxIndex + i + index + 1;
                             const imageUrl = `${API_BASE_URL}/productPost/content/${currentPostId}_${imageIndex}.${extension}`;
-    
+
                             return {
                                 file: fileObj.file,
                                 extension,
@@ -90,10 +101,10 @@ const SaleWrite = () => {
                     })
                 );
             }
-    
+
             const newImages = (await Promise.all(uploadPromises)).filter(img => img !== null);
             setImages(prev => [...prev, ...newImages]);
-    
+
             if (quillRef.current && newImages.length > 0) {
                 const quill = quillRef.current.getEditor();
                 const range = quill.getSelection(true) || { index: quill.getLength() };
@@ -107,6 +118,8 @@ const SaleWrite = () => {
             setError(`Image upload failed: ${err.message}`);
         } finally {
             setLoading(false);
+            // Clear the file input to allow re-uploading the same file
+            if (e.target) e.target.value = '';
         }
     };
 
@@ -152,14 +165,14 @@ const SaleWrite = () => {
         <div className="sale-write-wrapper">
             <div className="sale-write-container">
                 <h1 className="sale-write-title">상품 상세 설명 작성</h1>
-                
+
                 {loading && (
                     <div className="sale-write-loading">
                         <div className="spinner"></div>
                         <span>Uploading images...</span>
                     </div>
                 )}
-                
+
                 {error && (
                     <div className="sale-write-error">
                         <span className="error-icon">!</span>
@@ -187,6 +200,7 @@ const SaleWrite = () => {
                             multiple
                             onChange={handleImageUpload}
                             className="image-upload-input"
+                            ref={fileInputRef} // Use the same file input for both
                         />
                         <span className="saleWriteUpload-button">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -224,13 +238,13 @@ const SaleWrite = () => {
                 </div>
 
                 <div className="saleWriteBtn-group">
-                    <button 
+                    <button
                         className="saleWriteSubmitBtn"
                         onClick={handleSubmit}
                     >
                         작성 완료
                     </button>
-                    <button 
+                    <button
                         className="saleWriteCancelBtn"
                         onClick={() => navigate("/saleForm", { state: { ...location.state, from: "write" } })}
                     >

@@ -56,7 +56,7 @@ const PurchaseHistoryDetail = ({ purchase, onClose }) => {
                         {purchase.products.map((product, index) => (
                             <div className="phd-product-item" key={index}>
                                 {product.image && (
-                                    <img src={`http://localhost:8080/${product.image}`} alt={product.name} className="phd-product-image" />
+                                    <img src={`${product.image}`} alt={product.name} className="phd-product-image" />
                                 )}
                                 <div className="phd-product-info">
                                     <h3 className="phd-product-name">{product.name}</h3>
