@@ -1,87 +1,146 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import "./ReviewForm.css";
 import productService from "../../api/ProductService.jsx";
 
-const ReviewForm = ({ selectedPurchase, onClose }) => {
+const ReviewForm = ({ review = null, selectedPurchase = null, onClose }) => {
     const [rating, setRating] = useState(0);
     const [hover, setHover] = useState(null);
     const [reviewText, setReviewText] = useState("");
-    const [uploadedImages, setUploadedImages] = useState([]);
-
+    const [uploadedImages, setUploadedImages] = useState([]); // [{id?, filePath, isNew}]
+    const [deletedImageIds, setDeletedImageIds] = useState([]); // 삭제할 id 저장
+    const navigate = useNavigate();
 
     const ratingTexts = ["별로예요", "그저 그래요", "괜찮아요", "좋아요", "최고예요"];
 
+    // 수정 시 초기 값 세팅
+    useEffect(() => {
+        if (review) {
+            setRating(review.rating);
+            setReviewText(review.content);
+            const formattedImages = review.media?.map(img => ({
+                id: img.id,
+                filePath: img.filePath,
+                isNew: false,
+            })) || [];
+
+            setUploadedImages(formattedImages);
+        }
+    }, [review]);
+
     const handleImageUpload = (event) => {
         const files = Array.from(event.target.files).slice(0, 5 - uploadedImages.length);
-        const imageUrls = files.map((file) => URL.createObjectURL(file));
-        setUploadedImages([...uploadedImages, ...imageUrls]);
+
+        const newImages = files.map((file) => ({
+            file,
+            filePath: URL.createObjectURL(file),
+            isNew: true,
+        }));
+
+        setUploadedImages([...uploadedImages, ...newImages]);
     };
 
+
     const handleRemoveImage = (index) => {
+        const removed = uploadedImages[index];
+        // 기존 이미지라면 id 추적
+        if (!removed.isNew && removed.id) {
+            setDeletedImageIds(prev => [...prev, removed.id]);
+        }
         setUploadedImages(uploadedImages.filter((_, i) => i !== index));
     };
 
     const handleSubmit = async () => {
-        if (rating === 0) {
-            alert("별점을 선택해주세요.");
+        if (rating === 0 || reviewText.trim() === "") {
+            alert("별점과 내용을 모두 입력해주세요.");
             return;
         }
 
-        if (reviewText.trim() === "") {
-            alert("리뷰 내용을 입력해주세요.");
-            return;
-        }
-
-        const postId = selectedPurchase.products?.[0]?.postId;
-        if (!postId) {
-            alert("상품 ID를 찾을 수 없습니다.");
-            return;
-        }
-        console.log('업로드 이미지 목록11111111111111:', uploadedImages);
         try {
-            // blob URL → File 객체 변환
-            const filePromises = uploadedImages.map(async (url, index) => {
-                const response = await fetch(url);
-                const blob = await response.blob();
-                return new File([blob], `review_${index + 1}.jpg`, { type: blob.type });
-            });
+            const newFiles = [];
 
-            const reviewImages = await Promise.all(filePromises);
+            for (const image of uploadedImages) {
+                if (image.isNew) {
+                    const res = await fetch(image.filePath);
+                    const blob = await res.blob();
+                    const file = new File([blob], `review_${Date.now()}.jpg`, { type: blob.type });
+                    newFiles.push(file);
+                }
+            }
 
-            await productService.createReview(postId, {
-                rating,
-                content: reviewText,
-                reviewImages,
-            });
+            const remainImageUrls = uploadedImages
+                .filter(img => !img.isNew)
+                .map(img => img.filePath);
 
-            alert("리뷰가 성공적으로 등록되었습니다!");
+            if (review) {
+                // 수정 요청
+                await productService.updateReview({
+                    reviewId: review.reviewId,
+                    postId: review.postId,
+                    rating,
+                    content: reviewText,
+                    imageUrls: remainImageUrls,
+                    deletedImageIds: deletedImageIds, // 이게 핵심
+                }, newFiles);
+
+                alert("리뷰가 수정되었습니다!");
+                navigate("/mypage?page=reviews");
+            } else {
+                // 새 리뷰 등록
+                const postId = selectedPurchase?.products?.[0]?.postId;
+                if (!postId) {
+                    alert("postId를 찾을 수 없습니다.");
+                    return;
+                }
+
+                await productService.createReview(postId, {
+                    rating,
+                    content: reviewText,
+                    reviewImages: newFiles,
+                });
+
+                alert("리뷰가 등록되었습니다!");
+                navigate("/mypage?page=reviews");
+            }
+
             onClose();
-
         } catch (error) {
-            console.error("리뷰 등록 실패:", error);
-            alert("리뷰 등록에 실패했습니다.");
+            console.error("리뷰 등록/수정 실패:", error);
+            alert("작업에 실패했습니다.");
         }
     };
 
+
+
     return (
         <div className="reviewForm-container">
-            <h2 className="reviewForm-Title">리뷰 작성</h2>
+            <h2 className="reviewForm-Title">{review ? "리뷰 수정" : "리뷰 작성"}</h2>
 
             <div className="product-selection">
-                {selectedPurchase && selectedPurchase.products.map((product, index) => (
-                    <div key={index} className="review-product-item">
-                        <img 
-                            src={product.imageUrl}
-                            alt={product.name} 
-                            className="review-product-image" 
-                        />
+                {review ? (
+                    <div className="review-product-item">
                         <div className="review-product-info">
-                            <h3>{product.name}</h3>
-                            <p>수량: {product.quantity}개</p>
-                            <p>가격: {(product.price * product.quantity).toLocaleString()}원</p>
+                            <h3>리뷰 ID: {review.reviewId}</h3>
+                            <p>게시물 ID: {review.postId}</p>
+                            <p>작성자: {review.userName}</p>
                         </div>
                     </div>
-                ))}
+                ) : (
+                    selectedPurchase?.products?.map((product, index) => (
+                        <div key={index} className="review-product-item">
+                            <img
+                                src={product.imageUrl}
+                                alt={product.name}
+                                className="review-product-image"
+                            />
+                            <div className="review-product-info">
+                                <h3>{product.name}</h3>
+                                <p>수량: {product.quantity}개</p>
+                                <p>가격: {(product.price * product.quantity).toLocaleString()}원</p>
+                            </div>
+                        </div>
+                    ))
+                )}
             </div>
 
             <div className="reviewFormStars">
@@ -126,7 +185,7 @@ const ReviewForm = ({ selectedPurchase, onClose }) => {
                 <div className="image-preview-container">
                     {uploadedImages.map((image, index) => (
                         <div key={index} className="image-preview">
-                            <img src={image} alt={`Uploaded ${index}`} />
+                            <img src={image.filePath} alt={`Uploaded ${index}`} />
                             <button className="remove-image-button" onClick={() => handleRemoveImage(index)}>✖</button>
                         </div>
                     ))}
@@ -135,7 +194,9 @@ const ReviewForm = ({ selectedPurchase, onClose }) => {
 
             <div className="reviewFormsubmit-container">
                 <button className="reviewFormcancel-button" onClick={onClose}>취소하기</button>
-                <button className="reviewFormsubmit-button" onClick={handleSubmit}>등록하기</button>
+                <button className="reviewFormsubmit-button" onClick={handleSubmit}>
+                    {review ? "수정하기" : "등록하기"}
+                </button>
             </div>
         </div>
     );

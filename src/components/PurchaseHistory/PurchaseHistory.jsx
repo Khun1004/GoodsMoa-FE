@@ -31,6 +31,7 @@ const PurchaseHistory = () => {
         const fetchPurchaseHistory = async () => {
             try {
                 const res = await orderSaleDetail.listOrders(currentPage - 1, 10, 'id,DESC');
+                console.log('res :::::::: ',res);
                 setPurchaseHistory(res.content || []);
                 // setTotalPages(res.totalPages); // 페이지네이션 연동 시 필요
             } catch (err) {
@@ -80,7 +81,9 @@ const PurchaseHistory = () => {
             totalPrice: purchase.products.reduce((sum, p) => sum + (p.price * p.quantity), 0)
         });
         setIsPurchaseConfirmation(true);
-    };    
+    };
+
+    
 
     // useEffect(() => {
     //     const storedPurchases = JSON.parse(localStorage.getItem("purchaseHistory")) || [];
@@ -118,6 +121,11 @@ const PurchaseHistory = () => {
     const handleSearch = (e) => {
         e.preventDefault();
         setCurrentPage(1);
+    };
+
+    const handleReviewView = () => {
+        // 페이지 이동
+        navigate("/mypage?page=reviews");
     };
 
     // 필터링된 구매 내역 계산
@@ -296,12 +304,20 @@ const PurchaseHistory = () => {
                                             )}
                                             {purchase.status === '배송완료' && (
                                                 <>
-                                                    <button className="btn" onClick={() => handlePurchaseConfirmation(purchase)}>
-                                                        구매 확정
-                                                    </button>
-                                                    <button className="btn" onClick={() => handleReviewClick(purchase)}>
-                                                        리뷰 쓰기
-                                                    </button>
+                                                    {purchase.hasReview ? (
+                                                        <button className="btn" onClick={() => handleReviewView(purchase)}>
+                                                            리뷰 조회
+                                                        </button>
+                                                    ) : (
+                                                        <>
+                                                            <button className="btn" onClick={() => handlePurchaseConfirmation(purchase)}>
+                                                                구매 확정
+                                                            </button>
+                                                            <button className="btn" onClick={() => handleReviewClick(purchase)}>
+                                                                리뷰 쓰기
+                                                            </button>
+                                                        </>
+                                                    )}
                                                 </>
                                             )}
                                             {purchase.status === "배송 중" && (
