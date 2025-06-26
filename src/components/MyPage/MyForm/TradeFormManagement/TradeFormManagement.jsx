@@ -4,6 +4,13 @@ import { LoginContext } from "../../../../contexts/LoginContext";
 import api from "../../../../api/api";
 import "./TradeFormManagement.css";
 
+
+const categoryOptions = [
+  { id: 1, name: "애니메이션" }, { id: 2, name: "아이돌" }, { id: 3, name: "그림" },
+  { id: 4, name: "순수" }, { id: 5, name: "영화" }, { id: 6, name: "드라마" },
+  { id: 7, name: "웹소설" }, { id: 8, name: "웹툰" },
+];
+
 const TradeFormManagement = () => {
   const { userInfo } = useContext(LoginContext);
   const [tradeItems, setTradeItems] = useState([]);
@@ -46,12 +53,15 @@ const TradeFormManagement = () => {
 
   const handleDelete = async (id) => {
     try {
-      await api.delete(`/tradePost/delete/${id}`);
+      await api.delete(`/tradePost/delete/${id}`, { withCredentials: true });
       const updatedItems = tradeItems.filter((item) => item.id !== id);
       setTradeItems(updatedItems);
       setSelectedItem(null);
     } catch (err) {
       console.error("삭제 요청 실패:", err);
+      // 서버에서 온 에러 메시지가 있다면 보여주는 것이 좋습니다.
+      const errorMsg = err.response?.data?.message || "삭제 처리 중 오류가 발생했습니다.";
+      alert(errorMsg);
     }
   };
 
@@ -59,7 +69,7 @@ const TradeFormManagement = () => {
     try {
       const res = await api.get(`/tradePost/${item.id}`);
       const data = res.data;
-
+      const matchedCategory = categoryOptions.find(option => option.name === data.categoryName);
       const productImages = (data.productImages || []).map((img) => ({
         id: img.id,
         imagePath: img.imagePath,
@@ -68,7 +78,7 @@ const TradeFormManagement = () => {
       const formTradeData = {
         id: data.id,
         title: data.title,
-        categoryId: data.categoryId,
+        categoryId: matchedCategory ? matchedCategory.id : null,
         categoryName: data.categoryName,
         tags: data.hashtag ? data.hashtag.split(",") : [],
         hashtag: data.hashtag,
@@ -85,16 +95,14 @@ const TradeFormManagement = () => {
         productImages,
         newDetailImages: [],
         content: data.content || "",
-        contentImages: [],
+        contentImageObjects: [],
         deleteProductImageIds: [],
         user: data.user,
       };
+      console.log('%cTradeFormManagement ➡️ TradeForm: 전송 직전 데이터', 'color: #007bff; font-weight: bold;', { isEditMode: true, formTradeData });
 
       navigate("/tradeForm", {
-        state: {
-          formTradeData,
-          isEditMode: true,
-        },
+        state: { isEditMode: true, formTradeData }
       });
     } catch (err) {
       console.error("게시글 상세 fetch 실패:", err);

@@ -1,93 +1,59 @@
-
 import React, { useEffect, useState, useContext } from "react";  // useContext 추가
 import { useLocation, useNavigate } from "react-router-dom";
 import "./TradeForm.css";
 import { LoginContext } from "../../../contexts/LoginContext"; // 경로 수정
-import { TradeContext } from "../../../contexts/TradeContext";
 import api from "../../../api/api";
 
+
+const categoryOptions = [
+  { id: 1, name: "애니메이션" },
+  { id: 2, name: "아이돌" },
+  { id: 3, name: "그림" },
+  { id: 4, name: "순수" },
+  { id: 5, name: "영화" },
+  { id: 6, name: "드라마" },
+  { id: 7, name: "웹소설" },
+  { id: 8, name: "웹툰" },
+];
+
 const TradeForm = () => {
-  const { userInfo, isLogin } = useContext(LoginContext);
-  const [searchLocationInput, setSearchLocationInput] = useState("");
-  const [map, setMap] = useState(null);
+  const { isLogin } = useContext(LoginContext);
   const navigate = useNavigate();
   const location = useLocation();
-  const [marker, setMarker] = useState(null);
-  const [tagInput, setTagInput] = useState("");
-  // category state는 제거하고 formTradeData.categoryId만 사용
-  const { formTradeData, setFormTradeData } = useContext(TradeContext);
+  console.group('--- TradeForm 렌더링 시작 ---');
+  console.log('도착한 location.state:', location.state);
+  
   const isEditMode = location.state?.isEditMode === true;
+  console.log('isEditMode 상태:', isEditMode);
+  console.groupEnd();
 
-  const categoryOptions = [
-    { id: 1, name: "애니메이션" },
-    { id: 2, name: "아이돌" },
-    { id: 3, name: "그림" },
-    { id: 4, name: "순수" },
-    { id: 5, name: "영화" },
-    { id: 6, name: "드라마" },
-    { id: 7, name: "웹소설" },
-    { id: 8, name: "웹툰" },
-  ];
-
-  // 기존 게시글 불러오기 API 호출
-  useEffect(() => {
-    if (!isEditMode) return;
-    if (!formTradeData.id) return;
-
-    const fetchTradePost = async (id) => {
-      try {
-        const res = await api.get(`/tradePost/${id}`);
-        const data = res.data;
-
-        setFormTradeData(prev => ({
-          ...prev,
-          id: data.id,
-          title: data.title,
-          price: data.productPrice,
-          condition: data.conditionStatus || "중고",
-          shipping: data.delivery ? "사용" : "비사용",
-          directTrade: data.direct ? "직거래" : "택배",
-          directTradeLocation: data.place || "",
-          categoryId: data.categoryId || null,
-          tags: data.hashtag ? data.hashtag.split(",").filter(t => t) : [],
-          representativeImage: data.thumbnailImage || null,
-          productImages: data.productImages || [], // 서버에서 이미지 객체 배열
-          detailImages: data.productImages ? data.productImages.map(img => img.imagePath) : [], // 이미지 경로 배열
-          content: data.content || "",
-          deleteProductImageIds: [],
-          newDetailImages: [],
-          contentImages: [],
-        }));
-      } catch (error) {
-        console.error("기존 게시글 불러오기 실패:", error);
-      }
-    };
-
-    fetchTradePost(formTradeData.id);
-  }, [isEditMode, formTradeData.id, setFormTradeData]);
-
-
-
-
-  useEffect(() => {
+  const [formTradeData, setFormTradeData] = useState(() => {
     const incomingData = location.state?.formTradeData;
-
+    console.log('%cuseState 초기화 함수 실행, incomingData:', 'color: #28a745;', incomingData);
     if (incomingData) {
-      setFormTradeData(prevData => ({
-        ...prevData,
-        ...incomingData,
-        tags: Array.isArray(incomingData.tags)
-          ? incomingData.tags
-          : (incomingData.hashtag?.split(',').filter(t => t) || []),
-        representativeImage: incomingData.representativeImage || incomingData.thumbnailImage || null,
+      return {
+        id: incomingData.id || null,
+        title: incomingData.title || "",
+        price: incomingData.price || "",
+        condition: incomingData.condition || "중고",
+        shipping: incomingData.shipping || "사용",
+        directTrade: incomingData.directTrade || "직거래",
+        directTradeLocation: incomingData.directTradeLocation || "",
+        representativeImage: incomingData.representativeImage || null,
         representativeImageFile: incomingData.representativeImageFile || null,
         productImages: incomingData.productImages || [],
         newDetailImages: incomingData.newDetailImages || [],
         content: incomingData.content || "",
-        contentImages: incomingData.contentImages || [],
-      }));
+        // ## 핵심 수정 1: contentImages -> contentImageObjects ##
+        // 이제부터 에디터 이미지는 ID와 File 객체를 함께 관리합니다.
+        contentImageObjects: incomingData.contentImageObjects || [],
+        deleteProductImageIds: incomingData.deleteProductImageIds || [],
+        tags: incomingData.tags || [],
+        categoryId: incomingData.categoryId || null,
+      };
     } else {
-      setFormTradeData({
+      return { // 새 글 작성 기본값
+        id: null,
         title: "",
         price: "",
         condition: "중고",
@@ -96,16 +62,79 @@ const TradeForm = () => {
         directTradeLocation: "",
         representativeImage: null,
         representativeImageFile: null,
-        newDetailImages: [],
         productImages: [],
+        newDetailImages: [],
         content: "",
-        contentImages: [],
+        contentImageObjects: [], // 초기값 변경
         deleteProductImageIds: [],
         tags: [],
         categoryId: null,
-      });
+      };
     }
-  }, [location.state]);
+  });
+  
+  const [tagInput, setTagInput] = useState("");
+  const [searchLocationInput, setSearchLocationInput] = useState(() => formTradeData.directTradeLocation || "");
+  const [map, setMap] = useState(null);
+  const [marker, setMarker] = useState(null);
+  // 기존 게시글 불러오기 API 호출
+  // useEffect(() => {
+  //   if (!isEditMode) return;
+  //   if (!formTradeData.id) return;
+
+  //   const fetchTradePost = async (id) => {
+  //     try {
+  //       const res = await api.get(`/tradePost/${id}`);
+  //       const data = res.data;
+
+  //       setFormTradeData(prev => ({
+  //         ...prev,
+  //         id: data.id,
+  //         title: data.title,
+  //         price: data.productPrice,
+  //         condition: data.conditionStatus || "중고",
+  //         shipping: data.delivery ? "사용" : "비사용",
+  //         directTrade: data.direct ? "직거래" : "택배",
+  //         directTradeLocation: data.place || "",
+  //         categoryId: data.categoryId || null,
+  //         tags: data.hashtag ? data.hashtag.split(",").filter(t => t) : [],
+  //         representativeImage: data.thumbnailImage || null,
+  //         productImages: data.productImages || [], // 서버에서 이미지 객체 배열
+  //         detailImages: data.productImages ? data.productImages.map(img => img.imagePath) : [], // 이미지 경로 배열
+  //         content: data.content || "",
+  //         deleteProductImageIds: [],
+  //         newDetailImages: [],
+  //         contentImages: [],
+  //       }));
+  //     } catch (error) {
+  //       console.error("기존 게시글 불러오기 실패:", error);
+  //     }
+  //   };
+
+  //   fetchTradePost(formTradeData.id);
+  // }, [isEditMode, formTradeData.id, setFormTradeData]);
+
+
+
+
+  // useEffect(() => {
+  //   const incomingData = location.state?.formTradeData;
+  //   if (incomingData) {
+  //     setFormTradeData(prevData => ({
+  //       ...prevData,
+  //       ...incomingData,
+  //       tags: Array.isArray(incomingData.tags)
+  //         ? incomingData.tags
+  //         : (incomingData.hashtag?.split(',').filter(t => t) || []),
+  //       representativeImage: incomingData.representativeImage || incomingData.thumbnailImage || null,
+  //       representativeImageFile: incomingData.representativeImageFile || null,
+  //       productImages: incomingData.productImages || [],
+  //       newDetailImages: incomingData.newDetailImages || [],
+  //       content: incomingData.content || "",
+  //       contentImages: incomingData.contentImages || [],
+  //     }));
+  //   }
+  // }, [location.state])
 
 
 
@@ -222,8 +251,15 @@ const TradeForm = () => {
 
   // 카테고리 변경은 formTradeData.categoryId만 사용하도록 통일
   const handleInputChange = (e) => {
-    setFormTradeData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    const { name, value } = e.target;
+    if (name === 'price') {
+      const numericValue = value.replace(/[^0-9]/g, '');
+      setFormTradeData((prev) => ({ ...prev, [name]: numericValue }));
+    } else {
+      setFormTradeData((prev) => ({ ...prev, [name]: value }));
+    }
   };
+
 
   const handleOptionChange = (field, value) => {
     setFormTradeData(prev => ({ ...prev, [field]: value }));
@@ -262,41 +298,49 @@ const TradeForm = () => {
 
   // 수정: id를 받아서 삭제 처리
   const handleRemoveExistingImage = (idToRemove) => {
-    setFormTradeData(prev => ({
-      ...prev,
-      productImages: (prev.productImages || []).filter(img => img.id !== idToRemove),
-      deleteProductImageIds: [...(prev.deleteProductImageIds || []), idToRemove],
-    }));
+    console.group(`--- 기존 이미지 삭제 (ID: ${idToRemove}) ---`);
+    console.log('삭제 전 productImages:', formTradeData.productImages);
+    console.log('삭제 전 deleteProductImageIds:', formTradeData.deleteProductImageIds);
+    
+    setFormTradeData(prev => {
+      const updatedProductImages = prev.productImages.filter(img => img.id !== idToRemove);
+      const updatedDeleteIds = [...prev.deleteProductImageIds, idToRemove];
+      
+      console.log('삭제 후 productImages:', updatedProductImages);
+      console.log('삭제 후 deleteProductImageIds:', updatedDeleteIds);
+      console.groupEnd();
+      
+      return {
+        ...prev,
+        productImages: updatedProductImages,
+        deleteProductImageIds: updatedDeleteIds,
+      };
+    });
   };
 
   const handleAddTag = () => {
-    if (tagInput.trim() && formTradeData.tags.length < 3) {
-      const newTag = `#${tagInput.trim().replace(/^#+/, "")}`;
-      setFormTradeData(prev => ({ ...prev, tags: [...prev.tags, newTag] }));
+    const newTag = `${tagInput.trim().replace(/^#+/, "")}`;
+    if (newTag && formTradeData.tags.length < 3) {
+      if (!formTradeData.tags.includes(`#${newTag}`)) {
+        setFormTradeData(prev => ({ ...prev, tags: [...prev.tags, `#${newTag}`] }));
+      }
       setTagInput("");
-    } else {
-      alert("최대 3개의 태그만 추가할 수 있습니다.");
+    } else if (formTradeData.tags.length >= 3) {
+      alert("태그는 최대 3개까지 추가할 수 있습니다.");
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (!formTradeData.title || !formTradeData.price) {
-      alert("상품명과 가격은 필수입니다.");
-      return;
-    }
-
+    console.group('%c--- 최종 제출 (handleSubmit) ---', 'color: #dc3545; font-weight: bold;');
+    console.log('현재 formTradeData 전체 상태:', formTradeData);
     if (!isLogin) {
       alert("로그인 후 작성할 수 있습니다.");
       return;
     }
-
-    const categoryId = Number(formTradeData.categoryId);
-    if (!categoryId || isNaN(categoryId)) {
-      alert("카테고리를 선택해주세요.");
-      return;
-    }
+    if (!formTradeData.title.trim()) return alert("상품명을 입력해주세요.");
+    if (!formTradeData.categoryId) return alert("카테고리를 선택해주세요.");
+    if (!formTradeData.price) return alert("가격을 입력해주세요.");
 
     const price = Number(formTradeData.price);
     if (isNaN(price)) {
@@ -309,7 +353,7 @@ const TradeForm = () => {
       alert("대표 이미지를 등록해주세요.");
       return;
     }
-
+    const categoryId = Number(formTradeData.categoryId);
     const tradePostData = {
       title: formTradeData.title,
       productPrice: price,
@@ -325,27 +369,27 @@ const TradeForm = () => {
       content: formTradeData.content || "",
       deleteProductImageIds: formTradeData.deleteProductImageIds || [],
     };
-
+    console.log('서버로 보낼 JSON (request):', tradePostData);
     const formData = new FormData();
-    formData.append(
-      "request",
-      new Blob([JSON.stringify(tradePostData)], { type: "application/json" })
-    );
+    formData.append("request", new Blob([JSON.stringify(tradePostData)], { type: "application/json" }));
 
     if (formTradeData.representativeImageFile) {
       formData.append(isEditMode ? "newThumbnailImage" : "thumbnailImage", formTradeData.representativeImageFile);
     }
-
-    (formTradeData.contentImages || []).forEach(file =>
-      formData.append(isEditMode ? "newContentImages" : "contentImages", file)
-    );
-
-    (formTradeData.newDetailImages || []).forEach(imageObj => {
+    
+    formTradeData.newDetailImages.forEach(imageObj => {
       formData.append(isEditMode ? "newProductImages" : "productImages", imageObj.file);
     });
-
-    const url = isEditMode ? `/tradePost/update/${formTradeData.id}` : `/tradePost/create`;
-
+    
+    // ## 핵심 수정 2: contentImageObjects에서 파일 꺼내기 ##
+    // 서버로 보낼 때는 ID는 제외하고 순수 파일(File) 객체만 보냅니다.
+    (formTradeData.contentImageObjects || []).forEach(imgObj => {
+      formData.append(isEditMode ? "newContentImages" : "contentImages", imgObj.file);
+    });
+    console.log('FormData 준비 완료');
+    console.groupEnd();
+    
+    const url = isEditMode ? `/tradePost/update/${formTradeData.id}` : "/tradePost/create";
     try {
       await api.post(url, formData, { withCredentials: true });
       alert(isEditMode ? "수정 완료!" : "등록 완료!");
@@ -451,7 +495,7 @@ const TradeForm = () => {
                 <button
                   type="button"
                   className="edited-button"
-                  onClick={() => navigate("/tradeWrite", { state: { formTradeData } })}
+                  onClick={() => navigate("/tradeWrite", { state: { formTradeData, isEditMode } })}
                 >
                   수정하기
                 </button>
@@ -510,7 +554,7 @@ const TradeForm = () => {
                 type="text"
                 placeholder="태그를 입력해 주세요."
                 value={tagInput}
-                onChange={(e) => setTagInput(e.target.value)}
+                onChange={(e) => setTagInput(e.target.value)} onKeyPress={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddTag(); }}}
               />
               <button type="button" onClick={handleAddTag}>+</button>
             </div>
