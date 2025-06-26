@@ -14,7 +14,6 @@ import { TradeContext } from "../../../contexts/TradeContext";
 
 const TradeWrite = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   const editorRef = useRef(null);
   const { formTradeData, setFormTradeData } = useContext(TradeContext);
 
