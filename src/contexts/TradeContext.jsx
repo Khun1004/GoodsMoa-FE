@@ -6,6 +6,7 @@ export const TradeProvider = ({ children }) => {
   const [formTradeData, setFormTradeData] = useState({
     title: "",
     categoryId: "",
+    content: "",
     tags: [],
     description: [],
     price: "",

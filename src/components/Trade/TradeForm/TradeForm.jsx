@@ -1,29 +1,22 @@
+
 import React, { useEffect, useState, useContext } from "react";  // useContext 추가
 import { useLocation, useNavigate } from "react-router-dom";
 import "./TradeForm.css";
 import { LoginContext } from "../../../contexts/LoginContext"; // 경로 수정
 import { TradeContext } from "../../../contexts/TradeContext";
+import api from "../../../api/api";
 
 const TradeForm = () => {
-  const { userInfo, isLogin } = useContext(LoginContext);  // useContext로 로그인 정보 가져오기
+  const { userInfo, isLogin } = useContext(LoginContext);
   const [searchLocationInput, setSearchLocationInput] = useState("");
   const [map, setMap] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
-  const [isEditMode, setIsEditMode] = useState(false);
   const [marker, setMarker] = useState(null);
   const [tagInput, setTagInput] = useState("");
-  const [category, setCategory] = useState("");
+  // category state는 제거하고 formTradeData.categoryId만 사용
   const { formTradeData, setFormTradeData } = useContext(TradeContext);
-
-  
-
-  
-  const contentImageFiles = location.state?.formTradeData?.contentImageFiles || [];
-
-
-
- 
+  const isEditMode = location.state?.isEditMode === true;
 
   const categoryOptions = [
     { id: 1, name: "애니메이션" },
@@ -35,97 +28,84 @@ const TradeForm = () => {
     { id: 7, name: "웹소설" },
     { id: 8, name: "웹툰" },
   ];
-  
-  
 
- useEffect(() => {
-  const incoming = location.state?.formTradeData;
-  const isEdit = location.state?.isEditMode ?? !!incoming?.id;
+  // 기존 게시글 불러오기 API 호출
+  useEffect(() => {
+    if (!isEditMode) return;
+    if (!formTradeData.id) return;
 
-  if (incoming) {
-  const isDescriptionOnly = Object.keys(incoming).every((key) =>
-    ["description", "contentImageFiles"].includes(key)
-  );
+    const fetchTradePost = async (id) => {
+      try {
+        const res = await api.get(`/tradePost/${id}`);
+        const data = res.data;
 
-  if (isDescriptionOnly) {
-    setFormTradeData((prev) => ({
-      ...prev,
-      description: incoming.description,
-      contentImageFiles: incoming.contentImageFiles || [],
-    }));
-    return;
-  }
+        setFormTradeData(prev => ({
+          ...prev,
+          id: data.id,
+          title: data.title,
+          price: data.productPrice,
+          condition: data.conditionStatus || "중고",
+          shipping: data.delivery ? "사용" : "비사용",
+          directTrade: data.direct ? "직거래" : "택배",
+          directTradeLocation: data.place || "",
+          categoryId: data.categoryId || null,
+          tags: data.hashtag ? data.hashtag.split(",").filter(t => t) : [],
+          representativeImage: data.thumbnailImage || null,
+          productImages: data.productImages || [], // 서버에서 이미지 객체 배열
+          detailImages: data.productImages ? data.productImages.map(img => img.imagePath) : [], // 이미지 경로 배열
+          content: data.content || "",
+          deleteProductImageIds: [],
+          newDetailImages: [],
+          contentImages: [],
+        }));
+      } catch (error) {
+        console.error("기존 게시글 불러오기 실패:", error);
+      }
+    };
 
-  setFormTradeData((prev) => ({
-    ...prev,
-    ...incoming,
-    tags: Array.isArray(incoming.tags)
-      ? incoming.tags
-      : incoming.hashtag?.split(",") || prev.tags,
-    detailImages: incoming.detailImages ?? prev.detailImages, // 🔥 수정
-    detailImageFiles: incoming.detailImageFiles ?? prev.detailImageFiles, // 🔥 수정
-    imageUrl: incoming.imageUrl ?? prev.imageUrl,
-   representativeImage: incoming.representativeImage
-  ? incoming.representativeImage
-  : incoming.thumbnailImage
-    ? (incoming.thumbnailImage.startsWith("http")
-        ? incoming.thumbnailImage
-        : `http://localhost:8080${incoming.thumbnailImage}`)
-    : prev.representativeImage,
-
-    representativeImageFile: incoming.representativeImageFile ?? prev.representativeImageFile,
-    deleteProductImageIds: [],
-    condition: incoming.conditionStatus
-      ? (incoming.conditionStatus === "새상품" ? "새상품" : "중고")
-      : prev.condition,
-    shipping: incoming.delivery !== undefined
-      ? (incoming.delivery === false ? "비사용" : "사용")
-      : prev.shipping,
-   directTrade: isEdit ? "직거래" : (
-  incoming.direct !== undefined
-    ? (incoming.direct === false ? "택배" : "직거래")
-    : prev.directTrade
-),
-
-    price: incoming.productPrice?.toString() ?? prev.price,
-    categoryId: incoming.categoryId?.toString() ?? prev.categoryId,
-  }));
-
-
-
-    setIsEditMode(isEdit);
-  } else {
-    // 새 글 작성
-    setFormTradeData({
-      title: "",
-      price: "",
-      condition: "중고",
-      shipping: "사용",
-      directTrade: "직거래",
-      directTradeLocation: "",
-      representativeImage: null,
-      representativeImageFile: null,
-      detailImages: [],
-      detailImageFiles: [],
-      imageUrl: [],
-      deleteProductImageIds: [],
-      tags: [],
-      categoryId: "",
-      description: [],
-      contentImageFiles: [],
-    });
-    setIsEditMode(false);
-  }
-}, [location.state]);
+    fetchTradePost(formTradeData.id);
+  }, [isEditMode, formTradeData.id, setFormTradeData]);
 
 
 
 
+  useEffect(() => {
+    const incomingData = location.state?.formTradeData;
 
-
-
-
-
+    if (incomingData) {
+      setFormTradeData(prevData => ({
+        ...prevData,
+        ...incomingData,
+        tags: Array.isArray(incomingData.tags)
+          ? incomingData.tags
+          : (incomingData.hashtag?.split(',').filter(t => t) || []),
+        representativeImage: incomingData.representativeImage || incomingData.thumbnailImage || null,
+        representativeImageFile: incomingData.representativeImageFile || null,
+        productImages: incomingData.productImages || [],
+        newDetailImages: incomingData.newDetailImages || [],
+        content: incomingData.content || "",
+        contentImages: incomingData.contentImages || [],
+      }));
+    } else {
+      setFormTradeData({
+        title: "",
+        price: "",
+        condition: "중고",
+        shipping: "사용",
+        directTrade: "직거래",
+        directTradeLocation: "",
+        representativeImage: null,
+        representativeImageFile: null,
+        newDetailImages: [],
+        productImages: [],
+        content: "",
+        contentImages: [],
+        deleteProductImageIds: [],
+        tags: [],
+        categoryId: null,
+      });
+    }
+  }, [location.state]);
 
 
 
@@ -137,20 +117,17 @@ const TradeForm = () => {
     const handleMapClick = (mouseEvent) => {
       const latlng = mouseEvent.latLng;
 
-      // 기존 마커 제거
       if (marker) {
         marker.setMap(null);
       }
 
-      // 새 마커 생성
       const newMarker = new window.kakao.maps.Marker({
         position: latlng,
         map: map,
       });
 
-      setMarker(newMarker); // 현재 마커를 state에 저장
+      setMarker(newMarker);
 
-      // 좌표 → 주소 변환
       geocoder.coord2Address(latlng.getLng(), latlng.getLat(), (result, status) => {
         if (status === window.kakao.maps.services.Status.OK) {
           const address = result[0].road_address?.address_name || result[0].address?.address_name;
@@ -165,53 +142,40 @@ const TradeForm = () => {
       });
     };
 
-    // 지도 클릭 이벤트 등록
     window.kakao.maps.event.addListener(map, "click", handleMapClick);
 
-    // cleanup
     return () => {
       window.kakao.maps.event.removeListener(map, "click", handleMapClick);
     };
   }, [map, marker]);
 
   useEffect(() => {
-  const loadKakaoMap = () => {
-    if (window.kakao && window.kakao.maps) {
-      setTimeout(() => {  // 💡 DOM 렌더링 이후에 실행되도록 delay
-        const container = document.getElementById("map");
-        if (!container) return;
+    const loadKakaoMap = () => {
+      if (window.kakao && window.kakao.maps) {
+        setTimeout(() => {
+          const container = document.getElementById("map");
+          if (!container) return;
 
-        const options = {
-          center: new window.kakao.maps.LatLng(37.5665, 126.978),
-          level: 3,
-        };
+          const options = {
+            center: new window.kakao.maps.LatLng(37.5665, 126.978),
+            level: 3,
+          };
 
-        const newMap = new window.kakao.maps.Map(container, options);
-        setMap(newMap);
-      }, 300); // 딜레이
+          const newMap = new window.kakao.maps.Map(container, options);
+          setMap(newMap);
+        }, 300);
+      } else {
+        setTimeout(loadKakaoMap, 1000);
+      }
+    };
+
+    if (document.readyState === "complete") {
+      loadKakaoMap();
     } else {
-      setTimeout(loadKakaoMap, 1000);
+      window.addEventListener("load", loadKakaoMap);
+      return () => window.removeEventListener("load", loadKakaoMap);
     }
-  };
-
-  if (document.readyState === "complete") {
-    loadKakaoMap();
-  } else {
-    window.addEventListener("load", loadKakaoMap);
-    return () => window.removeEventListener("load", loadKakaoMap);
-  }
-}, []);
-
-  // useEffect(() => {
-  //   console.log("Location state changed:", location.state);
-  //   if (location.state?.description) {
-  //     console.log("Updating description:", location.state.description);
-  //     setFormTradeData(prev => ({
-  //       ...prev,
-  //       description: location.state.description
-  //     }));
-  //   }
-  // }, [location.state]);
+  }, []);
 
   const searchLocation = () => {
     const searchQuery = searchLocationInput || formTradeData.directTradeLocation;
@@ -249,19 +213,14 @@ const TradeForm = () => {
     });
   };
 
-
   const handleRemoveTag = (indexToRemove) => {
     setFormTradeData((prev) => ({
       ...prev,
       tags: prev.tags.filter((_, index) => index !== indexToRemove),
     }));
   };
-   
-  const handleCategoryChange = (e) => {
-    setCategory(e.target.value);
-    setFormTradeData((prev) => ({ ...prev, category: e.target.value }));
-  };
 
+  // 카테고리 변경은 formTradeData.categoryId만 사용하도록 통일
   const handleInputChange = (e) => {
     setFormTradeData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
@@ -274,86 +233,53 @@ const TradeForm = () => {
     const file = e.target.files[0];
     if (!file) return;
     const imageUrl = URL.createObjectURL(file);
-  
+
     setFormTradeData((prev) => ({
       ...prev,
       representativeImage: imageUrl,
-      representativeImageFile: file, // 🔥 이걸 추가해야 나중에 POST 시점에 접근 가능
+      representativeImageFile: file,
     }));
   };
-  
 
-const handleDetailImagesUpload = (e) => {
-  const files = Array.from(e.target.files);
-
-  const newFilesCount = files.length;
-  const existingFilesCount = formTradeData.detailImageFiles.length;
-
-  if (existingFilesCount + newFilesCount > 10) {
-    alert("최대 10개의 이미지만 업로드할 수 있습니다.");
-    return;
-  }
-
-  const newImageUrls = files.map((file) => URL.createObjectURL(file));
-
-  setFormTradeData((prev) => ({
-    ...prev,
-    detailImages: [...prev.detailImages, ...newImageUrls],
-    detailImageFiles: [...prev.detailImageFiles, ...files]
-  }));
-}
-
-
-const handleRemoveExistingImage = (index) => {
-  setFormTradeData((prev) => {
-    const newImages = [...prev.detailImages];
-    const [removed] = newImages.splice(index, 1); // 이미지 제거
-
-    const idToDelete = prev.imageUrl?.[index]?.id; // 삭제할 이미지 ID 추출
-    const newDeleteIds = idToDelete
-      ? [...(prev.deleteProductImageIds || []), idToDelete]
-      : prev.deleteProductImageIds;
-
-    return {
+  const handleDetailImagesUpload = (e) => {
+    const files = Array.from(e.target.files);
+    const imageObjects = files.map(file => ({
+      preview: URL.createObjectURL(file),
+      file: file,
+    }));
+    setFormTradeData(prev => ({
       ...prev,
-      detailImages: newImages,
-      deleteProductImageIds: newDeleteIds,
-    };
-  });
-};
+      newDetailImages: [...(prev.newDetailImages || []), ...imageObjects],
+    }));
+  };
 
+  const handleRemoveNewImage = (indexToRemove) => {
+    setFormTradeData(prev => ({
+      ...prev,
+      newDetailImages: (prev.newDetailImages || []).filter((_, index) => index !== indexToRemove),
+    }));
+  };
 
-    
+  // 수정: id를 받아서 삭제 처리
+  const handleRemoveExistingImage = (idToRemove) => {
+    setFormTradeData(prev => ({
+      ...prev,
+      productImages: (prev.productImages || []).filter(img => img.id !== idToRemove),
+      deleteProductImageIds: [...(prev.deleteProductImageIds || []), idToRemove],
+    }));
+  };
+
   const handleAddTag = () => {
     if (tagInput.trim() && formTradeData.tags.length < 3) {
-        const newTag = `#${tagInput.trim().replace(/^#+/, "")}`;
-        setFormTradeData(prev => ({ ...prev, tags: [...prev.tags, newTag] }));
-        setTagInput("");  // 입력란 비우기
+      const newTag = `#${tagInput.trim().replace(/^#+/, "")}`;
+      setFormTradeData(prev => ({ ...prev, tags: [...prev.tags, newTag] }));
+      setTagInput("");
     } else {
-        alert("최대 3개의 태그만 추가할 수 있습니다.");
+      alert("최대 3개의 태그만 추가할 수 있습니다.");
     }
-};
-// 이미지 업로드 함수
-const uploadImageAndGetUrl = async (file) => {
-  const formData = new FormData();
-  formData.append("image", file);
+  };
 
-  const res = await fetch("http://localhost:8080/upload/image", {
-    method: "POST",
-    body: formData,
-    credentials: "include", // 세션 쿠키 필요 시
-  });
-
-  if (!res.ok) throw new Error("이미지 업로드 실패");
-
-  const data = await res.json();
-  return data.imageUrl; // 서버 응답에 따라 필드명 확인
-};
-
-console.log(" tradeForm에서 받은 이미지들:", contentImageFiles);
-
-
-const handleSubmit = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!formTradeData.title || !formTradeData.price) {
@@ -384,8 +310,6 @@ const handleSubmit = async (e) => {
       return;
     }
 
-    const detailImageFiles = formTradeData.detailImageFiles || [];
-
     const tradePostData = {
       title: formTradeData.title,
       productPrice: price,
@@ -398,15 +322,9 @@ const handleSubmit = async (e) => {
       place: formTradeData.directTradeLocation || "",
       views: 0,
       hashtag: formTradeData.tags.join(","),
-      descriptions: Array.isArray(formTradeData.description)
-        ? formTradeData.description.map((desc, idx) => ({
-            type: desc.type,
-            value: desc.value || "",
-            sequence: idx
-          }))
-        : []
+      content: formTradeData.content || "",
+      deleteProductImageIds: formTradeData.deleteProductImageIds || [],
     };
-    console.log("🚀 tradePostData to send:", tradePostData);
 
     const formData = new FormData();
     formData.append(
@@ -414,70 +332,37 @@ const handleSubmit = async (e) => {
       new Blob([JSON.stringify(tradePostData)], { type: "application/json" })
     );
 
-   if (repImageFile) {
-  formData.append(isEditMode ? "newThumbnailImage" : "thumbnailImage", repImageFile);
-} else if (isEditMode && formTradeData.representativeImage) {
-  // 썸네일을 새로 업로드하지 않았다면, 기존 경로를 서버에 전달
-  formData.append("thumbnailImagePath", formTradeData.representativeImage);
-}
+    if (formTradeData.representativeImageFile) {
+      formData.append(isEditMode ? "newThumbnailImage" : "thumbnailImage", formTradeData.representativeImageFile);
+    }
 
-
-    detailImageFiles.forEach((file) =>
-      formData.append(isEditMode ? "newProductImages" : "productImages", file)
-    );
-
-    (formTradeData.contentImageFiles || []).forEach((file) =>
+    (formTradeData.contentImages || []).forEach(file =>
       formData.append(isEditMode ? "newContentImages" : "contentImages", file)
     );
 
-    (formTradeData.deleteProductImageIds || []).forEach((id) =>
-      formData.append("deleteProductImageIds", id)
-    );
+    (formTradeData.newDetailImages || []).forEach(imageObj => {
+      formData.append(isEditMode ? "newProductImages" : "productImages", imageObj.file);
+    });
 
-    const url = isEditMode
-      ? `http://localhost:8080/tradePost/update/${formTradeData.id}`
-      : `http://localhost:8080/tradePost/create`;
-    const method = "POST";
+    const url = isEditMode ? `/tradePost/update/${formTradeData.id}` : `/tradePost/create`;
 
     try {
-      const res = await fetch(url, {
-        method,
-        body: formData,
-        credentials: "include"
-      });
-
-      if (!res.ok) throw new Error("서버 오류");
-      alert(isEditMode ? "글이 수정되었습니다." : "글이 작성되었습니다.");
+      await api.post(url, formData, { withCredentials: true });
+      alert(isEditMode ? "수정 완료!" : "등록 완료!");
       navigate("/trade");
     } catch (error) {
-      console.error(isEditMode ? "글 수정 중 오류:" : "글 작성 중 오류:", error);
-      alert(isEditMode ? "글 수정에 실패했습니다." : "글 작성에 실패했습니다.");
+      console.error("전송 오류:", error);
+      alert("요청 처리 중 오류가 발생했습니다.");
     }
   };
 
-console.log(
-  "description 길이 (문자 수):",
-  typeof formTradeData.description === "string"
-    ? formTradeData.description.length
-    : Array.isArray(formTradeData.description)
-    ? formTradeData.description.length
-    : 0
-);
-
-console.log("description 길이 (바이트):", new Blob([formTradeData.description]).size);
-console.log("✅ 로그인 상태:", isLogin);
-console.log("👤 로그인된 사용자 정보:", userInfo);
-console.log("✅ shipping 원본 값:", formTradeData.shipping);
-
-
   return (
-    
     <div className="container">
-       {isEditMode && (
-      <div className="edit-mode-banner">
-        ✏️ 현재 게시글을 수정 중입니다.
-      </div>
-    )}
+      {isEditMode && (
+        <div className="edit-mode-banner">
+          ✏️ 현재 게시글을 수정 중입니다.
+        </div>
+      )}
       <h1 className="trade-form-title">중고거래 폼 만들기</h1>
       <div className="trade-form-container">
         <form onSubmit={handleSubmit}>
@@ -515,22 +400,36 @@ console.log("✅ shipping 원본 값:", formTradeData.shipping);
               style={{ display: "none" }}
             />
             <div className="image-preview-container">
-  {(formTradeData.detailImages || []).map((image, index) => (
-    <div key={index} className="preview-wrapper">
-      <img src={image} alt={`상세 이미지 ${index}`} className="preview-image" />
-      {isEditMode && (
-        <button
-          type="button"
-          className="delete-button"
-          onClick={() => handleRemoveExistingImage(index)}
-        >
-          ×
-        </button>
-      )}
-    </div>
-  ))}
-</div>
+              {/* 기존 서버 이미지 렌더링 */}
+              {(formTradeData.productImages || []).map((imageObj) => (
+                <div key={imageObj.id} className="preview-wrapper">
+                  <img src={imageObj.imagePath} alt="상세 이미지" className="preview-image" />
+                  {isEditMode && (
+                    <button
+                      type="button"
+                      className="delete-button"
+                      onClick={() => handleRemoveExistingImage(imageObj.id)}
+                    >
+                      ×
+                    </button>
+                  )}
+                </div>
+              ))}
 
+              {/* 새로 추가한 이미지 렌더링 */}
+              {(formTradeData.newDetailImages || []).map((imageObj, index) => (
+                <div key={`new-${index}`} className="preview-wrapper">
+                  <img src={imageObj.preview} alt={`새 이미지 ${index}`} className="preview-image" />
+                  <button
+                    type="button"
+                    className="delete-button"
+                    onClick={() => handleRemoveNewImage(index)}
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+            </div>
           </div>
 
           {/* 상품명 */}
@@ -545,51 +444,28 @@ console.log("✅ shipping 원본 값:", formTradeData.shipping);
           </div>
 
           {/* 상세 설명 */}
-<div>
-  <label className="form-label">상세설명</label>
-  <div className="description-box">
-    {Array.isArray(formTradeData.description) && formTradeData.description.length > 0 ? (
-      <>
-        <div
-          className="description-display hidden"
-          dangerouslySetInnerHTML={{
-            __html: formTradeData.description
-              .map((desc) =>
-                desc.type === "IMAGE"
-                  ? `<img src="${desc.value}" alt="image" />`
-                  : `<p>${desc.value}</p>`
-              )
-              .join("")
-          }}
-        />
-        <button
-          type="button"
-          className="edited-button"
-          onClick={() =>
-            navigate("/tradeWrite", {
-              state: { formTradeData: { ...formTradeData } }
-            })
-          }
-        >
-          수정하기
-        </button>
-      </>
-    ) : (
-      <button
-        type="button"
-        className="saleFormWriteBtn"
-        onClick={() =>
-          navigate("/tradeWrite", {
-            state: { formTradeData: { ...formTradeData } }
-          })
-        }
-      >
-        작성하기
-      </button>
-    )}
-  </div>
-</div>
-
+          <div>
+            <label className="form-label">상세설명</label>
+            <div className="description-box">
+              {formTradeData.content && formTradeData.content.trim() !== '<p><br></p>' ? (
+                <button
+                  type="button"
+                  className="edited-button"
+                  onClick={() => navigate("/tradeWrite", { state: { formTradeData } })}
+                >
+                  수정하기
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className="saleFormWriteBtn"
+                  onClick={() => navigate("/tradeWrite", { state: { formTradeData } })}
+                >
+                  작성하기
+                </button>
+              )}
+            </div>
+          </div>
 
           {/* 가격 입력 */}
           <div className="form-group">
@@ -605,29 +481,27 @@ console.log("✅ shipping 원본 값:", formTradeData.shipping);
 
           {/* 카테고리 선택 */}
           <div>
-  <label className="form-label">카테고리</label>
-  <select
-  className="form-input"
-  value={formTradeData.categoryId || ""}
-  onChange={(e) => {
-    const selectedValue = e.target.value;
-    setFormTradeData((prev) => ({
-      ...prev,
-      categoryId: selectedValue === "" ? null : Number(selectedValue),
-    }));
-  }}
->
-  <option value="">카테고리를 선택해주세요</option>
-  {categoryOptions.map((option) => (
-    <option key={option.id} value={option.id}>
-      {option.name}
-    </option>
-  ))}
-</select>
+            <label className="form-label">카테고리</label>
+            <select
+              className="form-input"
+              value={formTradeData.categoryId || ""}
+              onChange={(e) => {
+                const selectedValue = e.target.value;
+                setFormTradeData((prev) => ({
+                  ...prev,
+                  categoryId: selectedValue === "" ? null : Number(selectedValue),
+                }));
+              }}
+            >
+              <option value="">카테고리를 선택해주세요</option>
+              {categoryOptions.map((option) => (
+                <option key={option.id} value={option.id}>
+                  {option.name}
+                </option>
+              ))}
+            </select>
+          </div>
 
-</div>
-
-          
           {/* 태그 입력 */}
           <div className="form-group">
             <label>태그 (최대 3개)</label>
@@ -649,6 +523,7 @@ console.log("✅ shipping 원본 값:", formTradeData.shipping);
               ))}
             </div>
           </div>
+
 
           {/* 상품 상태 */}
           <div className="form-group">

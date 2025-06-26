@@ -6,13 +6,18 @@ const api = axios.create({
 });
 
 // Request interceptor for accessToken
-api.interceptors.request.use((config) => {
-    const token = localStorage.getItem("accessToken");
-    if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
+api.interceptors.request.use(
+    (config) => {
+        const token = localStorage.getItem("accessToken");
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+    },
+    (error) => {
+        return Promise.reject(error);
     }
-    return config;
-});
+);
 
 // Response interceptor for 401 handling
 api.interceptors.response.use(
@@ -28,7 +33,7 @@ api.interceptors.response.use(
                 if (!refreshToken) return Promise.reject(error);
 
                 const res = await axios.post(
-                    "http://192.168.0.13:8080/auth/reissue",
+                    "http://localhost:8080/auth/reissue", // baseURL과 동일하게 맞춰줌
                     {},
                     {
                         headers: {
@@ -46,6 +51,7 @@ api.interceptors.response.use(
                 console.error("❌ 리프레시 토큰도 만료됨");
                 localStorage.removeItem("accessToken");
                 localStorage.removeItem("refreshToken");
+                window.location.href = "/login";
                 return Promise.reject(err);
             }
         }
