@@ -1,6 +1,9 @@
 import React, { useEffect, useRef, useState, useContext } from "react";
 import { CiImageOn } from "react-icons/ci";
-import { FaAlignCenter, FaAlignJustify, FaAlignLeft, FaAlignRight, FaBold, FaCaretDown, FaItalic, FaPaintBrush, FaStrikethrough, FaUnderline } from "react-icons/fa";
+import {
+  FaAlignCenter, FaAlignJustify, FaAlignLeft, FaAlignRight, FaBold,
+  FaCaretDown, FaItalic, FaPaintBrush, FaStrikethrough, FaUnderline
+} from "react-icons/fa";
 import { IoIosArrowBack } from "react-icons/io";
 import { LuRedo2, LuUndo2 } from "react-icons/lu";
 import { PiListBulletsBold } from "react-icons/pi";
@@ -11,18 +14,19 @@ import { TradeContext } from "../../../contexts/TradeContext";
 
 const TradeWrite = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const editorRef = useRef(null);
   const { formTradeData, setFormTradeData } = useContext(TradeContext);
 
-  const [contentImages, setContentImages] = useState([]);
+  const [contentImages, setContentImages] = useState(formTradeData.contentImages || []);
   const [color, setColor] = useState("#000000");
-  const [descriptions, setDescriptions] = useState(
-    Array.isArray(formTradeData?.description) ? formTradeData.description : []
-  );
-  const [contentImageFiles, setContentImageFiles] = useState(
-    formTradeData?.contentImageFiles || []
-  );
   const [savedSelection, setSavedSelection] = useState(null);
+
+  useEffect(() => {
+    if (editorRef.current && formTradeData.content) {
+      editorRef.current.innerHTML = formTradeData.content;
+    }
+  }, []);
 
   const saveSelection = () => {
     const selection = window.getSelection();
@@ -37,110 +41,46 @@ const TradeWrite = () => {
 
   const handleImageUpload = (event) => {
     const files = Array.from(event.target.files);
-    if (files.length === 0) {
-      alert("이미지를 선택해주세요.");
+    if (files.length === 0) return;
+
+    const range = savedSelection;
+    if (!range) {
+      alert("이미지를 삽입할 위치를 에디터 안에서 클릭해주세요.");
       return;
     }
 
     files.forEach((file) => {
-      const localUrl = URL.createObjectURL(file);
+      setContentImages((prev) => [...prev, file]);
+      const previewUrl = URL.createObjectURL(file);
+
       const img = document.createElement("img");
-      img.src = localUrl;
+      img.src = previewUrl;
       img.alt = "image";
-
-      if (savedSelection) {
-        const range = savedSelection.cloneRange();
-        range.deleteContents();
-        range.insertNode(img);
-        range.setStartAfter(img);
-        range.setEndAfter(img);
-        const selection = window.getSelection();
-        selection.removeAllRanges();
-        selection.addRange(range);
-      } else {
-        editorRef.current.appendChild(img);
-      }
-
-      editorRef.current.focus();
+      range.deleteContents();
+      range.insertNode(img);
+      range.setStartAfter(img);
+      range.collapse(true);
     });
-
-    setContentImageFiles((prev) => [...prev, ...files]);
-    setContentImages((prev) => [...prev, ...files]);
   };
 
   const handleColorChange = (event) => {
     const selectedColor = event.target.value;
     setColor(selectedColor);
-    document.execCommand("foreColor", false, selectedColor);
+    handleCommand("foreColor", selectedColor);
   };
 
-const handleSave = () => {
-  const tempDiv = document.createElement("div");
-  tempDiv.innerHTML = editorRef.current.innerHTML;
-  const nodes = Array.from(tempDiv.childNodes);
+  const handleSave = () => {
+    const finalHtmlContent = editorRef.current.innerHTML;
 
-  const parsedDescriptions = [];
-  let sequenceCounter = 0;
-  let detectedImageCount = 0;
+    const updatedFormData = {
+      ...formTradeData,
+      content: finalHtmlContent,
+      contentImages: contentImages,
+    };
 
-  nodes.forEach((node) => {
-    if (node.nodeName === "IMG") {
-      parsedDescriptions.push({ type: "IMAGE", value: "", sequence: sequenceCounter++ });
-      detectedImageCount++;
-    } else if (node.nodeType === Node.ELEMENT_NODE) {
-      const text = node.innerText || node.textContent;
-      if (text.trim()) {
-        parsedDescriptions.push({ type: "TEXT", value: text.trim(), sequence: sequenceCounter++ });
-      }
-      const imgs = node.getElementsByTagName("img");
-      for (let img of imgs) {
-        parsedDescriptions.push({ type: "IMAGE", value: "", sequence: sequenceCounter++ });
-        detectedImageCount++;
-      }
-    } else if (node.nodeType === Node.TEXT_NODE) {
-      const text = node.textContent.trim();
-      if (text) {
-        parsedDescriptions.push({ type: "TEXT", value: text, sequence: sequenceCounter++ });
-      }
-    }
-  });
-
-  if (detectedImageCount !== contentImages.length) {
-    alert(`에디터에 들어간 이미지 수(${detectedImageCount})와 업로드된 이미지 수(${contentImages.length})가 다릅니다.`);
-    return;
-  }
-
-  const updatedFormData = {
-    ...formTradeData,
-    description: parsedDescriptions,
-    contentImageFiles: contentImages,
-    detailImages: formTradeData.detailImages || [],
-    detailImageFiles: formTradeData.detailImageFiles || [],
+    setFormTradeData(updatedFormData); // ✅ Context로 반영
+    navigate("/tradeForm"); // ✅ 상태 전달 생략
   };
-
-  console.log("✅ 저장 직전 updatedFormData 확인:", updatedFormData);
-
-  setFormTradeData(updatedFormData);
-
-  navigate("/tradeForm", {
-    state: {
-      formTradeData: updatedFormData,
-      isEditMode: !!updatedFormData.id,
-    },
-  });
-};
-
-
-  useEffect(() => {
-    if (editorRef.current && descriptions.length > 0) {
-      const html = descriptions.map((desc) => {
-        if (desc.type === "IMAGE") return `<img src='${desc.value}' alt='image' />`;
-        if (desc.type === "TEXT") return `<p>${desc.value}</p>`;
-        return "";
-      }).join("");
-      editorRef.current.innerHTML = html;
-    }
-  }, [descriptions]);
 
   return (
     <div className="container">
@@ -202,8 +142,8 @@ const handleSave = () => {
           suppressContentEditableWarning
           onMouseUp={saveSelection}
           onKeyUp={saveSelection}
+          onFocus={saveSelection}
         />
-
       </div>
     </div>
   );
