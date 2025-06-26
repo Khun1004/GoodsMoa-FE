@@ -45,7 +45,6 @@ import MyOrders from "./components/Sales/MyOrders/MyOrders";
 import Sale from "./components/Sales/Sale/Sale";
 import SaleDetail from "./components/Sales/SaleDetail/SaleDetail";
 import SaleForm from "./components/Sales/SaleForm/SaleForm";
-import PaymentSuccess from "./components/Sales/SalePurchaseCheck/PaymentSuccess";
 import SalePurchaseCheck from "./components/Sales/SalePurchaseCheck/SalePurchaseCheck";
 import SalePurchaseModal from "./components/Sales/SalePurchaseModal/SalePurchaseModal";
 import SalePurchasePerfect from "./components/Sales/SalePurchasePerfect/SalePurchasePerfect";

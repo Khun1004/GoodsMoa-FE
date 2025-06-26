@@ -1,19 +1,24 @@
-import React, { useState } from "react";
+import React, {useEffect, useState} from "react";
 import './ReviewsCheck.css';
 
-const ReviewCheck = ({ review, onClose }) => {
+const ReviewCheck = ({ review, onClose, onEdit }) => {
     const [selectedImageIndex, setSelectedImageIndex] = useState(null);
 
     const handleImageClick = (index) => {
         setSelectedImageIndex(index);
     };
 
+    // 수정 시 초기값 세팅
+    useEffect(() => {
+        console.log('review ::: ',review);
+    }, []);
+
     const closeModal = () => {
         setSelectedImageIndex(null);
     };
 
     const handleNextImage = () => {
-        if (selectedImageIndex < review.uploadedImages.length - 1) {
+        if (selectedImageIndex < review.media.length - 1) {
             setSelectedImageIndex(selectedImageIndex + 1);
         }
     };
@@ -24,45 +29,34 @@ const ReviewCheck = ({ review, onClose }) => {
         }
     };
 
-    const selectedImage = review.uploadedImages && review.uploadedImages[selectedImageIndex];
+    const selectedImage = review.media?.[selectedImageIndex]?.filePath;
 
     return (
         <div className="review-check-container">
             <h2 className="review-checkTitle">리뷰 상세보기</h2>
+
             <div className="review-details">
-                <div className="product-selection">
-                    {review.purchase && review.purchase.products.map((product, index) => (
-                        <div key={index} className="review-product-item">
-                            <img 
-                                src={product.image} 
-                                alt={product.name} 
-                                className="review-product-image" 
-                            />
-                            <div className="review-product-info">
-                                <h3>{product.name}</h3>
-                                <p>수량: {product.quantity}개</p>
-                                <p>가격: {(product.price * product.quantity).toLocaleString()}원</p>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-                <div className="rating-section">
-                    <p className="checkReviewStar">{"★".repeat(review.rating)}</p>
-                </div>
-                <div className="review-text-section">
-                    <strong>리뷰내용:</strong>
-                    <p className="checkReviewText">{review.reviewText}</p>
+                <div className="review-info">
+                    <p><strong>작성일:</strong> {new Date(review.createdAt).toLocaleString()}</p>
+                    <p className="checkReviewStar">
+                        {"★".repeat(Math.round(review.rating)) + "☆".repeat(5 - Math.round(review.rating))}
+                    </p>
                 </div>
 
-                {review.uploadedImages && review.uploadedImages.length > 0 && (
+                <div className="review-text-section">
+                    <strong>리뷰 내용:</strong>
+                    <p className="checkReviewText">{review.content}</p>
+                </div>
+
+                {review.media && review.media.length > 0 && (
                     <div className="uploaded-images-section">
                         <h4>업로드 이미지:</h4>
                         <div className="image-preview-container">
-                            {review.uploadedImages.map((image, index) => (
+                            {review.media.map((item, index) => (
                                 <div key={index} className="image-preview">
-                                    <img 
-                                        src={image} 
-                                        alt={`Uploaded ${index}`} 
+                                    <img
+                                        src={item.filePath}
+                                        alt={`리뷰 이미지 ${index + 1}`}
                                         onClick={() => handleImageClick(index)}
                                     />
                                 </div>
@@ -72,12 +66,12 @@ const ReviewCheck = ({ review, onClose }) => {
                 )}
             </div>
 
-            {/* Modal for displaying the larger image */}
+            {/* 이미지 확대 모달 */}
             {selectedImage && (
                 <div className="image-modal" onClick={closeModal}>
                     <div className="modal-content" onClick={(e) => e.stopPropagation()}>
                         <div className="close-btn" onClick={closeModal}>X</div>
-                        <img src={selectedImage} alt="Selected for large view" />
+                        <img src={selectedImage} alt="리뷰 확대 이미지" />
                         <div className="image-navigation">
                             <button className="nav-btn prev-btn" onClick={handlePrevImage}>{'<'}</button>
                             <button className="nav-btn next-btn" onClick={handleNextImage}>{'>'}</button>
@@ -87,6 +81,7 @@ const ReviewCheck = ({ review, onClose }) => {
             )}
 
             <button className="reviewCheckBtn" onClick={onClose}>뒤로 가기</button>
+            <button className="reviewCheckBtn" onClick={() => onEdit(review)}>수정하기</button>
         </div>
     );
 };

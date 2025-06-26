@@ -98,14 +98,30 @@ const SaleDetail = () => {
     const [category, setCategory] = useState(location.state?.category || product?.category || product?.categoryName || "미정");
     const [productReviews, setProductReviews] = useState(initialProductReviews);
 
+    // 서버에서 불러오는 리뷰
     useEffect(() => {
-        const storedReviews = JSON.parse(localStorage.getItem("reviews")) || [];
-        const filteredReviews = storedReviews.filter(review =>
-            review.productId === product.id ||
-            review.purchase?.products?.some(p => p.id === product.id)
-        );
-        setProductReviews(filteredReviews);
-    }, [product.id]);
+        const fetchProductReviews = async () => {
+            if (!product?.id) return;
+            try {
+                const response = await productService.getReviewsByPost(product.id);
+                setProductReviews(response.content); // Page 객체에서 content만 저장
+            } catch (err) {
+                console.error("상품 리뷰 조회 실패:", err);
+            }
+        };
+
+        fetchProductReviews();
+    }, [product?.id]);
+
+    // 로컬 스토리지로 불러오는 리뷰 값
+    // useEffect(() => {
+    //     const storedReviews = JSON.parse(localStorage.getItem("reviews")) || [];
+    //     const filteredReviews = storedReviews.filter(review =>
+    //         review.productId === product.id ||
+    //         review.purchase?.products?.some(p => p.id === product.id)
+    //     );
+    //     setProductReviews(filteredReviews);
+    // }, [product.id]);
 
     useEffect(() => {
         if (location.state?.productReviews) {
@@ -685,30 +701,28 @@ const SaleDetail = () => {
                             </div>
 
                             <div className="person-review">
-                                {productReviews.map((review, index) => (
-                                    <div key={index} className="person-review-item">
+                                {productReviews.map((review) => (
+                                    <div key={review.reviewId} className="person-review-item">
                                         <div className="person-review-header">
                                             <div className="person-review-profile">
                                                 <div className="person-review-profile-image">
-                                                    {review.profileImage ? (
-                                                        <img src={review.profileImage} alt="프로필" />
-                                                    ) : (
-                                                        <CgProfile className="person-review-profile-icon" />
-                                                    )}
+                                                    <CgProfile className="person-review-profile-icon" />
                                                 </div>
-                                                <span className="person-review-nickname">{review.nickname || "익명"}</span>
+                                                <span className="person-review-nickname">{review.userName || "익명"}</span>
                                             </div>
                                             <div className="person-review-rating-date">
-                                                <span className="person-review-rating">
-                                                    {'★'.repeat(review.rating)}{'☆'.repeat(5 - review.rating)}
-                                                </span>
-                                                <span className="person-review-date">{review.date}</span>
+                                              <span className="person-review-rating">
+                                                {"★".repeat(Math.round(review.rating)) + "☆".repeat(5 - Math.round(review.rating))}
+                                              </span>
+                                                                                    <span className="person-review-date">
+                                                {new Date(review.createdAt).toLocaleDateString()}
+                                              </span>
                                             </div>
                                         </div>
-                                        <p className="person-review-text">{review.reviewText}</p>
-                                        {review.uploadedImages && review.uploadedImages.length > 0 && (
+                                        <p className="person-review-text">{review.content}</p>
+                                        {review.mediaUrls && review.mediaUrls.length > 0 && (
                                             <div className="person-review-images">
-                                                {review.uploadedImages.map((img, i) => (
+                                                {review.mediaUrls.map((img, i) => (
                                                     <img key={i} src={img} alt={`리뷰 이미지 ${i + 1}`} className="person-review-image" />
                                                 ))}
                                             </div>
@@ -716,6 +730,7 @@ const SaleDetail = () => {
                                     </div>
                                 ))}
                             </div>
+
                         </>
                     ) : (
                         <div className="no-reviews">

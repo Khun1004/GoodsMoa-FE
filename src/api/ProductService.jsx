@@ -546,6 +546,56 @@ class ProductService {
         }
     }
 
+    // 리뷰 목록 조회 (예: /product-review/list?page=0&size=10&sort=id,desc)
+    async getMyReviews(page = 0, size = 10, sort = 'id,desc') {
+        try {
+            const params = new URLSearchParams({ page, size, sort });
+            return await this.request(`/product-review/list?${params.toString()}`, 'GET');
+        } catch (error) {
+            console.error('내 리뷰 목록 조회 오류:', error);
+            throw new Error(`리뷰 목록을 가져오는데 실패했습니다: ${error.message}`);
+        }
+    }
+
+    // postId에 해당하는 리뷰 목록 조회
+    async getReviewsByPost(postId, page = 0, size = 10, sort = 'createdAt,desc') {
+        try {
+            const params = new URLSearchParams({ page, size, sort });
+            return await this.request(`/product-review/post/${postId}?${params.toString()}`, 'GET');
+        } catch (error) {
+            console.error('상품글 리뷰 조회 오류:', error);
+            throw new Error(`리뷰 목록을 가져오는데 실패했습니다: ${error.message}`);
+        }
+    }
+
+    // 리뷰 수정
+    async updateReview(reviewData, newImages = []) {
+        const formData = new FormData();
+
+        formData.append("review", new Blob([JSON.stringify(reviewData)], { type: "application/json" }));
+
+        for (let image of newImages) {
+            formData.append("newImages", image);
+        }
+
+        return await this.request(`/product-review/update`, 'PUT', formData, true);
+    }
+
+    // 리뷰 삭제
+    async deleteReview(reviewId) {
+        try {
+            return await this.request(`/product-review/${reviewId}`, 'DELETE');
+        } catch (error) {
+            console.error('Delete review error:', error);
+
+            if (error.message?.includes('foreign key constraint')) {
+                throw new Error('이 리뷰는 다른 정보와 연결되어 있어 삭제할 수 없습니다. 관리자에게 문의하세요.');
+            }
+
+            throw new Error(`리뷰 삭제 실패: ${error.message}`);
+        }
+    }
+
     formatPostData(data) {
         if (!data) {
             console.error('포맷할 데이터가 없습니다');
