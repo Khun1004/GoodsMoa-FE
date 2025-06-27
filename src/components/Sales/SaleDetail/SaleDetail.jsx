@@ -14,20 +14,13 @@ const SaleDetail = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const [liked, setLiked] = useState({});
-    const [likedInfo, setLikedInfo] = useState(null);
-    const [likeError, setLikeError] = useState(null);
     const {
         product,
         products = [],
         selectedImage: initialSelectedImage = null,
         productReviews: initialProductReviews = [],
-        start_time = null,
-        end_time = null,
         saleLabel = "판매",
-        isPublic = true,
-        privateCode = "",
         description = "",
-        hashtags = [],
         from = "",
         userName: userNameProp,
         profileImage: profileImageProp
@@ -44,16 +37,18 @@ const SaleDetail = () => {
         userInfo?.nickname || userNameProp || localStorage.getItem('userName') || "사용자 이름"
     );
 
+    // ===============contextProfileImage 값이 바뀔 때마다 profileImage 상태를 업데이트 (프로필 이미지만 갱신)===========
     useEffect(() => {
         if (contextProfileImage) setProfileImage(contextProfileImage);
     }, [contextProfileImage]);
 
+    // =========userInfo 객체가 바뀔 때마다 nickname, profileImage 상태를 업데이트 (이름과 이미지 모두 갱신)==============
     useEffect(() => {
         if (userInfo?.nickname) setUserName(userInfo.nickname);
         if (userInfo?.profileImage) setProfileImage(userInfo.profileImage);
     }, [userInfo]);
 
-    // 좋아요 상태 가져오기
+    // =================좋아요 상태 가져오기===================
     useEffect(() => {
         const fetchLikedInfo = async () => {
             if (!product?.id) return;
@@ -89,6 +84,7 @@ const SaleDetail = () => {
     const [wantedProducts, setWantedProducts] = useState([]);
     const [hashtag, setHashtag] = useState([]);
 
+    // ======== 서버에서 받은 hashtag를 배열 형태로 가공해서 제공 ==========
     useEffect(() => {
         const tagSource = location.state?.hashtags || product?.hashtag || "";
         const parsed = typeof tagSource === 'string' ? tagSource.split(',') : Array.isArray(tagSource) ? tagSource : [];
@@ -98,7 +94,7 @@ const SaleDetail = () => {
     const [category, setCategory] = useState(location.state?.category || product?.category || product?.categoryName || "미정");
     const [productReviews, setProductReviews] = useState(initialProductReviews);
 
-    // 서버에서 불러오는 리뷰
+    // ============ 서버에서 불러오는 리뷰 ===============
     useEffect(() => {
         const fetchProductReviews = async () => {
             if (!product?.id) return;
@@ -113,16 +109,7 @@ const SaleDetail = () => {
         fetchProductReviews();
     }, [product?.id]);
 
-    // 로컬 스토리지로 불러오는 리뷰 값
-    // useEffect(() => {
-    //     const storedReviews = JSON.parse(localStorage.getItem("reviews")) || [];
-    //     const filteredReviews = storedReviews.filter(review =>
-    //         review.productId === product.id ||
-    //         review.purchase?.products?.some(p => p.id === product.id)
-    //     );
-    //     setProductReviews(filteredReviews);
-    // }, [product.id]);
-
+    // ========== 페이지 진입 시 productReviews 상태를 location.state 또는 localStorage 기반으로 초기 설정 ===========
     useEffect(() => {
         if (location.state?.productReviews) {
             setProductReviews(location.state.productReviews);
@@ -140,6 +127,7 @@ const SaleDetail = () => {
         setProductReviews(filteredReviews);
     }, [product.id, location.state?.productReviews]);
 
+    // ============ 다른 탭/창에서 localStorage의 리뷰 데이터가 변경되면 해당 리뷰 상태를 자동으로 최신화 ===========
     useEffect(() => {
         const handleStorageChange = () => {
             const storedReviews = JSON.parse(localStorage.getItem("reviews")) || [];
@@ -394,15 +382,6 @@ const SaleDetail = () => {
             alert('좋아요 처리에 실패했습니다.');
         }
     };
-
-    const isMainProductImage = () => {
-        if (!selectedImage || !product) return false;
-      
-        const mainImage = product.image || product.src || "";
-        const selectedFileName = selectedImage.split('/').pop();
-        
-        return mainImage.includes(selectedFileName);
-      };
 
     // Placeholder image for when images are missing
     const placeholderImage = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300' viewBox='0 0 300 300'%3E%3Crect width='300' height='300' fill='%23f0f0f0'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial' font-size='24' fill='%23999999'%3E이미지 없음%3C/text%3E%3C/svg%3E";

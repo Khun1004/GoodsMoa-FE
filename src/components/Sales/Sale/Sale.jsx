@@ -576,146 +576,146 @@ const Sale = ({ showBanner = true, showCustomProducts = true }) => {
                             ))}
                         </div>
                         {/* 검색 중이 아닐 때만 헤더 표시 */}
-                        {!isSearching && (
-                            <div className='sale-header'>
-                                <div className='sale-icon'>
-                                    <SlSocialDropbox className='salebox-icon'/>
-                                    <FaHeart className='heart-icon'/>
-                                </div>
-                                <h2 className="sale-heading">내 판매 제품</h2>
-                            </div>
-                        )}
-                        <div className="saleWrite-grid">
-                            {filteredSaleFormData.map((saleFormData) => (
-                                <div key={saleFormData.id} className="sale-card">
-                                    <div className="sale-profile-info">
-                                        {userInfo?.profileImage || profileImage ? (
-                                            <img
-                                                src={userInfo?.profileImage || profileImage}
-                                                alt="Profile"
-                                                className="sale-profile-pic"
-                                                onError={(e) => {
-                                                    e.target.src = placeholderImage;
-                                                }}
-                                            />
-                                        ) : (
-                                            <CgProfile className="sale-profile-pic"/>
-                                        )}
-                                        <p className="sale-user-name">{userInfo?.nickname || userName}</p>
-                                    </div>
-                                    <div onClick={() => handleSaleFormProductClick(saleFormData)}>
-                                        {saleFormData.thumbnailImage && (
-                                            <img
-                                                src={getThumbnailImageUrl(saleFormData.thumbnailImage, saleFormData.id)}
-                                                alt={saleFormData.title}
-                                                className="sale-image"
-                                                onError={(e) => {
-                                                    e.target.src = placeholderImage;
-                                                }}
-                                            />
-                                        )}
-                                    </div>
-                                    <span className="sale-label">판매</span>
-                                    {saleFormData.products && saleFormData.products[0] && (
-                                        <button
-                                            className={`sale-like-button ${liked[saleFormData.products[0].id] ? 'liked' : ''}`}
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                handleLike(saleFormData.products[0].id);
-                                            }}
-                                        >
-                                            <FaHeart size={18}/>
-                                        </button>
-                                    )}
-                                    <p className="sale-product-name">{saleFormData.title}</p>
+                        {/*{!isSearching && (*/}
+                        {/*    <div className='sale-header'>*/}
+                        {/*        <div className='sale-icon'>*/}
+                        {/*            <SlSocialDropbox className='salebox-icon'/>*/}
+                        {/*            <FaHeart className='heart-icon'/>*/}
+                        {/*        </div>*/}
+                        {/*        <h2 className="sale-heading">내 판매 제품</h2>*/}
+                        {/*    </div>*/}
+                        {/*)}*/}
+                        {/*<div className="saleWrite-grid">*/}
+                        {/*    {filteredSaleFormData.map((saleFormData) => (*/}
+                        {/*        <div key={saleFormData.id} className="sale-card">*/}
+                        {/*            <div className="sale-profile-info">*/}
+                        {/*                {userInfo?.profileImage || profileImage ? (*/}
+                        {/*                    <img*/}
+                        {/*                        src={userInfo?.profileImage || profileImage}*/}
+                        {/*                        alt="Profile"*/}
+                        {/*                        className="sale-profile-pic"*/}
+                        {/*                        onError={(e) => {*/}
+                        {/*                            e.target.src = placeholderImage;*/}
+                        {/*                        }}*/}
+                        {/*                    />*/}
+                        {/*                ) : (*/}
+                        {/*                    <CgProfile className="sale-profile-pic"/>*/}
+                        {/*                )}*/}
+                        {/*                <p className="sale-user-name">{userInfo?.nickname || userName}</p>*/}
+                        {/*            </div>*/}
+                        {/*            <div onClick={() => handleSaleFormProductClick(saleFormData)}>*/}
+                        {/*                {saleFormData.thumbnailImage && (*/}
+                        {/*                    <img*/}
+                        {/*                        src={getThumbnailImageUrl(saleFormData.thumbnailImage, saleFormData.id)}*/}
+                        {/*                        alt={saleFormData.title}*/}
+                        {/*                        className="sale-image"*/}
+                        {/*                        onError={(e) => {*/}
+                        {/*                            e.target.src = placeholderImage;*/}
+                        {/*                        }}*/}
+                        {/*                    />*/}
+                        {/*                )}*/}
+                        {/*            </div>*/}
+                        {/*            <span className="sale-label">판매</span>*/}
+                        {/*            {saleFormData.products && saleFormData.products[0] && (*/}
+                        {/*                <button*/}
+                        {/*                    className={`sale-like-button ${liked[saleFormData.products[0].id] ? 'liked' : ''}`}*/}
+                        {/*                    onClick={(e) => {*/}
+                        {/*                        e.stopPropagation();*/}
+                        {/*                        handleLike(saleFormData.products[0].id);*/}
+                        {/*                    }}*/}
+                        {/*                >*/}
+                        {/*                    <FaHeart size={18}/>*/}
+                        {/*                </button>*/}
+                        {/*            )}*/}
+                        {/*            <p className="sale-product-name">{saleFormData.title}</p>*/}
 
-                                    {showDetails[saleFormData.id] && (
-                                        <div className="product-details">
-                                            <div dangerouslySetInnerHTML={{
-                                                __html: saleFormData.content
-                                            }}/>
+                        {/*            {showDetails[saleFormData.id] && (*/}
+                        {/*                <div className="product-details">*/}
+                        {/*                    <div dangerouslySetInnerHTML={{*/}
+                        {/*                        __html: saleFormData.content*/}
+                        {/*                    }}/>*/}
 
-                                            <h4>상품 목록</h4>
-                                            {saleFormData.products?.map((product, index) => (
-                                                <div key={product.id} className="product-detail-item">
-                                                    <h3>{product.name}</h3>
-                                                    <img
-                                                        src={getProductImageUrl(product.image, saleFormData.id, index)}
-                                                        alt={product.name}
-                                                        className="product-image"
-                                                        onError={(e) => {
-                                                            e.target.src = placeholderImage;
-                                                        }}
-                                                    />
-                                                    <p>가격: {Number(product.price).toLocaleString()}원</p>
-                                                    <p>재고: {product.quantity}</p>
-                                                    <p>최대 구매 개수: {product.maxQuantity}</p>
-                                                </div>
-                                            ))}
-                                            <p>카테고리: {saleFormData.category?.name || saleFormData.category}</p>
-                                            {productReviews.length > 0 && (
-                                                <div className="reviews-section">
-                                                    <h3>리뷰 ({productReviews.length})</h3>
-                                                    {productReviews.map((review, index) => (
-                                                        <div key={`${review.date}-${index}`} className="review-item">
-                                                            <div className="review-header">
-                                                                <span className="review-rating">
-                                                                    {'★'.repeat(review.rating)}{'☆'.repeat(5 - review.rating)}
-                                                                </span>
-                                                                <span className="review-date">{review.date}</span>
-                                                            </div>
-                                                            <p className="review-text">{review.reviewText}</p>
+                        {/*                    <h4>상품 목록</h4>*/}
+                        {/*                    {saleFormData.products?.map((product, index) => (*/}
+                        {/*                        <div key={product.id} className="product-detail-item">*/}
+                        {/*                            <h3>{product.name}</h3>*/}
+                        {/*                            <img*/}
+                        {/*                                src={getProductImageUrl(product.image, saleFormData.id, index)}*/}
+                        {/*                                alt={product.name}*/}
+                        {/*                                className="product-image"*/}
+                        {/*                                onError={(e) => {*/}
+                        {/*                                    e.target.src = placeholderImage;*/}
+                        {/*                                }}*/}
+                        {/*                            />*/}
+                        {/*                            <p>가격: {Number(product.price).toLocaleString()}원</p>*/}
+                        {/*                            <p>재고: {product.quantity}</p>*/}
+                        {/*                            <p>최대 구매 개수: {product.maxQuantity}</p>*/}
+                        {/*                        </div>*/}
+                        {/*                    ))}*/}
+                        {/*                    <p>카테고리: {saleFormData.category?.name || saleFormData.category}</p>*/}
+                        {/*                    {productReviews.length > 0 && (*/}
+                        {/*                        <div className="reviews-section">*/}
+                        {/*                            <h3>리뷰 ({productReviews.length})</h3>*/}
+                        {/*                            {productReviews.map((review, index) => (*/}
+                        {/*                                <div key={`${review.date}-${index}`} className="review-item">*/}
+                        {/*                                    <div className="review-header">*/}
+                        {/*                                        <span className="review-rating">*/}
+                        {/*                                            {'★'.repeat(review.rating)}{'☆'.repeat(5 - review.rating)}*/}
+                        {/*                                        </span>*/}
+                        {/*                                        <span className="review-date">{review.date}</span>*/}
+                        {/*                                    </div>*/}
+                        {/*                                    <p className="review-text">{review.reviewText}</p>*/}
 
-                                                            {review.uploadedImages && review.uploadedImages.length > 0 && (
-                                                                <div className="review-images">
-                                                                    {review.uploadedImages.map((img, imgIndex) => (
-                                                                        <img
-                                                                            key={imgIndex}
-                                                                            src={img}
-                                                                            alt={`리뷰 이미지 ${imgIndex + 1}`}
-                                                                            className="review-image"
-                                                                            onError={(e) => {
-                                                                                e.target.src = placeholderImage;
-                                                                            }}
-                                                                        />
-                                                                    ))}
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            )}
-                                            <p>판매 기간:
-                                                {saleFormData.isPermanent ? (
-                                                    " 상시판매"
-                                                ) : saleFormData.startTime && saleFormData.endTime ? (
-                                                    ` ${formatDate(saleFormData.startTime)} ~ ${formatDate(saleFormData.endTime)}`
-                                                ) : (
-                                                    " 판매 기간 없음"
-                                                )}
-                                            </p>
+                        {/*                                    {review.uploadedImages && review.uploadedImages.length > 0 && (*/}
+                        {/*                                        <div className="review-images">*/}
+                        {/*                                            {review.uploadedImages.map((img, imgIndex) => (*/}
+                        {/*                                                <img*/}
+                        {/*                                                    key={imgIndex}*/}
+                        {/*                                                    src={img}*/}
+                        {/*                                                    alt={`리뷰 이미지 ${imgIndex + 1}`}*/}
+                        {/*                                                    className="review-image"*/}
+                        {/*                                                    onError={(e) => {*/}
+                        {/*                                                        e.target.src = placeholderImage;*/}
+                        {/*                                                    }}*/}
+                        {/*                                                />*/}
+                        {/*                                            ))}*/}
+                        {/*                                        </div>*/}
+                        {/*                                    )}*/}
+                        {/*                                </div>*/}
+                        {/*                            ))}*/}
+                        {/*                        </div>*/}
+                        {/*                    )}*/}
+                        {/*                    <p>판매 기간:*/}
+                        {/*                        {saleFormData.isPermanent ? (*/}
+                        {/*                            " 상시판매"*/}
+                        {/*                        ) : saleFormData.startTime && saleFormData.endTime ? (*/}
+                        {/*                            ` ${formatDate(saleFormData.startTime)} ~ ${formatDate(saleFormData.endTime)}`*/}
+                        {/*                        ) : (*/}
+                        {/*                            " 판매 기간 없음"*/}
+                        {/*                        )}*/}
+                        {/*                    </p>*/}
 
-                                            <h4>배송 방법</h4>
-                                            {saleFormData.delivers?.map((method, index) => (
-                                                <div key={index} className="shipping-method-item">
-                                                    <p>배송 방법: {method.name}</p>
-                                                    <p>배송비: {Number(method.price).toLocaleString()}원</p>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    )}
-                                    {saleFormData.hashtag && (
-                                        <div className="tags-container">
-                                            <div className="tags-list">
-                                                {formatHashtags(saleFormData.hashtag).map((tag, index) => (
-                                                    <span key={index} className="tag-item">#{tag}</span>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-                            ))}
-                        </div>
+                        {/*                    <h4>배송 방법</h4>*/}
+                        {/*                    {saleFormData.delivers?.map((method, index) => (*/}
+                        {/*                        <div key={index} className="shipping-method-item">*/}
+                        {/*                            <p>배송 방법: {method.name}</p>*/}
+                        {/*                            <p>배송비: {Number(method.price).toLocaleString()}원</p>*/}
+                        {/*                        </div>*/}
+                        {/*                    ))}*/}
+                        {/*                </div>*/}
+                        {/*            )}*/}
+                        {/*            {saleFormData.hashtag && (*/}
+                        {/*                <div className="tags-container">*/}
+                        {/*                    <div className="tags-list">*/}
+                        {/*                        {formatHashtags(saleFormData.hashtag).map((tag, index) => (*/}
+                        {/*                            <span key={index} className="tag-item">#{tag}</span>*/}
+                        {/*                        ))}*/}
+                        {/*                    </div>*/}
+                        {/*                </div>*/}
+                        {/*            )}*/}
+                        {/*        </div>*/}
+                        {/*    ))}*/}
+                        {/*</div>*/}
                     </div>
                 )}
 

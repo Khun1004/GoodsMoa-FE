@@ -29,7 +29,7 @@ const SaleForm = () => {
     const [editMode, setEditMode] = useState(false);
     const [editingMethod, setEditingMethod] = useState(null);
     const [defaultShippingChecked, setDefaultShippingChecked] = useState(true);
-    const [shippingMethods, setShippingMethods] = useState([{ name: '택배', price: '3000' }]);
+    const [shippingMethods, setShippingMethods] = useState([]);
     const [shippingCost, setShippingCost] = useState("");
     const [newMethod, setNewMethod] = useState("");
     const [productName, setProductName] = useState("");
@@ -121,32 +121,6 @@ const SaleForm = () => {
 
         loadData();
     }, [location.state]);
-
-    // useEffect(() => {
-    //     if (isEditMode && postId && !String(postId).startsWith('temp_')) {
-    //         fetchPostDetails(postId); // ✅ 이것만이 populateFormWithPostData를 실행시킴
-    //     }
-    // }, [postId, isEditMode]);
-
-    const fetchPostDetails = async (id) => {
-        if (!id || String(id).startsWith('temp_') || isNaN(id)) {
-            console.warn('Invalid or temporary postId, skipping fetch:', id);
-            return;
-        }
-    
-        try {
-            setLoading(true);
-            const postData = await ProductService.getPostDetail(id);
-            populateFormWithPostData(postData);
-
-            console.log(postData);
-        } catch (err) {
-            console.error('Failed to fetch post details:', err);
-            setError(`게시물 정보를 불러오는데 실패했습니다: ${err.message}`);
-        } finally {
-            setLoading(false);
-        }
-    };
 
     const populateFormWithPostData = (postData) => {
         if (!postData) return;
@@ -393,21 +367,6 @@ const SaleForm = () => {
             setLoading(false);
         }
     };
-
-    const handleDefaultShippingChange = (e) => {
-        const isChecked = e.target.checked;
-        setDefaultShippingChecked(isChecked);
-
-        if (isChecked) {
-            const hasPost = shippingMethods.some(m => m.name === '택배');
-            if (!hasPost) {
-                setShippingMethods([...shippingMethods, { name: '택배', price: '3000' }]);
-            }
-        } else {
-            setShippingMethods(shippingMethods.filter(m => m.name !== '택배'));
-        }
-    };
-
     // 배달 방식 수정하기
     const handleSaveShippingEdit = () => {
         if (!editingMethod) return;
@@ -485,12 +444,6 @@ const SaleForm = () => {
             setDefaultShippingChecked(false);
         }
     };
-
-    useEffect(() => {
-        if (shippingMethods.length === 0) {
-            setShippingMethods([{ name: '택배', price: '3000' }]);
-        }
-    }, []);
 
     const handleEditMethod = (method) => {
         setNewMethod(method.name);
@@ -795,6 +748,25 @@ const SaleForm = () => {
         navigate(-1)
     };
 
+    // 상시 판매 클릭 시 start_time은 현재시간, end_time은 내후년까지 설정
+    useEffect(() => {
+        if (isPermanent) {
+            const now = new Date();
+            const start = now.toISOString().split("T")[0]; // yyyy-MM-dd
+
+            const future = new Date(now);
+            future.setFullYear(future.getFullYear() + 2);
+            const end = future.toISOString().split("T")[0];
+
+            setStartTime(start);
+            setEndTime(end);
+        } else {
+            setStartTime("");
+            setEndTime("");
+        }
+    }, [isPermanent]);
+
+
     useEffect(() => {
         if (location.state?.from === 'write') {
             setIsDescriptionEdit(false);
@@ -933,17 +905,6 @@ const SaleForm = () => {
                 <div>
                     <label className="form-label">배송 방법 입력 <span style={{ color: "red" }}>*</span></label>
                     <p className="form-description">배송방법 수정은 구매 발생 전까지 변경이 가능합니다.</p>
-
-                    <div className="shipping-default-option">
-                        <label>
-                            <input
-                                type="checkbox"
-                                checked={defaultShippingChecked}
-                                onChange={handleDefaultShippingChange}
-                            />
-                            기본 택배 (3000원)
-                        </label>
-                    </div>
 
                     <div className="shipping-methods-list">
                         {shippingMethods
