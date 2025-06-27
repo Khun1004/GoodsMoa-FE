@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import DemandWrite from "../DemandWrite/DemandWrite.jsx";
 import { LoginContext } from "../../../contexts/LoginContext";
+import api from "../../../api/api"; // ★ api 인스턴스 import!
 import "./DemandForm.css";
 
 const categoryOptions = [
@@ -258,12 +259,12 @@ const DemandForm = () => {
             let isUpdate = isEditMode && formData?.id;
 
             if (isUpdate) {
-                url = `http://localhost:8080/demand/update/${formData.id}`;
-                method = "PUT";
+                url = `/demand/update/${formData.id}`;
+                method = "put";
                 key = "demandPostUpdateRequest";
             } else {
-                url = "http://localhost:8080/demand/create";
-                method = "POST";
+                url = "/demand/create";
+                method = "post";
                 key = "demandPostCreateRequest";
             }
 
@@ -285,15 +286,16 @@ const DemandForm = () => {
                 formDataToSend.append(isUpdate ? "newDescriptionImages" : "descriptionImages", file);
             });
 
-            const res = await fetch(url, {
-                method,
-                body: formDataToSend,
-                credentials: "include",
+            // ★ fetch → api 인스턴스로 변경
+            const res = await api[method](url, formDataToSend, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                },
+                withCredentials: true,
             });
 
-            if (!res.ok) {
-                const errorText = await res.text();
-                throw new Error(`서버 오류: ${res.status} ${res.statusText} - ${errorText}`);
+            if (!(res.status >= 200 && res.status < 300)) {
+                throw new Error(`서버 오류: ${res.status} ${res.statusText}`);
             }
 
             alert(isEditMode ? "수정 완료" : "등록 완료");
@@ -303,7 +305,7 @@ const DemandForm = () => {
                 navigate("/demand");
             }
         } catch (err) {
-            alert("저장 중 오류 발생: " + err.message);
+            alert("저장 중 오류 발생: " + (err.response?.data?.message || err.message));
         }
     };
 

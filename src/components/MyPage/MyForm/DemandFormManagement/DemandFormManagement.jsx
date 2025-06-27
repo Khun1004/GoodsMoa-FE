@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import api from "../../../../api/api"; // ★ axios 인스턴스 import!
 import "./DemandFormManagement.css";
 
 const categoryOptions = [
@@ -30,13 +31,17 @@ const DemandFormManagement = () => {
 
   useEffect(() => {
     setIsLoading(true);
-    fetch(`http://localhost:8080/demand/user?category=${category}&page=${page}&page_size=10`, {
-      credentials: "include",
+    api.get('/demand/user', {
+      params: {
+        category,
+        page,
+        page_size: 10,
+      },
+      withCredentials: true,
     })
-        .then((res) => res.json())
-        .then((data) => {
-          setDemandList(data.content);
-          setTotalPages(data.totalPages);
+        .then((res) => {
+          setDemandList(res.data.content);
+          setTotalPages(res.data.totalPages);
           setIsLoading(false);
         })
         .catch((err) => {
@@ -64,25 +69,21 @@ const DemandFormManagement = () => {
     });
   };
 
-
-// id는 수요조사 게시글 id
+  // id는 수요조사 게시글 id
   async function urlToFile(url, filename = "image.jpg") {
-    const response = await fetch(url);
-    const blob = await response.blob();
+    const response = await api.get(url, { responseType: 'blob' });
+    const blob = response.data;
     return new File([blob], filename, { type: blob.type });
   }
 
+  // ★ 변환(POST) fetch → api.post로!
   const handleConvert = async (id) => {
     try {
-      const res = await fetch(`http://localhost:8080/demand/convert/${id}`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+      const res = await api.post(`/demand/convert/${id}`, {}, {
+        withCredentials: true,
+        headers: { 'Content-Type': 'application/json' },
       });
-      if (!res.ok) throw new Error('변환 실패');
-      const data = await res.json();
+      const data = res.data;
 
       // imageFile, productFiles 변환(다운로드) X!
       // 그냥 URL만 넘김
@@ -124,14 +125,12 @@ const DemandFormManagement = () => {
       });
       console.log("✅ [handleConvert] SaleForm으로 URL만 전달 완료!");
     } catch (err) {
-      alert("판매글 변환에 실패했습니다: " + err.message);
+      alert("판매글 변환에 실패했습니다: " + (err.response?.data?.message || err.message));
       console.error("❌ [handleConvert] 에러 발생:", err);
     }
   };
 
-
-
-// category 번호 → 이름 변환 함수
+  // category 번호 → 이름 변환 함수
   const getCategoryName = (id) => {
     const map = {
       1: "애니메이션",
@@ -146,26 +145,20 @@ const DemandFormManagement = () => {
     return map[id] || "";
   };
 
-
+  // ★ 삭제도 api.delete로 변경!
   const handleDelete = async (id) => {
     if (!window.confirm("정말 삭제하시겠습니까? 삭제 후 복구할 수 없습니다.")) return;
 
     try {
-      const res = await fetch(`http://localhost:8080/demand/delete/${id}`, {
-        method: "DELETE",
-        credentials: "include",
+      await api.delete(`/demand/delete/${id}`, {
+        withCredentials: true
       });
-      if (!res.ok) throw new Error("삭제 실패");
       alert("삭제되었습니다.");
-      // 삭제 후 목록 새로고침
       setDemandList(demandList.filter((item) => item.id !== id));
-      // 또는 setPage(0); // 페이지 초기화해도 됨
     } catch (err) {
-      alert("삭제 중 오류 발생: " + err.message);
+      alert("삭제 중 오류 발생: " + (err.response?.data?.message || err.message));
     }
   };
-
-
 
   return (
       <div className="demandFormMancontainer">
@@ -267,10 +260,8 @@ const DemandFormManagement = () => {
                             삭제
                           </button>
                         </div>
-
                       </div>
                     </div>
-
                     <div className="demandFormMandemand-products-section">
                       <h3>등록된 상품 ({formData.products.length})</h3>
                       <div className="demandFormMandemand-products-grid">

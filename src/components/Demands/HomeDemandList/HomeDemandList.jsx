@@ -2,14 +2,10 @@ import React, { useCallback, useEffect, useState } from 'react';
 import _ from 'lodash';
 import { CgProfile } from 'react-icons/cg';
 import { FaHeart } from 'react-icons/fa';
-import { SlSocialDropbox } from 'react-icons/sl';
 import { Link, useLocation } from 'react-router-dom';
-import welcomeVideo from '../../../assets/demandWelcome.mp4';
+import api from '../../../api/api'; // ★ api 인스턴스 import!
 import Demand1 from '../../../assets/demands/demand1.jpg';
 import '../Demand/Demand.css';
-
-// 새로 만든 컴포넌트 import
-// import DemandSearchBar from '../DemandSearchBar/DemandSearchBar.jsx';
 
 const categoryOptions = [
     { id: 0, name: '전체' },
@@ -52,30 +48,30 @@ const Demand = ({ showBanner = true }) => {
     const [totalPages, setTotalPages] = useState(0);
     const pageSize = 10;
 
-    const fetchDemandProducts = useCallback(
+    // ★ fetch → api.get 으로 변경
+    const getDemandProducts = useCallback(
         _.debounce(async () => {
             setLoading(true);
             setError(null);
             try {
-                const params = new URLSearchParams({
-                    query: searchTerm,
-                    category,
-                    order_by: orderBy,
-                    include_expired: includeExpired.toString(),
-                    include_scheduled: includeScheduled.toString(),
-                    page: page.toString(),
-                    page_size: pageSize.toString(),
+                const res = await api.get('/demand', {
+                    params: {
+                        query: searchTerm,
+                        category,
+                        order_by: orderBy,
+                        include_expired: includeExpired.toString(),
+                        include_scheduled: includeScheduled.toString(),
+                        page: page.toString(),
+                        page_size: pageSize.toString(),
+                    },
                 });
-                const url = `http://localhost:8080/demand?${params.toString()}`;
-                const res = await fetch(url);
-                if (!res.ok) throw new Error('서버 응답 에러');
-                const data = await res.json();
+                const data = res.data;
                 const productsArr = Array.isArray(data.content) ? data.content : [];
                 setDemandProducts(productsArr);
                 setLiked(new Array(productsArr.length).fill(false));
                 setTotalPages(data.totalPages || 1);
             } catch (err) {
-                setError(err.message);
+                setError(err.message || (err.response?.data?.message));
             } finally {
                 setLoading(false);
             }
@@ -84,9 +80,9 @@ const Demand = ({ showBanner = true }) => {
     );
 
     useEffect(() => {
-        fetchDemandProducts();
-        return fetchDemandProducts.cancel;
-    }, [fetchDemandProducts]);
+        getDemandProducts();
+        return getDemandProducts.cancel;
+    }, [getDemandProducts]);
 
     useEffect(() => {
         const storedLiked = localStorage.getItem('demandLiked');
@@ -99,29 +95,29 @@ const Demand = ({ showBanner = true }) => {
         <div className="container">
             <div className="demand-container">
                 {/* 검색/필터 컴포넌트 분리 */}
-                {/*<DemandSearchBar*/}
-                {/*    category={category}*/}
-                {/*    setCategory={setCategory}*/}
-                {/*    searchTerm={searchTerm}*/}
-                {/*    setSearchTerm={setSearchTerm}*/}
-                {/*    orderBy={orderBy}*/}
-                {/*    setOrderBy={setOrderBy}*/}
-                {/*    includeExpired={includeExpired}*/}
-                {/*    setIncludeExpired={setIncludeExpired}*/}
-                {/*    includeScheduled={includeScheduled}*/}
-                {/*    setIncludeScheduled={setIncludeScheduled}*/}
-                {/*    categoryOptions={categoryOptions}*/}
-                {/*/>*/}
+                {/*<DemandSearchBar
+                    category={category}
+                    setCategory={setCategory}
+                    searchTerm={searchTerm}
+                    setSearchTerm={setSearchTerm}
+                    orderBy={orderBy}
+                    setOrderBy={setOrderBy}
+                    includeExpired={includeExpired}
+                    setIncludeExpired={setIncludeExpired}
+                    includeScheduled={includeScheduled}
+                    setIncludeScheduled={setIncludeScheduled}
+                    categoryOptions={categoryOptions}
+                />*/}
 
                 {/* 이하 기존 코드 동일! */}
                 <div className="demandProductFrame">
-                    {/*<div className="demand-header">*/}
-                    {/*    <div className="demand-icon">*/}
-                    {/*        <SlSocialDropbox className="demandbox-icon"/>*/}
-                    {/*        <FaHeart className="heart-icon"/>*/}
-                    {/*    </div>*/}
-                    {/*    <h2 className="demand-heading">수요조사</h2>*/}
-                    {/*</div>*/}
+                    {/*<div className="demand-header">
+                        <div className="demand-icon">
+                            <SlSocialDropbox className="demandbox-icon"/>
+                            <FaHeart className="heart-icon"/>
+                        </div>
+                        <h2 className="demand-heading">수요조사</h2>
+                    </div>*/}
 
                     {loading && <div className="loading-box"
                                      style={{textAlign: 'center', margin: '40px 0', fontSize: '18px', color: '#888'}}>🔄
@@ -168,17 +164,16 @@ const Demand = ({ showBanner = true }) => {
                                                         fontSize: "1.5rem",
                                                         margin: 0,
                                                         lineHeight: 1.3,
-                                                        maxWidth: "13em",         // 글자 10~11자 정도 너비 (글꼴 따라 조정)
+                                                        maxWidth: "13em",
                                                         overflow: "hidden",
                                                         whiteSpace: "nowrap",
                                                         textOverflow: "ellipsis",
-                                                        display: "block",         // 필요 시 명확히 block으로
+                                                        display: "block",
                                                     }}
-                                                    title={item.title} // 전체 제목 툴팁
+                                                    title={item.title}
                                                 >
                                                     {item.title}
                                                 </p>
-
 
                                                 <div>
                                                     {item.hashtag
@@ -196,7 +191,7 @@ const Demand = ({ showBanner = true }) => {
                                                                     fontSize: "24px",
                                                                     textAlign: "center",
                                                                     minWidth: "80px",
-                                                                    marginRight: "8px",    // 태그끼리 간격
+                                                                    marginRight: "8px",
                                                                     fontWeight: "400",
                                                                 }}
                                                             >
@@ -204,7 +199,6 @@ const Demand = ({ showBanner = true }) => {
       </span>
                                                         ))}
                                                 </div>
-
 
                                                 <div className="demand-profile-info">
                                                     {item.profileUrl ? (
@@ -216,7 +210,6 @@ const Demand = ({ showBanner = true }) => {
                                                     {item.nickname}
                                                 </div>
 
-
                                             </div>
                                         );
                                     })}
@@ -226,25 +219,25 @@ const Demand = ({ showBanner = true }) => {
                     )}
                 </div>
 
-                {/*<div className="pagination" style={{textAlign: 'center', marginTop: '30px'}}>*/}
-                {/*    {Array.from({length: totalPages}, (_, i) => (*/}
-                {/*        <button*/}
-                {/*            key={i}*/}
-                {/*            onClick={() => setPage(i)}*/}
-                {/*            style={{*/}
-                {/*                margin: '0 5px',*/}
-                {/*                padding: '6px 10px',*/}
-                {/*                backgroundColor: i === page ? '#333' : '#eee',*/}
-                {/*                color: i === page ? '#fff' : '#000',*/}
-                {/*                border: 'none',*/}
-                {/*                borderRadius: '4px',*/}
-                {/*                cursor: 'pointer'*/}
-                {/*            }}*/}
-                {/*        >*/}
-                {/*            {i + 1}*/}
-                {/*        </button>*/}
-                {/*    ))}*/}
-                {/*</div>*/}
+                {/*<div className="pagination" style={{textAlign: 'center', marginTop: '30px'}}>
+                    {Array.from({length: totalPages}, (_, i) => (
+                        <button
+                            key={i}
+                            onClick={() => setPage(i)}
+                            style={{
+                                margin: '0 5px',
+                                padding: '6px 10px',
+                                backgroundColor: i === page ? '#333' : '#eee',
+                                color: i === page ? '#fff' : '#000',
+                                border: 'none',
+                                borderRadius: '4px',
+                                cursor: 'pointer'
+                            }}
+                        >
+                            {i + 1}
+                        </button>
+                    ))}
+                </div>*/}
             </div>
         </div>
     );

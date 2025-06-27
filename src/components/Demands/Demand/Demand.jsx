@@ -4,27 +4,16 @@ import { CgProfile } from 'react-icons/cg';
 import { FaHeart } from 'react-icons/fa';
 import { SlSocialDropbox } from 'react-icons/sl';
 import { Link, useLocation } from 'react-router-dom';
-import welcomeVideo from '../../../assets/demandWelcome.mp4';
 import Demand1 from '../../../assets/demands/demand1.jpg';
 import './Demand.css';
 
+// ★ api 인스턴스 import (경로 확인 필요!)
+import api from '../../../api/api';
+
 // 새로 만든 컴포넌트 import
-import DemandSearchBar from '../DemandSearchBar/DemandSearchBar';
 import Category from '../../public/Category/Category';
 import SearchBanner from "../../public/SearchBanner.jsx";
 import Spacer from "../../public/Spacer.jsx";
-
-const categoryOptions = [
-    { id: 0, name: '전체' },
-    { id: 1, name: '애니메이션' },
-    { id: 2, name: '아이돌' },
-    { id: 3, name: '순수창작' },
-    { id: 4, name: '게임' },
-    { id: 5, name: '영화' },
-    { id: 6, name: '드라마' },
-    { id: 7, name: '웹소설' },
-    { id: 8, name: '웹툰' },
-];
 
 const getFullThumbnailUrl = (thumbnailUrl) =>
     thumbnailUrl
@@ -55,24 +44,24 @@ const Demand = ({ showBanner = true }) => {
     const [totalPages, setTotalPages] = useState(0);
     const pageSize = 10;
 
-    const fetchDemandProducts = useCallback(
+    // ★ 함수명 fetch X → getDemandProducts 로 변경
+    const getDemandProducts = useCallback(
         _.debounce(async () => {
             setLoading(true);
             setError(null);
             try {
-                const params = new URLSearchParams({
-                    query: searchTerm,
-                    category,
-                    order_by: orderBy,
-                    include_expired: includeExpired.toString(),
-                    include_scheduled: includeScheduled.toString(),
-                    page: page.toString(),
-                    page_size: pageSize.toString(),
+                const res = await api.get('/demand', {
+                    params: {
+                        query: searchTerm,
+                        category,
+                        order_by: orderBy,
+                        include_expired: includeExpired.toString(),
+                        include_scheduled: includeScheduled.toString(),
+                        page: page.toString(),
+                        page_size: pageSize.toString(),
+                    }
                 });
-                const url = `http://localhost:8080/demand?${params.toString()}`;
-                const res = await fetch(url);
-                if (!res.ok) throw new Error('서버 응답 에러');
-                const data = await res.json();
+                const data = res.data;
                 const productsArr = Array.isArray(data.content) ? data.content : [];
                 setDemandProducts(productsArr);
                 setLiked(new Array(productsArr.length).fill(false));
@@ -87,9 +76,9 @@ const Demand = ({ showBanner = true }) => {
     );
 
     useEffect(() => {
-        fetchDemandProducts();
-        return fetchDemandProducts.cancel;
-    }, [fetchDemandProducts]);
+        getDemandProducts();
+        return getDemandProducts.cancel;
+    }, [getDemandProducts]);
 
     useEffect(() => {
         const storedLiked = localStorage.getItem('demandLiked');
@@ -112,9 +101,13 @@ const Demand = ({ showBanner = true }) => {
                         if (e.key === 'Enter') console.log('검색어:', searchTerm);
                     }}
                 />
-                <Category gap={90} />
-                <hr className="sale-divider" />
+                <Category
+                    gap={90}
+                    onCategoryClick={(id) => setCategory(id)}
+                    selectedId={category} // 현재 선택된 id
+                />
 
+                <hr className="sale-divider" />
                 {/* 이하 기존 코드 동일! */}
                 <div className="demandProductFrame">
                     <div className="demand-header">
