@@ -10,6 +10,7 @@ import CommImage4 from '../../assets/commission/comm4.png';
 import Category from "../public/Category/Category";
 import CommissionIcon from "../CommissionIcon/CommissionIcon";
 import './Search.css';
+import productService from '../../api/ProductService';
 
 const popularProducts = [
     { id: 1, title: "상품 1", image: CommImage1, description: "설명 1" },
@@ -49,28 +50,39 @@ const Search = () => {
         setSearchQuery(e.target.value);
     };
 
-    const handleSearchKeyDown = (e) => {
+    const handleSearchKeyDown = async (e) => {
         if (e.key === 'Enter') {
             e.preventDefault();
             if (searchQuery.trim()) {
-                const route = categoryRoutes[searchQuery];
-                if (route) {
-                    navigate(`${route}?q=${searchQuery}`);
-                    setNoResultsFound(false);
-                } else {
-                    const productFound = popularProducts.some(product =>
-                        product.title.includes(searchQuery) || product.description.includes(searchQuery)
-                    );
-                    if (productFound) {
-                        navigate(`/search?q=${searchQuery}`);
+                try {
+                    const data = await productService.searchIntegrated({
+                        query: searchQuery,
+                        orderBy: 'new',
+                        includeExpired: false,
+                        includeScheduled: false,
+                        pageSize: 8
+                    });
+
+                    console.log('🔍 검색 결과:', data);
+
+                    if (Object.keys(data).length > 0) {
+                        navigate(`/search/results?q=${encodeURIComponent(searchQuery)}`, {
+                            state: { results: data }
+                        });
                         setNoResultsFound(false);
                     } else {
                         setNoResultsFound(true);
                     }
+
+                } catch (error) {
+                    console.error("검색 요청 실패:", error);
+                    setNoResultsFound(true);
                 }
             }
         }
     };
+
+
 
     const goHome = () => {
         navigate("/");

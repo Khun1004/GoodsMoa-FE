@@ -50,6 +50,7 @@ import SalePurchaseModal from "./components/Sales/SalePurchaseModal/SalePurchase
 import SalePurchasePerfect from "./components/Sales/SalePurchasePerfect/SalePurchasePerfect";
 import SaleWrite from "./components/Sales/SaleWrite/SaleWrite";
 import Search from "./components/Search/Search";
+import SearchResults from './components/SearchResults/SearchResults'; // 경로는 맞게 수정하세요
 import Trade from "./components/Trade/Trade/Trade";
 import TradeBuy from "./components/Trade/TradeBuy/TradeBuy";
 import TradeBuyPerfect from "./components/Trade/TradeBuyPerfect/TradeBuyPerfect";
@@ -463,6 +464,16 @@ const AppContent = ({
             </div>
           }
         />
+
+      {/* Search Results Page */}
+      <Route
+          path="/search/results"
+          element={
+              <div className="pt-[30px]">
+                  <SearchResults />
+              </div>
+          }
+      />
 
         {/* Paint Page */}
         <Route

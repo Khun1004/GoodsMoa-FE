@@ -70,72 +70,29 @@ const SaleFormManagement = () => {
     });
 
     useEffect(() => {
-        const fetchAndMergeForms = async () => {
+        const fetchUserForms = async () => {
             try {
                 setLoading(true);
 
-                // Fetch posts from API
-                const response = await ProductService.getPosts(0, 100, 'createdAt,desc');
-                const apiPosts = response.content || [];
-                const formattedApiForms = apiPosts.map((post, index) => formatForm(post, index));
+                // 🚩 사용자 작성 글만 가져오기
+                const userPostsResponse = await ProductService.getUserPosts(0, 100, 'createdAt,desc');
+                const userApiPosts = userPostsResponse.content || [];
 
-                // Load forms from localStorage
-                const storedSaleFormDataList = JSON.parse(localStorage.getItem('saleFormDataList')) || [];
+                // formatForm으로 가공
+                const formattedUserForms = userApiPosts.map((post, index) => formatForm(post, index));
 
-                // Merge API forms with localStorage forms
-                const mergedForms = [];
-                const formIds = new Set();
-
-                // Add API forms first
-                formattedApiForms.forEach(form => {
-                    mergedForms.push(form);
-                    formIds.add(form.id);
-                });
-
-                // Add localStorage forms that aren't in the API response
-                storedSaleFormDataList.forEach((storedForm, index) => {
-                    if (!formIds.has(storedForm.id)) {
-                        const formattedStoredForm = formatForm(storedForm, index);
-                        mergedForms.push(formattedStoredForm);
-                        formIds.add(formattedStoredForm.id);
-                    } else {
-                        // Update existing form with localStorage data if it has newer changes
-                        const apiFormIndex = mergedForms.findIndex(f => f.id === storedForm.id);
-                        if (apiFormIndex !== -1) {
-                            mergedForms[apiFormIndex] = {
-                                ...mergedForms[apiFormIndex],
-                                ...formatForm(storedForm, index),
-                            };
-                        }
-                    }
-                });
-
-                // Handle new form from location.state
-                if (location.state?.formData) {
-                    const newForm = formatForm(location.state.formData);
-                    const existingIndex = mergedForms.findIndex(f => f.id === newForm.id);
-                    if (existingIndex >= 0) {
-                        mergedForms[existingIndex] = newForm;
-                    } else {
-                        mergedForms.unshift(newForm);
-                    }
-
-                    // Update localStorage
-                    const updatedSaleFormDataList = mergedForms.filter(f => String(f.id).startsWith('temp_') || !apiPosts.some(p => p.id === f.id));
-                    localStorage.setItem('saleFormDataList', JSON.stringify(updatedSaleFormDataList));
-                }
-
-                setForms(mergedForms);
+                // 상태에 반영
+                setForms(formattedUserForms);
             } catch (e) {
-                console.error('Failed to fetch or merge forms:', e);
-                setError('데이터 로드 실패');
+                console.error('사용자 작성 글 로드 실패:', e);
+                setError('작성한 글을 가져오는 데 실패했습니다.');
             } finally {
                 setLoading(false);
             }
         };
 
-        fetchAndMergeForms();
-    }, [location.state]);
+        fetchUserForms();
+    }, []); // ✅ location.state 제거, 마운트 시 한 번만 호출
 
     const getImageSrc = (img, postId, isProductImage = false, index = 0) => {
         if (!img) return 'https://images.unsplash.com/photo-1590736969955-71cc94901144?w=400&h=300&fit=crop';

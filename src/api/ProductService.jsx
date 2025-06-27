@@ -148,6 +148,7 @@ class ProductService {
         return { file: null, extension: null };
     }
 
+    // 상품글 생성
     async createPost(postData) {
         try {
             const userId = this.getUserId();
@@ -265,6 +266,7 @@ class ProductService {
         }
     }
 
+    // 상품글 수정
     async updatePost(postId, postData) {
         try {
             const formData = new FormData();
@@ -423,6 +425,7 @@ class ProductService {
         }
     }
 
+    // 상품글 상세조히
     async getPostDetail(postId) {
         if (isNaN(postId)) {
             throw new Error('Invalid post ID');
@@ -435,6 +438,7 @@ class ProductService {
         }
     }
 
+    // 상품글 삭제
     async deletePost(postId) {
         try {
             const response = await api.delete(`/product/post-delete/${postId}`, {
@@ -451,6 +455,7 @@ class ProductService {
         }
     }
 
+    // 여러 상품글 리스트
     async getPosts(page = 0, size = 10, sort = 'createdAt,desc') {
         try {
             const params = new URLSearchParams({ page, size, sort });
@@ -461,6 +466,18 @@ class ProductService {
         }
     }
 
+    // 사용자가 작성한 상품글 리스트 조회
+    async getUserPosts(page = 0, size = 10, sort = 'createdAt,desc') {
+        try {
+            const params = new URLSearchParams({ page, size, sort });
+            return await this.request(`/product/post-user?${params.toString()}`, 'GET');
+        } catch (error) {
+            console.error('사용자 게시물 목록 조회 오류:', error);
+            throw new Error(`사용자 게시물 목록을 가져오는데 실패했습니다: ${error.message}`);
+        }
+    }
+
+    // 상품글 찜
     async likeProduct(postId) {
         if (isNaN(postId)) {
             throw new Error('Invalid post ID');
@@ -473,6 +490,7 @@ class ProductService {
         }
     }
 
+    // 상품글 찜 해제
     async unlikeProduct(postId) {
         if (isNaN(postId)) {
             throw new Error('Invalid post ID');
@@ -485,6 +503,7 @@ class ProductService {
         }
     }
 
+    // 내가 찜한 상품글 조회
     async getLikedPosts(page = 0) {
         try {
             const query = `?page=${page}&size=10&sort=id,DESC`;
@@ -495,6 +514,7 @@ class ProductService {
         }
     }
 
+    // 상품글 상세 조회일때 찜
     async getSingleLikedPost(id) {
         try {
             return await this.request(`/product-like/my-likes/${id}`, 'GET');
@@ -593,6 +613,28 @@ class ProductService {
             }
 
             throw new Error(`리뷰 삭제 실패: ${error.message}`);
+        }
+    }
+
+    // 통합 키워드 검색 (새 API 대응)
+    async searchIntegrated({
+                               query = '',
+                               searchType = 'ALL',         // 제목, 내용, 해시태그 등 선택 시
+                               boardType = 'TRADE',        // PRODUCT, TRADE, DEMAND
+                               page = 0                    // 페이지 번호
+                           }) {
+        try {
+            const params = new URLSearchParams({
+                search_type: searchType,
+                board_type: boardType,
+                ...(query && { query }),
+                page: page.toString()
+            });
+
+            return await this.request(`/search?${params.toString()}`, 'GET');
+        } catch (error) {
+            console.error('🔍 통합 검색 오류:', error);
+            throw new Error(`검색 요청 중 오류 발생: ${error.message}`);
         }
     }
 

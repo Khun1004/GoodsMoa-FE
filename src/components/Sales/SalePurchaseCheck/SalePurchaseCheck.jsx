@@ -78,7 +78,7 @@ export function SalePurchaseCheck() {
     
         try {
             const response = await OrderSaleDetail.requestTossPayment({ orderId });
-    
+            console.log('response ::::: ',response);
             // Create complete order data with more details
             const completeOrderData = {
                 id: new Date().getTime(),
