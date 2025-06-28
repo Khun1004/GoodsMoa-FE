@@ -70,6 +70,7 @@ const TradeDetail = () => {
         setLoading(false);
       }
     };
+    console.log("🔥 중고거래 상세조회useEffect 실행됨");
     if (id) fetchPost();
   }, [id]);
 
