@@ -77,67 +77,7 @@ const TradeForm = () => {
   const [searchLocationInput, setSearchLocationInput] = useState(() => formTradeData.directTradeLocation || "");
   const [map, setMap] = useState(null);
   const [marker, setMarker] = useState(null);
-  // 기존 게시글 불러오기 API 호출
-  // useEffect(() => {
-  //   if (!isEditMode) return;
-  //   if (!formTradeData.id) return;
-
-  //   const fetchTradePost = async (id) => {
-  //     try {
-  //       const res = await api.get(`/tradePost/${id}`);
-  //       const data = res.data;
-
-  //       setFormTradeData(prev => ({
-  //         ...prev,
-  //         id: data.id,
-  //         title: data.title,
-  //         price: data.productPrice,
-  //         condition: data.conditionStatus || "중고",
-  //         shipping: data.delivery ? "사용" : "비사용",
-  //         directTrade: data.direct ? "직거래" : "택배",
-  //         directTradeLocation: data.place || "",
-  //         categoryId: data.categoryId || null,
-  //         tags: data.hashtag ? data.hashtag.split(",").filter(t => t) : [],
-  //         representativeImage: data.thumbnailImage || null,
-  //         productImages: data.productImages || [], // 서버에서 이미지 객체 배열
-  //         detailImages: data.productImages ? data.productImages.map(img => img.imagePath) : [], // 이미지 경로 배열
-  //         content: data.content || "",
-  //         deleteProductImageIds: [],
-  //         newDetailImages: [],
-  //         contentImages: [],
-  //       }));
-  //     } catch (error) {
-  //       console.error("기존 게시글 불러오기 실패:", error);
-  //     }
-  //   };
-
-  //   fetchTradePost(formTradeData.id);
-  // }, [isEditMode, formTradeData.id, setFormTradeData]);
-
-
-
-
-  // useEffect(() => {
-  //   const incomingData = location.state?.formTradeData;
-  //   if (incomingData) {
-  //     setFormTradeData(prevData => ({
-  //       ...prevData,
-  //       ...incomingData,
-  //       tags: Array.isArray(incomingData.tags)
-  //         ? incomingData.tags
-  //         : (incomingData.hashtag?.split(',').filter(t => t) || []),
-  //       representativeImage: incomingData.representativeImage || incomingData.thumbnailImage || null,
-  //       representativeImageFile: incomingData.representativeImageFile || null,
-  //       productImages: incomingData.productImages || [],
-  //       newDetailImages: incomingData.newDetailImages || [],
-  //       content: incomingData.content || "",
-  //       contentImages: incomingData.contentImages || [],
-  //     }));
-  //   }
-  // }, [location.state])
-
-
-
+  
   useEffect(() => {
     if (!map) return;
 

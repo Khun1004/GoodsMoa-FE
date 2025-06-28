@@ -8,6 +8,7 @@ import SockJS from 'sockjs-client';
 import { Client } from '@stomp/stompjs';
 import "./ChatApp.css";
 import MessageItem from '../MessageItem/MessageItem';
+import api from '../../api/api';
 
 export default function ChatApp() {
   const [currentRoomId, setCurrentRoomId] = useState(null);
@@ -37,31 +38,30 @@ export default function ChatApp() {
   }, [])
 
   // ===== 채팅방 리스트 불러오기 =====
-  const fetchChatRooms = useCallback(() => {
-    if (!myUserId) return;
-    fetch("/chatroom/rooms/list", { credentials: "include" })
-      .then(res => {
-        if (!res.ok) throw new Error("채팅방 목록 API 실패");
-        return res.json();
-      })
-      .then(data => setChatRooms(Array.isArray(data) ? data : []))
-      .catch(err => {
-        console.error("채팅방 목록 불러오기 실패", err);
-        setChatRooms([]);
-      });
-  }, [myUserId]);
+  const fetchChatRooms = useCallback( async ()  => {
+    if (isLoading || !myUserId) return;
+    try {
+      const response = await api.get("/chatroom/rooms/list");
+      setChatRooms(Array.isArray(response.data) ? response.data : []);
+    } catch (err) {
+      console.error("채팅방 목록 불러오기 실패", err);
+      setChatRooms([]);
+    }
+  }, [myUserId, isLoading]); 
 
   // ===== 최초 렌더링 시 채팅방 목록 불러오기 =====
   useEffect(() => {
-    if (myUserId) {
+    // ✨ 4. 여기서도 "로딩 중이 아닐 때" 라는 조건을 확인합니다.
+    if (!isLoading && myUserId) {
         fetchChatRooms();
     }
-  }, [myUserId, fetchChatRooms]);
+  }, [isLoading, myUserId, fetchChatRooms]); // 의존성 배열에 isLoading 추가
+
 
 
   // ===== [추가] 채팅방 목록 실시간 업데이트용 WebSocket =====
   useEffect(() => {
-    if (!myUserId) return;
+    if (isLoading || !myUserId) return;
 
     const userUpdateClient = new Client({
       webSocketFactory: () => new SockJS("http://localhost:8080/ws"),
@@ -89,7 +89,7 @@ export default function ChatApp() {
         console.log("ℹ️ [User WS] 개인 알림 채널 연결 종료");
       }
     };
-  }, [myUserId, fetchChatRooms]);
+  }, [isLoading, myUserId, fetchChatRooms]);
 
 
   // ===== 채팅방 생성 =====
@@ -114,21 +114,15 @@ export default function ChatApp() {
 
     console.log(`채팅방 생성 시도: ${senderId}(구매자) -> ${receiverId}(판매자)`);
 
-    const res = await fetch("http://localhost:8080/chatroom/room/create", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
+    try {
+      const res = await api.post("/chatroom/room/create", {
         senderId,
         receiverId,
-        title: newRoomTitle, // 자동으로 생성된 제목 사용
-      }),
-    });
-
-    if (res.ok) {
+        title: newRoomTitle,
+      });
       alert("채팅방이 생성되었습니다.");
-      // 목록 다시 불러오기 또는 해당 채팅방으로 이동하는 로직
-      // 예: const roomData = await res.json(); navigate(`/chatroom/${roomData.id}`);
-    } else {
+      // 필요시: const roomData = res.data;
+    } catch (err) {
       alert("채팅방 생성에 실패했습니다.");
     }
   };
@@ -145,14 +139,14 @@ export default function ChatApp() {
 
     // WebSocket 연결 로직 등 ...
     useEffect(() => {
-        if (!currentRoomId || !myUserId) {
+        if (isLoading ||!currentRoomId || !myUserId) {
             setMessages([]);
             return;
         }
 
-        fetch(`http://localhost:8080/chatroom/room/${currentRoomId}/messages`, { credentials: "include" })
-        .then(res => res.ok ? res.json() : [])
-        .then(setMessages)
+        api.get(`/chatroom/room/${currentRoomId}/messages`)
+        .then(res => setMessages(res.data))
+        .catch(() => setMessages([]));
 
         const client = new Client({
           webSocketFactory: () => new SockJS("http://localhost:8080/ws"),
@@ -172,16 +166,8 @@ export default function ChatApp() {
                 // 이 부분은 이미 있지만, 위치를 다시 확인합니다.
                 if (newMessage.senderId !== myUserId) {
                   // 이 요청은 기다릴 필요 없이 바로 보냅니다.
-                  fetch("http://localhost:8080/chat/read", {
-                    method: "POST",
-                    credentials: "include",
-                    headers: {
-                      "Content-Type": "application/json",
-                      
-                    },
-                    body: JSON.stringify({ chatRoomId: currentRoomId })
-                  })
-                  .catch(err => console.error("❌ 실시간 읽음 처리 요청 에러:", err));
+                  api.post("/chat/read", { chatRoomId: currentRoomId })
+                  .catch(err => console.error("❌ 읽음 처리 요청 에러:", err));
                 }
               });
                 // --- 2-2. 읽음 처리 알림 구독 ---
@@ -239,7 +225,7 @@ export default function ChatApp() {
               console.log("ℹ️ STOMP: 연결 종료");
           }
       };
-    }, [currentRoomId, myUserId]); // ✅ 의존성 배열에 myUserId도 추가
+    }, [isLoading, currentRoomId, myUserId, fetchChatRooms]); // ✅ 의존성 배열에 myUserId도 추가
 
   
     const sendMessage = () => {
@@ -253,9 +239,8 @@ export default function ChatApp() {
           })
       });
       setMessage("");
-      fetch("/chatroom/rooms/list", { credentials: "include" })
-          .then(res => res.json())
-          .then(data => setChatRooms(Array.isArray(data) ? data : []));
+      api.get("/chatroom/rooms/list")
+      .then(res => setChatRooms(Array.isArray(res.data) ? res.data : []));
   };
 
     const handleKeyDown = (e) => {
