@@ -65,7 +65,14 @@ const SearchResults = () => {
         if (boardType === "상품판매") {
             try {
                 const fullProduct = await productService.getPostDetail(numericId);
-                navigate("/person", { state: { product: fullProduct } });
+                const imageUrl = fullProduct.thumbnailImage || fullProduct.image || fullProduct.src || null;
+                navigate("/person", {
+                    state: {
+                        product: fullProduct,
+                        products: [fullProduct], // 필요시
+                        selectedImage: imageUrl // 추가
+                    }
+                });
             } catch (err) {
                 console.error("상품 상세 조회 실패:", err);
                 alert("상품 상세 정보를 가져오는데 실패했습니다.");

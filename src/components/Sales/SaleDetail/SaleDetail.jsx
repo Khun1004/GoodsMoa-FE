@@ -146,11 +146,13 @@ const SaleDetail = () => {
         ? (productReviews.reduce((sum, review) => sum + review.rating, 0) / productReviews.length).toFixed(1)
         : 0;
 
+    // =========== 가격을 1,000 형식으로 포맷, 없으면 "가격 미정" 반환 ==============
     const formatPrice = (price) => {
         if (!price) return "가격 미정";
         return typeof price === 'number' ? price.toLocaleString() : Number(price).toLocaleString();
     };
 
+    // ================ 선택된 이미지가 유효한 상품 이미지인지 검사 ==================
     const isValidProductImage = () => {
         if (!selectedImage) return false;
     
@@ -173,6 +175,7 @@ const SaleDetail = () => {
         return mainImage.includes(selectedFileName);
     };
 
+    // =============== 판매글 작성 후 상세 페이지 진입 시 첫 상품 이미지를 자동으로 selectedImage에 설정해 화면에 표시 =======
     useEffect(() => {
         if (from === 'saleForm' && product.products) {
             if (product.products.length > 0 && !selectedImage) {
@@ -184,11 +187,12 @@ const SaleDetail = () => {
         }
     }, [from, product, selectedImage]);
 
+    // ============= 신고하기 버튼 클릭 시 현재 선택된 상품 정보를 들고 신고 페이지로 이동 ================
     const handleReportClick = () => {
         navigate('/report', { state: { selectedProduct } });
     };
 
-    // 채팅 실행하는 메서드
+    // ================= 채팅 실행하는 메서드 =================
     const handleChatClick = async () => {
         console.log("✅ handleChatClick 호출됨");
         // 실제 데이터 구조에 맞게 판매자 ID 추출
@@ -229,6 +233,7 @@ const SaleDetail = () => {
         }
     };
 
+    // ============== 	썸네일 클릭 시 해당 이미지를 화면에 표시하고 관련 상품 정보를 selectedProduct로 설정 ==============
     const onImageClick = (image) => {
         setSelectedImage(image);
 
@@ -246,13 +251,15 @@ const SaleDetail = () => {
         }
     };
 
-
+    // =============== 현재 활성화된 탭(“상세 설명” 또는 “리뷰”) 상태를 관리해 보여줄 내용을 전환 ==============
     const [activeTab, setActiveTab] = useState('상세 설명');
 
+    // ================== 사용자가 탭 클릭 시 활성 탭(activeTab) 상태를 변경하여 표시 내용을 전환 ===============
     const handleTabClick = (tabName) => {
         setActiveTab(tabName);
     };
 
+    // =============== 현재 선택한 상품을 wantedProducts 에 추가 (이미 추가된 상품이거나 유효하지 않은 이미지일 경우 경고) =======
     const handleWantClick = () => {
         // Check if the current image is a valid product image
         if (!isValidProductImage()) {
@@ -279,6 +286,7 @@ const SaleDetail = () => {
         setWantedProducts([...wantedProducts, productWithCategory]);
     };
 
+    // ============ wantedProducts에서 특정 상품을 제거하며, 제거 후 상품이 0개면 이미지/상품 상태 초기화 ============
     const handleCancelClick = (productToRemove) => {
         const updatedProducts = wantedProducts.filter(product => product !== productToRemove);
         setWantedProducts(updatedProducts);
@@ -290,6 +298,7 @@ const SaleDetail = () => {
         }
     };
 
+    // ============= 선택된 상품의 구매 수량을 1 증가 (재고 및 최대 구매 제한 내에서만 증가) =================
     const increaseQuantity = (product) => {
         // 재고 확인 (selectedProduct.stock 또는 product.stock 사용)
         const stock = selectedProduct.stock || product.stock || Infinity;
@@ -313,12 +322,14 @@ const SaleDetail = () => {
         ));
     };
 
+    // =============== 선택된 상품의 구매 수량을 1 감소 (최소 1까지 유지) =================
     const decreaseQuantity = (product) => {
         setWantedProducts(wantedProducts.map(p =>
             p.id === product.id ? { ...p, quantity: p.quantity > 1 ? p.quantity - 1 : 1 } : p
         ));
     };
 
+    // =============== wantedProducts를 localStorage의 장바구니(wantedProducts)에 저장 후 주문 페이지로 이동 ============
     const handleCartClick = () => {
         // Get existing cart items
         const existingCart = JSON.parse(localStorage.getItem("wantedProducts")) || [];
