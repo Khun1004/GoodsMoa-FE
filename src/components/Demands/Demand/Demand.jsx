@@ -7,10 +7,8 @@ import { Link, useLocation } from 'react-router-dom';
 import Demand1 from '../../../assets/demands/demand1.jpg';
 import './Demand.css';
 
-// ★ api 인스턴스 import (경로 확인 필요!)
 import api from '../../../api/api';
 
-// 새로 만든 컴포넌트 import
 import Category from '../../public/Category/Category';
 import SearchBanner from "../../public/SearchBanner.jsx";
 import Spacer from "../../public/Spacer.jsx";
@@ -27,24 +25,21 @@ const Demand = ({ showBanner = true }) => {
     const { formData } = location.state || {};
 
     const [demandProducts, setDemandProducts] = useState([]);
-    const [liked, setLiked] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
-    const [savedDemandFormData, setSavedDemandFormData] = useState(null);
 
-    // ↓↓↓ 이 부분이 검색바에 넘겨줄 state
     const [searchTerm, setSearchTerm] = useState('');
-    const [category, setCategory] = useState(0); // id가 number면 number로!
+    const [category, setCategory] = useState(0);
     const [orderBy, setOrderBy] = useState('old');
     const [includeExpired, setIncludeExpired] = useState(true);
     const [includeScheduled, setIncludeScheduled] = useState(true);
-    // ↑↑↑
 
     const [page, setPage] = useState(0);
     const [totalPages, setTotalPages] = useState(0);
     const pageSize = 10;
 
-    // ★ 함수명 fetch X → getDemandProducts 로 변경
+    // 좋아요 상태는 demandProducts의 liked 값을 직접 사용
+    // 단, 토글 시 해당 demandProducts를 직접 수정
     const getDemandProducts = useCallback(
         _.debounce(async () => {
             setLoading(true);
@@ -64,7 +59,6 @@ const Demand = ({ showBanner = true }) => {
                 const data = res.data;
                 const productsArr = Array.isArray(data.content) ? data.content : [];
                 setDemandProducts(productsArr);
-                setLiked(new Array(productsArr.length).fill(false));
                 setTotalPages(data.totalPages || 1);
             } catch (err) {
                 setError(err.message);
@@ -80,17 +74,31 @@ const Demand = ({ showBanner = true }) => {
         return getDemandProducts.cancel;
     }, [getDemandProducts]);
 
-    useEffect(() => {
-        const storedLiked = localStorage.getItem('demandLiked');
-        if (storedLiked) setLiked(JSON.parse(storedLiked));
-    }, [formData]);
-
     if (error) return <div>에러 발생: {error}</div>;
+
+    // 좋아요 토글 함수 (제품 배열 직접 카피 & 수정)
+    const handleLikeClick = async (product, idx) => {
+        const demandId = product.id.replace(/^DEMAND_/, '');
+        // 1. optimistic update
+        const newProducts = [...demandProducts];
+        const prevLiked = newProducts[idx].liked;
+        newProducts[idx] = { ...newProducts[idx], liked: !prevLiked };
+        setDemandProducts(newProducts);
+
+        try {
+            // 2. POST 요청 (항상 POST만)
+            await api.post(`/demand/like/${demandId}`);
+        } catch (err) {
+            // 3. 실패시 롤백
+            newProducts[idx] = { ...newProducts[idx], liked: prevLiked };
+            setDemandProducts(newProducts);
+            alert('좋아요 처리 중 오류가 발생했습니다.');
+        }
+    };
 
     return (
         <div className="container">
             <div className="demand-container">
-                {/* 검색/필터 컴포넌트 분리 */}
                 <Spacer height={20} />
                 <SearchBanner
                     title="수요조사 검색:"
@@ -104,11 +112,11 @@ const Demand = ({ showBanner = true }) => {
                 <Category
                     gap={90}
                     onCategoryClick={(id) => setCategory(id)}
-                    selectedId={category} // 현재 선택된 id
+                    selectedId={category}
                 />
 
                 <hr className="sale-divider" />
-                {/* 이하 기존 코드 동일! */}
+
                 <div className="demandProductFrame">
                     <div className="demand-header">
                         <div className="demand-icon">
@@ -147,13 +155,9 @@ const Demand = ({ showBanner = true }) => {
                                                 </Link>
                                                 <span className="demand-label">수요조사</span>
                                                 <button
-                                                    className={`demand-like-button ${liked[globalIndex] ? 'liked' : ''}`}
-                                                    onClick={() => {
-                                                        const newLiked = [...liked];
-                                                        newLiked[globalIndex] = !newLiked[globalIndex];
-                                                        setLiked(newLiked);
-                                                        localStorage.setItem('demandLiked', JSON.stringify(newLiked));
-                                                    }}>
+                                                    className={`demand-like-button ${item.liked ? 'liked' : ''}`}
+                                                    onClick={() => handleLikeClick(item, globalIndex)}
+                                                >
                                                     <FaHeart size={18}/>
                                                 </button>
                                                 <p
@@ -163,17 +167,16 @@ const Demand = ({ showBanner = true }) => {
                                                         fontSize: "1.5rem",
                                                         margin: 0,
                                                         lineHeight: 1.3,
-                                                        maxWidth: "13em",         // 글자 10~11자 정도 너비 (글꼴 따라 조정)
+                                                        maxWidth: "13em",
                                                         overflow: "hidden",
                                                         whiteSpace: "nowrap",
                                                         textOverflow: "ellipsis",
-                                                        display: "block",         // 필요 시 명확히 block으로
+                                                        display: "block",
                                                     }}
-                                                    title={item.title} // 전체 제목 툴팁
+                                                    title={item.title}
                                                 >
                                                     {item.title}
                                                 </p>
-
 
                                                 <div>
                                                     {item.hashtag
@@ -191,15 +194,14 @@ const Demand = ({ showBanner = true }) => {
                                                                     fontSize: "24px",
                                                                     textAlign: "center",
                                                                     minWidth: "80px",
-                                                                    marginRight: "8px",    // 태그끼리 간격
+                                                                    marginRight: "8px",
                                                                     fontWeight: "400",
                                                                 }}
                                                             >
-        #{tag}
-      </span>
+                                                                #{tag}
+                                                            </span>
                                                         ))}
                                                 </div>
-
 
                                                 <div className="demand-profile-info">
                                                     {item.profileUrl ? (
@@ -210,8 +212,6 @@ const Demand = ({ showBanner = true }) => {
                                                     )}
                                                     {item.nickname}
                                                 </div>
-
-
                                             </div>
                                         );
                                     })}

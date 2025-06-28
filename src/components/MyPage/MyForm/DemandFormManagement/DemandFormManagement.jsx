@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "../../../../api/api"; // ★ axios 인스턴스 import!
+import api from "../../../../api/api";
 import "./DemandFormManagement.css";
 
 const categoryOptions = [
@@ -30,6 +30,11 @@ const DemandFormManagement = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    fetchDemandList();
+    // eslint-disable-next-line
+  }, [category, page]);
+
+  const fetchDemandList = () => {
     setIsLoading(true);
     api.get('/demand/user', {
       params: {
@@ -48,7 +53,7 @@ const DemandFormManagement = () => {
           console.error("데이터 불러오기 실패", err);
           setIsLoading(false);
         });
-  }, [category, page]);
+  };
 
   const handleCategoryChange = (e) => {
     setCategory(Number(e.target.value));
@@ -69,14 +74,35 @@ const DemandFormManagement = () => {
     });
   };
 
-  // id는 수요조사 게시글 id
   async function urlToFile(url, filename = "image.jpg") {
     const response = await api.get(url, { responseType: 'blob' });
     const blob = response.data;
     return new File([blob], filename, { type: blob.type });
   }
 
-  // ★ 변환(POST) fetch → api.post로!
+  // ✅ [수정] 끌어올림: status 200이 아니면 서버 메시지 그대로 알림!
+  const handlePull = async (id) => {
+    try {
+      const res = await api.post(`/demand/pull/${id}`);
+      if (res.status === 200) {
+        if (res.data && res.data.message) {
+          alert(res.data.message);
+        } else {
+          alert("끌어올림 성공!");
+        }
+        fetchDemandList();
+      } else {
+        // 200이 아니면 메시지 바로 출력
+        const msg = res.data?.message || `에러: status ${res.status}`;
+        alert(msg);
+      }
+    } catch (err) {
+      const msg = err.response?.data?.message || err.message;
+      alert(msg);
+      console.error("❌ [handlePull] 에러:", err);
+    }
+  };
+
   const handleConvert = async (id) => {
     try {
       const res = await api.post(`/demand/convert/${id}`, {}, {
@@ -85,8 +111,6 @@ const DemandFormManagement = () => {
       });
       const data = res.data;
 
-      // imageFile, productFiles 변환(다운로드) X!
-      // 그냥 URL만 넘김
       const imageUrl = data.imageUrl ? `http://localhost:8080/${data.imageUrl.replace(/^\/+/, '')}` : null;
       const productImageUrls = (data.products || []).map(
           prod => prod.imageUrl ? `http://localhost:8080/${prod.imageUrl.replace(/^\/+/, '')}` : null
@@ -96,7 +120,7 @@ const DemandFormManagement = () => {
         state: {
           from: 'demand',
           image: imageUrl,
-          productImageUrls, // 상품 이미지 URL 배열
+          productImageUrls,
           title: data.title || "",
           description: data.description || "",
           category: getCategoryName(data.category),
@@ -130,7 +154,6 @@ const DemandFormManagement = () => {
     }
   };
 
-  // category 번호 → 이름 변환 함수
   const getCategoryName = (id) => {
     const map = {
       1: "애니메이션",
@@ -145,7 +168,6 @@ const DemandFormManagement = () => {
     return map[id] || "";
   };
 
-  // ★ 삭제도 api.delete로 변경!
   const handleDelete = async (id) => {
     if (!window.confirm("정말 삭제하시겠습니까? 삭제 후 복구할 수 없습니다.")) return;
 
@@ -208,7 +230,25 @@ const DemandFormManagement = () => {
                               ))}
                         </div>
                         <div className="demandFormManbutton-group"
-                             style={{display: "flex", gap: "10px", marginTop: "10px"}}>
+                             style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
+                          {/* 끌어올림 버튼 */}
+                          <button
+                              style={{
+                                background: "#fbbf24",
+                                color: "#fff",
+                                border: "none",
+                                borderRadius: "8px",
+                                padding: "8px 18px",
+                                fontSize: "16px",
+                                fontWeight: 500,
+                                cursor: "pointer",
+                                transition: "background 0.2s",
+                              }}
+                              onClick={() => handlePull(formData.id)}
+                          >
+                            끌어올림
+                          </button>
+                          {/* 수정 버튼 */}
                           <button
                               style={{
                                 background: "#5288e3",
@@ -222,7 +262,7 @@ const DemandFormManagement = () => {
                                 transition: "background 0.2s",
                               }}
                               onClick={() => {
-                                // ...생략...
+                                // ...수정 기능 필요시 여기에 추가...
                               }}
                           >
                             수정
