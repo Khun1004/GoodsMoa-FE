@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../../../api/api'; // ★ api 인스턴스 import!
 import DemandService from '../../../api/DemandService.jsx'; // 주문/수정용 서비스는 기존 그대로
 import './DemandDetail.css';
+import {LoginContext} from "../../../contexts/LoginContext.jsx";
 
 const getFullImageUrl = (url) =>
     url
@@ -15,6 +16,7 @@ const DemandDetail = () => {
     const { id } = useParams();
     const navigate = useNavigate();
 
+    const { userInfo } = useContext(LoginContext);
     const [detail, setDetail] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -135,6 +137,38 @@ const DemandDetail = () => {
         (sum, product, idx) => sum + (quantities[idx] > 0 ? quantities[idx] * product.price : 0),
         0
     );
+
+    //채팅하기
+    const handleChatClick = async () => {
+        const sellerId = detail?.userId;
+        if (!userInfo) {
+            alert("로그인이 필요합니다.");
+            return;
+        }
+        if (!sellerId) {
+            alert("수요조사 작성자의 정보가 없습니다.");
+            return;
+        }
+        if (userInfo.id === sellerId) {
+            alert("자기 자신과는 채팅할 수 없습니다.");
+            return;
+        }
+        try {
+            const res = await api.post("/chatroom/create", {
+                buyerId: userInfo.id,
+                sellerId: sellerId
+            });
+            const roomData = res.data;
+            window.open(`/chat-app?roomId=${roomData.id}`, "_blank", "width=1000,height=800,resizable=yes");
+        } catch (error) {
+            if (error.response && error.response.status === 409) {
+                const roomData = error.response.data;
+                window.open(`/chat-app?roomId=${roomData.id}`, "_blank", "width=1000,height=800,resizable=yes");
+            } else {
+                alert("채팅방 생성에 실패했습니다.");
+            }
+        }
+    };
 
     return (
         <div className='container'>
