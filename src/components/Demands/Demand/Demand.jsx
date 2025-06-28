@@ -9,6 +9,7 @@ import './Demand.css';
 import Category from '../../public/Category/Category';
 import SearchBanner from "../../public/SearchBanner.jsx";
 import Spacer from "../../public/Spacer.jsx";
+import api from '../../../api/api'; // axios 인스턴스
 
 const getFullThumbnailUrl = (thumbnailUrl) =>
     thumbnailUrl
@@ -17,12 +18,19 @@ const getFullThumbnailUrl = (thumbnailUrl) =>
             : `http://localhost:8080/${thumbnailUrl.replace(/^\/+/,'')}`
         : Demand1;
 
+// 숫자만 추출 (DEMAND_2 → 2)
+const getNumericId = (id) => {
+    if (typeof id === 'string' && id.startsWith('DEMAND_')) {
+        return id.replace('DEMAND_', '');
+    }
+    return id;
+};
+
 const Demand = ({ showBanner = true }) => {
     const location = useLocation();
     const { formData } = location.state || {};
 
     const [demandProducts, setDemandProducts] = useState([]);
-    const [liked, setLiked] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
@@ -36,28 +44,27 @@ const Demand = ({ showBanner = true }) => {
     const [totalPages, setTotalPages] = useState(0);
     const pageSize = 10;
 
-    // Sale와 동일하게, 검색/필터 변경마다 상품 불러오기
+    // 상품 불러오기
     const fetchDemandProducts = useCallback(
         _.debounce(async () => {
             setLoading(true);
             setError(null);
             try {
-                const params = new URLSearchParams({
+                const params = {
                     query: searchTerm,
                     category,
                     order_by: orderBy,
-                    include_expired: includeExpired.toString(),
-                    include_scheduled: includeScheduled.toString(),
-                    page: page.toString(),
-                    page_size: pageSize.toString(),
-                });
-                const url = `http://localhost:8080/demand?${params.toString()}`;
-                const res = await fetch(url);
-                if (!res.ok) throw new Error('서버 응답 에러');
-                const data = await res.json();
+                    include_expired: includeExpired,
+                    include_scheduled: includeScheduled,
+                    page,
+                    page_size: pageSize,
+                };
+                const res = await api.get('/demand', { params });
+                const data = res.data;
                 const productsArr = Array.isArray(data.content) ? data.content : [];
+                // *** 상품 배열 전체 로그 찍기 ***
+                console.log('[불러온 demandProducts]', productsArr);
                 setDemandProducts(productsArr);
-                setLiked(new Array(productsArr.length).fill(false));
                 setTotalPages(data.totalPages || 1);
             } catch (err) {
                 setError(err.message);
@@ -73,10 +80,10 @@ const Demand = ({ showBanner = true }) => {
         return fetchDemandProducts.cancel;
     }, [fetchDemandProducts]);
 
+    // demandProducts가 갱신될 때마다 콘솔에 전체 로그 찍기
     useEffect(() => {
-        const storedLiked = localStorage.getItem('demandLiked');
-        if (storedLiked) setLiked(JSON.parse(storedLiked));
-    }, [formData]);
+        console.log('[렌더 직전 demandProducts]', demandProducts);
+    }, [demandProducts]);
 
     if (error) return <div>에러 발생: {error}</div>;
 
@@ -89,10 +96,29 @@ const Demand = ({ showBanner = true }) => {
 
     const isSearching = searchTerm.trim().length > 0;
 
+    // 좋아요 버튼 클릭 핸들러 (리스트의 liked를 직접 토글)
+    const handleLike = async (id) => {
+        const numericId = getNumericId(id);
+        try {
+            await api.post(`/demand/like/${numericId}`);
+            setDemandProducts(prev =>
+                prev.map(item =>
+                    item.id === id
+                        ? { ...item, liked: !item.liked }
+                        : item
+                )
+            );
+            // *** 좋아요 누른 뒤 해당 id, liked 상태 콘솔 출력 ***
+            const target = demandProducts.find(item => item.id === id);
+            console.log(`[좋아요 클릭] id: ${id}, liked(before): ${target ? target.liked : 'N/A'}`);
+        } catch (err) {
+            alert('좋아요 처리 실패: ' + (err.response?.data?.message || err.message));
+        }
+    };
+
     return (
         <div className="container">
             <div className="demand-container">
-                {/* 1. 검색, 카테고리, Divider */}
                 {showBanner && (
                     <>
                         <Spacer height={20} />
@@ -110,7 +136,6 @@ const Demand = ({ showBanner = true }) => {
                 )}
                 <hr className="sale-divider" />
 
-                {/* 2. 헤더 (Sale과 동일 위치) */}
                 {showBanner && !isSearching && (
                     <div className="demand-header">
                         <div className="demand-icon">
@@ -121,7 +146,6 @@ const Demand = ({ showBanner = true }) => {
                     </div>
                 )}
 
-                {/* 3. 상품 그리드 (Sale의 sale-grid → demand-grid) */}
                 <div className="demand-grid">
                     {loading && (
                         <div className="loading-box" style={{
@@ -142,64 +166,62 @@ const Demand = ({ showBanner = true }) => {
                         </div>
                     )}
 
-                    {!loading && (isSearching ? filteredProducts : demandProducts).map((item, idx) => (
-                        <div key={item.id || idx} className="demand-card">
-                            <Link to={`/demandDetail/${item.id.replace(/^DEMAND_/, '')}`} state={{
-                                product: item,
-                                saleLabel: '수요거래',
-                                products: demandProducts
-                            }}>
-                                <img
-                                    src={getFullThumbnailUrl(item.thumbnailUrl)}
-                                    alt={item.title}
-                                    className="demand-image"
-                                />
-                            </Link>
-                            <span className="demand-label">수요조사</span>
-                            <button
-                                className={`demand-like-button ${liked[idx] ? 'liked' : ''}`}
-                                onClick={() => {
-                                    const newLiked = [...liked];
-                                    newLiked[idx] = !newLiked[idx];
-                                    setLiked(newLiked);
-                                    localStorage.setItem('demandLiked', JSON.stringify(newLiked));
-                                }}
-                            >
-                                <FaHeart size={18} />
-                            </button>
-                            <div className="demand-profile-block">
-                                <div className="demand-profile-row">
-                                    {item.profileUrl ? (
-                                        <img
-                                            src={item.profileUrl}
-                                            alt="profile"
-                                            className="profile-pic"
-                                        />
-                                    ) : (
-                                        <CgProfile className="profile-pic" />
-                                    )}
-                                    <span className="demand-user-name-mini">{item.nickname}</span>
-                                </div>
-                                <div className="demand-product-title">{item.title}</div>
-                            </div>
-                            {item.hashtag && (
-                                <div className="tags-container">
-                                    <div className="tags-list">
-                                        {item.hashtag
-                                            .split(',')
-                                            .map(tag => tag.trim())
-                                            .filter(tag => tag.length > 0)
-                                            .map((tag, tIdx) => (
-                                                <span key={tIdx} className="tag-item">#{tag}</span>
-                                            ))}
+                    {!loading && (isSearching ? filteredProducts : demandProducts).map((item, idx) => {
+                        // *** 렌더링 시점에 각 item의 liked, id, title 로그 찍기 ***
+                        console.log(`[렌더링] idx:${idx}, id:${item.id}, liked:${item.liked}, title:${item.title}`);
+                        return (
+                            <div key={item.id || idx} className="demand-card">
+                                <Link to={`/demandDetail/${getNumericId(item.id)}`} state={{
+                                    product: item,
+                                    saleLabel: '수요거래',
+                                    products: demandProducts
+                                }}>
+                                    <img
+                                        src={getFullThumbnailUrl(item.thumbnailUrl)}
+                                        alt={item.title}
+                                        className="demand-image"
+                                    />
+                                </Link>
+                                <span className="demand-label">수요조사</span>
+                                <button
+                                    className={`demand-like-button${item.liked ? ' liked' : ''}`}
+                                    onClick={() => handleLike(item.id)}
+                                >
+                                    <FaHeart size={18}/>
+                                </button>
+
+                                <div className="demand-profile-block">
+                                    <div className="demand-profile-row">
+                                        {item.profileUrl ? (
+                                            <img
+                                                src={item.profileUrl}
+                                                alt="profile"
+                                                className="profile-pic"
+                                            />
+                                        ) : (
+                                            <CgProfile className="profile-pic" />
+                                        )}
+                                        <span className="demand-user-name-mini">{item.nickname}</span>
                                     </div>
+                                    <div className="demand-product-title">{item.title}</div>
                                 </div>
-                            )}
-                        </div>
-                    ))}
+                                {item.hashtag && (
+                                    <div className="tags-container">
+                                        <div className="tags-list">
+                                            {item.hashtag
+                                                .split(',')
+                                                .map(tag => tag.trim())
+                                                .filter(tag => tag.length > 0)
+                                                .map((tag, tIdx) => (
+                                                    <span key={tIdx} className="tag-item">#{tag}</span>
+                                                ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        )})}
                 </div>
 
-                {/* 4. 페이지네이션 */}
                 <div className="pagination" style={{ textAlign: 'center', marginTop: '30px' }}>
                     {Array.from({ length: totalPages }, (_, i) => (
                         <button
