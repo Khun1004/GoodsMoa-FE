@@ -4,6 +4,7 @@ import {Link, useNavigate} from 'react-router-dom';
 import { Package, Calendar, ChevronRight, Lock, Eye } from 'lucide-react';
 import './Like.css'; // 네가 제공한 CSS 파일
 import productService from '../../api/ProductService';
+import demandService from '../../api/DemandService';
 
 // --- 헬퍼 함수 ---
 const API_BASE_URL = 'http://localhost:8080';
@@ -27,6 +28,10 @@ const Like = () => {
   const [likedPosts, setLikedPosts] = useState([]);
   const [likedProductPosts, setLikedProductPosts] = useState([]);
   const [productPageInfo, setProductPageInfo] = useState({ page: 0, totalPages: 1 });
+
+  const [likedDemandPosts, setLikedDemandPosts] = useState([]);
+  const [demandPageInfo, setDemandPageInfo] = useState({ page: 0, totalPages: 1 });
+
   const [liked, setLiked] = useState({}); // postId => true
   const navigate = useNavigate();
 
@@ -112,6 +117,36 @@ const Like = () => {
         }
     }, [productPageInfo.page]);
 
+    // 단일 useEffect로 통합
+    useEffect(() => {
+        const fetchLikedDemands = async () => {
+            try {
+                // demandService.getLikedDemands는 백엔드에서 수요조사 좋아요 목록을 반환하는 API여야 합니다.
+                const url = `${API_BASE_URL}/demand/like/user?page=${pageInfo.page}&page_size=${pageInfo.size}`;
+                const response = await fetch(url, { credentials: 'include' });
+                const res = await response.json();
+
+                // 좋아요 상태 맵 생성
+                const likedMap = {};
+                res.content.forEach(item => {
+                    likedMap[String(item.id)] = true;
+                });
+                setLikedDemandPosts(likedMap);
+
+                // 목록 및 페이지 정보 저장
+                setLikedDemandPosts(res.content || []);
+                setDemandPageInfo({
+                    page: res.number,
+                    totalPages: res.totalPages,
+                });
+            } catch (err) {
+                console.error('좋아요한 수요조사 목록 가져오기 실패:', err.message);
+            }
+        };
+
+        fetchLikedDemands();
+    }, [demandPageInfo.page]);
+
   const handlePageChange = (newPage) => {
     if (newPage >= 0 && newPage < pageInfo.totalPages) {
       setPageInfo((prev) => ({ ...prev, page: newPage }));
@@ -170,6 +205,49 @@ const Like = () => {
         } catch (err) {
             console.error('handleProductClick 중 에러:', err);
             alert('상품 정보를 불러오는 데 실패했습니다.');
+        }
+    };
+
+    // 상품으로 넘어가는 헨들러
+    const handleDemandClick = async (post) => {
+        console.log('post ::: ', post);
+
+        try {
+            // 1. 상세 정보 조회
+            const detailedPost = await demandService.getPostDetail(post.id);
+            const imageUrl = detailedPost.imageUrl;
+
+            // 2. 유저 정보 로컬스토리지에서 가져오기
+            const rawUserInfo = localStorage.getItem('userInfo');
+            const parsedUserInfo = rawUserInfo ? JSON.parse(rawUserInfo) : {};
+            const userName = parsedUserInfo?.name || '사용자';
+            const profileImage = parsedUserInfo?.profileImage || '';
+
+            // 3. 이동
+            navigate(`/demandDetail/${detailedPost.id}`, {
+                state: {
+                    demand: { // ✅ 수요조사 특화 데이터 구조
+                        ...detailedPost,
+                        id: detailedPost.id,
+                        title: detailedPost.title,
+                        description: detailedPost.description,
+                        image: imageUrl,
+                        startTime: detailedPost.startTime,
+                        endTime: detailedPost.endTime,
+                        hashtag: detailedPost.hashtag,
+                        category: detailedPost.category,
+                        products: detailedPost.products || [] // ✅ 상품 목록 포함
+                    },
+                    user: {
+                        name: userName,
+                        profileImage: profileImage
+                    },
+                    from: 'demand-like-list'
+                }
+            });
+        } catch (err) {
+            console.error('수요조사 상세 조회 실패:', err);
+            alert('수요조사 정보를 불러오는 데 실패했습니다.');
         }
     };
 
@@ -239,7 +317,7 @@ const Like = () => {
                                             )}
                                             {post.createdAt && (
                                                 <span className="like-card-badge date">
-                          <Calendar className="like-icon-xs" />
+                          <Calendar className="like-icon-xs"/>
                                                     {formatDate(post.createdAt)}
                         </span>
                                             )}
@@ -250,12 +328,12 @@ const Like = () => {
                         </div>
 
                         {productPageInfo.totalPages > 1 && (
-                            <div style={{ textAlign: 'center', marginTop: '32px' }}>
+                            <div style={{textAlign: 'center', marginTop: '32px'}}>
                                 <button
                                     onClick={() => handleProductPageChange(productPageInfo.page - 1)}
                                     disabled={productPageInfo.page === 0}
                                     className="like-btn-primary"
-                                    style={{ marginRight: '12px' }}
+                                    style={{marginRight: '12px'}}
                                 >
                                     이전
                                 </button>
@@ -266,7 +344,84 @@ const Like = () => {
                                     onClick={() => handleProductPageChange(productPageInfo.page + 1)}
                                     disabled={productPageInfo.page + 1 >= productPageInfo.totalPages}
                                     className="like-btn-primary"
-                                    style={{ marginLeft: '12px' }}
+                                    style={{marginLeft: '12px'}}
+                                >
+                                    다음
+                                </button>
+                            </div>
+                        )}
+                    </>
+                )}
+
+                {/* 👍 좋아요한 수요조사 목록 */}
+                <div className="like-list-header" style={{marginTop: '48px'}}>
+                    <h1 className="like-list-title">좋아요한 수요조사 목록</h1>
+                </div>
+                {likedDemandPosts.length === 0 ? (
+                    <div className="like-empty-container">
+                        <div className="like-empty-content">
+                            <h3 className="like-empty-title">좋아요한 수요조사가 없습니다</h3>
+                            <p className="like-empty-description">관심있는 수요조사에 좋아요를 눌러보세요!</p>
+                        </div>
+                    </div>
+                ) : (
+                    <>
+                        <div className="like-forms-grid">
+                            {likedDemandPosts.map((post) => (
+                                <div
+                                    key={post.id}
+                                    className="like-form-card"
+                                    onClick={() => handleDemandClick(post)}
+                                >
+                                    <div className="like-form-thumbnail">
+                                        <img
+                                            src={post.imageUrl}
+                                            alt={post.title}
+                                            className="like-thumbnail-img"
+                                            onError={(e) => {
+                                                e.target.onerror = null;
+                                                e.target.src = getImageUrl(null);
+                                            }}
+                                        />
+                                    </div>
+                                    <div className="like-card-content">
+                                        <div className="like-card-header">
+                                            <h3 className="like-card-title">{post.title}</h3>
+                                        </div>
+                                        <div className="like-card-badges">
+                                            {post.hashtag && (
+                                                <span className="like-card-badge category">#{post.hashtag}</span>
+                                            )}
+                                            {post.createdAt && (
+                                                <span className="like-card-badge date">
+                          <Calendar className="like-icon-xs"/>
+                                                    {formatDate(post.createdAt)}
+                        </span>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        {demandPageInfo.totalPages > 1 && (
+                            <div style={{textAlign: 'center', marginTop: '32px'}}>
+                                <button
+                                    onClick={() => handleProductPageChange(demandPageInfo.page - 1)}
+                                    disabled={demandPageInfo.page === 0}
+                                    className="like-btn-primary"
+                                    style={{marginRight: '12px'}}
+                                >
+                                    이전
+                                </button>
+                                <span>
+                  {demandPageInfo.page + 1} / {demandPageInfo.totalPages}
+                </span>
+                                <button
+                                    onClick={() => handleProductPageChange(demandPageInfo.page + 1)}
+                                    disabled={demandPageInfo.page + 1 >= demandPageInfo.totalPages}
+                                    className="like-btn-primary"
+                                    style={{marginLeft: '12px'}}
                                 >
                                     다음
                                 </button>
@@ -276,7 +431,7 @@ const Like = () => {
                 )}
 
                 {/* 👍 좋아요한 중고거래 목록 */}
-                <div className="like-list-header" style={{ marginTop: '48px' }}>
+                <div className="like-list-header" style={{marginTop: '48px'}}>
                     <h1 className="like-list-title">좋아요한 중고거래 목록</h1>
                 </div>
                 {likedPosts.length === 0 ? (
@@ -308,7 +463,7 @@ const Like = () => {
                                         <div className="like-thumbnail-overlay">
                                             <div className="like-overlay-icon">
                                                 <div className="like-icon-circle">
-                                                    <ChevronRight className="like-icon-md" />
+                                                    <ChevronRight className="like-icon-md"/>
                                                 </div>
                                             </div>
                                         </div>
@@ -316,7 +471,7 @@ const Like = () => {
                       <span
                           className={`like-status ${post.tradeStatus === '판매중' ? 'public' : 'private'}`}
                       >
-                        <Eye className="like-icon-xs" />
+                        <Eye className="like-icon-xs"/>
                           {post.tradeStatus}
                       </span>
                                         </div>
@@ -328,13 +483,13 @@ const Like = () => {
                                         <div className="like-card-badges">
                                             {post.categoryName && (
                                                 <span className="like-card-badge category">
-                          <Package className="like-icon-xs" />
+                          <Package className="like-icon-xs"/>
                                                     {post.categoryName}
                         </span>
                                             )}
                                             {post.createdAt && (
                                                 <span className="like-card-badge date">
-                          <Calendar className="like-icon-xs" />
+                          <Calendar className="like-icon-xs"/>
                                                     {formatDate(post.createdAt)}
                         </span>
                                             )}
@@ -345,12 +500,12 @@ const Like = () => {
                         </div>
 
                         {pageInfo.totalPages > 1 && (
-                            <div style={{ textAlign: 'center', marginTop: '32px' }}>
+                            <div style={{textAlign: 'center', marginTop: '32px'}}>
                                 <button
                                     onClick={() => handlePageChange(pageInfo.page - 1)}
                                     disabled={pageInfo.page === 0}
                                     className="like-btn-primary"
-                                    style={{ marginRight: '12px' }}
+                                    style={{marginRight: '12px'}}
                                 >
                                     이전
                                 </button>
@@ -361,7 +516,7 @@ const Like = () => {
                                     onClick={() => handlePageChange(pageInfo.page + 1)}
                                     disabled={pageInfo.page + 1 >= pageInfo.totalPages}
                                     className="like-btn-primary"
-                                    style={{ marginLeft: '12px' }}
+                                    style={{marginLeft: '12px'}}
                                 >
                                     다음
                                 </button>

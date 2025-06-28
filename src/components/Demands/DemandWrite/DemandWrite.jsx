@@ -3,9 +3,6 @@ import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import "./DemandWrite.css";
 
-
-// ... patchSrcToAbsolute, patchSrcToRelative 함수 생략 ...
-
 const DemandWrite = ({ description, setDescription, descriptionImages, setDescriptionImages, onClose }) => {
     const quillRef = useRef();
     const [content, setContent] = useState(description || "");

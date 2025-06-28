@@ -8,7 +8,7 @@ const SearchBanner = ({
                           handleSearchKeyPress,
                           selectedOption,
                           setSelectedOption,
-                          selectOptions = ["제목", "해시태그", "내용"] // 🔹 기본값 설정
+                          selectOptions = ["전체","제목", "해시태그", "내용"] // 🔹 기본값 설정
                       }) => {
     return (
         <div style={styles.banner}>
@@ -24,6 +24,8 @@ const SearchBanner = ({
                             {option}
                         </option>
                     ))}
+
+
                 </select>
 
                 {/* 🔍 검색 인풋 */}

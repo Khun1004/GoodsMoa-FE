@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import api from "../../../../api/api";
 import "./DemandFormManagement.css";
 
 const categoryOptions = [
@@ -29,21 +30,30 @@ const DemandFormManagement = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    fetchDemandList();
+    // eslint-disable-next-line
+  }, [category, page]);
+
+  const fetchDemandList = () => {
     setIsLoading(true);
-    fetch(`http://localhost:8080/demand/user?category=${category}&page=${page}&page_size=10`, {
-      credentials: "include",
+    api.get('/demand/user', {
+      params: {
+        category,
+        page,
+        page_size: 10,
+      },
+      withCredentials: true,
     })
-        .then((res) => res.json())
-        .then((data) => {
-          setDemandList(data.content);
-          setTotalPages(data.totalPages);
+        .then((res) => {
+          setDemandList(res.data.content);
+          setTotalPages(res.data.totalPages);
           setIsLoading(false);
         })
         .catch((err) => {
           console.error("데이터 불러오기 실패", err);
           setIsLoading(false);
         });
-  }, [category, page]);
+  };
 
   const handleCategoryChange = (e) => {
     setCategory(Number(e.target.value));
@@ -64,28 +74,56 @@ const DemandFormManagement = () => {
     });
   };
 
-
-// id는 수요조사 게시글 id
   async function urlToFile(url, filename = "image.jpg") {
-    const response = await fetch(url);
-    const blob = await response.blob();
+    const response = await api.get(url, { responseType: 'blob' });
+    const blob = response.data;
     return new File([blob], filename, { type: blob.type });
   }
 
+  // 글 상세보기
+  const handleDemandClick = async (post) => {
+    try {
+      const detailedPost = await api.get(`/demand/${post.id}`, { withCredentials: true });
+      const data = detailedPost.data;
+      navigate(`/demandDetail/${data.id}`);
+    } catch (err) {
+      alert('수요조사 정보를 불러오는 데 실패했습니다.');
+      console.error('수요조사 상세 조회 실패:', err);
+    }
+  };
+
+
+  // ✅ [수정] 끌어올림: status 200이 아니면 서버 메시지 그대로 알림!
+  const handlePull = async (id) => {
+    try {
+      const res = await api.post(`/demand/pull/${id}`);
+      if (res.status === 200) {
+        if (res.data && res.data.message) {
+          alert(res.data.message);
+        } else {
+          alert("끌어올림 성공!");
+        }
+        fetchDemandList();
+      } else {
+        // 200이 아니면 메시지 바로 출력
+        const msg = res.data?.message || `에러: status ${res.status}`;
+        alert(msg);
+      }
+    } catch (err) {
+      const msg = err.response?.data?.message || err.message;
+      alert(msg);
+      console.error("❌ [handlePull] 에러:", err);
+    }
+  };
+
   const handleConvert = async (id) => {
     try {
-      const res = await fetch(`http://localhost:8080/demand/convert/${id}`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+      const res = await api.post(`/demand/convert/${id}`, {}, {
+        withCredentials: true,
+        headers: { 'Content-Type': 'application/json' },
       });
-      if (!res.ok) throw new Error('변환 실패');
-      const data = await res.json();
+      const data = res.data;
 
-      // imageFile, productFiles 변환(다운로드) X!
-      // 그냥 URL만 넘김
       const imageUrl = data.imageUrl ? `http://localhost:8080/${data.imageUrl.replace(/^\/+/, '')}` : null;
       const productImageUrls = (data.products || []).map(
           prod => prod.imageUrl ? `http://localhost:8080/${prod.imageUrl.replace(/^\/+/, '')}` : null
@@ -95,7 +133,7 @@ const DemandFormManagement = () => {
         state: {
           from: 'demand',
           image: imageUrl,
-          productImageUrls, // 상품 이미지 URL 배열
+          productImageUrls,
           title: data.title || "",
           description: data.description || "",
           category: getCategoryName(data.category),
@@ -124,14 +162,11 @@ const DemandFormManagement = () => {
       });
       console.log("✅ [handleConvert] SaleForm으로 URL만 전달 완료!");
     } catch (err) {
-      alert("판매글 변환에 실패했습니다: " + err.message);
+      alert("판매글 변환에 실패했습니다: " + (err.response?.data?.message || err.message));
       console.error("❌ [handleConvert] 에러 발생:", err);
     }
   };
 
-
-
-// category 번호 → 이름 변환 함수
   const getCategoryName = (id) => {
     const map = {
       1: "애니메이션",
@@ -146,30 +181,33 @@ const DemandFormManagement = () => {
     return map[id] || "";
   };
 
-
   const handleDelete = async (id) => {
     if (!window.confirm("정말 삭제하시겠습니까? 삭제 후 복구할 수 없습니다.")) return;
 
     try {
-      const res = await fetch(`http://localhost:8080/demand/delete/${id}`, {
-        method: "DELETE",
-        credentials: "include",
+      await api.delete(`/demand/delete/${id}`, {
+        withCredentials: true
       });
-      if (!res.ok) throw new Error("삭제 실패");
       alert("삭제되었습니다.");
-      // 삭제 후 목록 새로고침
       setDemandList(demandList.filter((item) => item.id !== id));
-      // 또는 setPage(0); // 페이지 초기화해도 됨
     } catch (err) {
-      alert("삭제 중 오류 발생: " + err.message);
+      alert("삭제 중 오류 발생: " + (err.response?.data?.message || err.message));
     }
   };
 
-
-
   return (
       <div className="demandFormMancontainer">
-        <h1>내 수요조사 관리</h1>
+        <h1
+            style={{
+              fontSize: '24px',
+              fontWeight: 700,
+              color: '#1f2937',
+              margin: '0 0 8px 0'
+            }}
+        >
+          내 수요조사 관리
+        </h1>
+
 
         <div className="demandFormManfilter-bar">
           <label>카테고리: </label>
@@ -189,7 +227,10 @@ const DemandFormManagement = () => {
         ) : (
             <div className="demandFormManlist">
               {demandList.map((formData, idx) => (
-                  <div key={idx} className="demandFormMandemand-card">
+                  <div key={idx}
+                       className="demandFormMandemand-card"
+                       onClick={() => handleDemandClick(formData)}
+                       style={{ cursor: "pointer" }}>
                     <div className="demandFormMandemand-card-header">
                       <div className="demandFormMandemand-main-thumbnail">
                         <img
@@ -215,7 +256,25 @@ const DemandFormManagement = () => {
                               ))}
                         </div>
                         <div className="demandFormManbutton-group"
-                             style={{display: "flex", gap: "10px", marginTop: "10px"}}>
+                             style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
+                          {/* 끌어올림 버튼 */}
+                          <button
+                              style={{
+                                background: "#fbbf24",
+                                color: "#fff",
+                                border: "none",
+                                borderRadius: "8px",
+                                padding: "8px 18px",
+                                fontSize: "16px",
+                                fontWeight: 500,
+                                cursor: "pointer",
+                                transition: "background 0.2s",
+                              }}
+                              onClick={() => handlePull(formData.id)}
+                          >
+                            끌어올림
+                          </button>
+                          {/* 수정 버튼 */}
                           <button
                               style={{
                                 background: "#5288e3",
@@ -229,7 +288,7 @@ const DemandFormManagement = () => {
                                 transition: "background 0.2s",
                               }}
                               onClick={() => {
-                                // ...생략...
+                                // ...수정 기능 필요시 여기에 추가...
                               }}
                           >
                             수정
@@ -267,10 +326,8 @@ const DemandFormManagement = () => {
                             삭제
                           </button>
                         </div>
-
                       </div>
                     </div>
-
                     <div className="demandFormMandemand-products-section">
                       <h3>등록된 상품 ({formData.products.length})</h3>
                       <div className="demandFormMandemand-products-grid">
