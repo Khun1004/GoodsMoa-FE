@@ -218,7 +218,7 @@ const Trade = ({ showBanner = true }) => {
                     <span className="user-name-mini">{item.userNickName || '작성자'}</span>
                   </div>
                   {/* item.views는 서버에서 '조회수'에 해당하는 필드명으로 변경해야 할 수 있어! */}
-                  <span className="view-count">조회 {item.views || 0}</span>
+                  <span className="view-counts">조회수 : {item.views || 0}</span>
                 </div>
                 <span className="sale-product-title">{item.title}</span>
                 {item.hashtag && item.hashtag.trim() && (
