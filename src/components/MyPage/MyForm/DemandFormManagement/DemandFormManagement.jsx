@@ -196,15 +196,8 @@ const DemandFormManagement = () => {
   };
 
   return (
-      <div className="demandFormMancontainer">
-        <h1
-            style={{
-              fontSize: '24px',
-              fontWeight: 700,
-              color: '#1f2937',
-              margin: '0 0 8px 0'
-            }}
-        >
+      <div className="demandFormMandemand-management-container">
+        <h1 className="demandFormMandemand-management-header-h1">
           내 수요조사 관리
         </h1>
 
