@@ -80,6 +80,19 @@ const DemandFormManagement = () => {
     return new File([blob], filename, { type: blob.type });
   }
 
+  // 글 상세보기
+  const handleDemandClick = async (post) => {
+    try {
+      const detailedPost = await api.get(`/demand/${post.id}`, { withCredentials: true });
+      const data = detailedPost.data;
+      navigate(`/demandDetail/${data.id}`);
+    } catch (err) {
+      alert('수요조사 정보를 불러오는 데 실패했습니다.');
+      console.error('수요조사 상세 조회 실패:', err);
+    }
+  };
+
+
   // ✅ [수정] 끌어올림: status 200이 아니면 서버 메시지 그대로 알림!
   const handlePull = async (id) => {
     try {
@@ -184,7 +197,17 @@ const DemandFormManagement = () => {
 
   return (
       <div className="demandFormMancontainer">
-        <h1>내 수요조사 관리</h1>
+        <h1
+            style={{
+              fontSize: '24px',
+              fontWeight: 700,
+              color: '#1f2937',
+              margin: '0 0 8px 0'
+            }}
+        >
+          내 수요조사 관리
+        </h1>
+
 
         <div className="demandFormManfilter-bar">
           <label>카테고리: </label>
@@ -204,7 +227,10 @@ const DemandFormManagement = () => {
         ) : (
             <div className="demandFormManlist">
               {demandList.map((formData, idx) => (
-                  <div key={idx} className="demandFormMandemand-card">
+                  <div key={idx}
+                       className="demandFormMandemand-card"
+                       onClick={() => handleDemandClick(formData)}
+                       style={{ cursor: "pointer" }}>
                     <div className="demandFormMandemand-card-header">
                       <div className="demandFormMandemand-main-thumbnail">
                         <img

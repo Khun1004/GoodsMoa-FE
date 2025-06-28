@@ -99,6 +99,18 @@ class DemandService {
     async getMyOrders() {
         return await this.request('/demand/order', 'GET');
     }
+
+    async getPostDetail(postId) {
+        if (isNaN(postId)) {
+            throw new Error('Invalid post ID');
+        }
+        try {
+            return await this.request(`/demand/${postId}`, 'GET');
+        } catch (error) {
+            console.error('게시물 상세 정보 조회 오류:', error);
+            throw new Error(`게시물 상세 정보를 가져오는데 실패했습니다: ${error.message}`);
+        }
+    }
 }
 
 export default new DemandService();
