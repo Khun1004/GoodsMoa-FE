@@ -107,8 +107,8 @@ const Demand = ({ showBanner = true }) => {
                 {/*        />*/}
                 {/*        <Category gap={90} />*/}
                 {/*    </>*/}
-                {/*)}*/}
-                <hr className="sale-divider" />
+                {/*/!*)}*!/*/}
+                {/*<hr className="sale-divider" />*/}
 
                 {/* 2. 헤더 (Sale과 동일 위치) */}
                 {showBanner && !isSearching && (
