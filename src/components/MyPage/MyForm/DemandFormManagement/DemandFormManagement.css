@@ -1,9 +1,17 @@
 .demandFormMandemand-management-container {
-    width: 100%;
+    max-width: 1200px;
+    /*width: 100%;*/
     margin: 0 auto;
     padding: 20px;
     font-family: 'Noto Sans KR', sans-serif;
 }
+
+/*.tradeManagement-container {*/
+/*    max-width: 1200px;*/
+/*    margin: 0 auto;*/
+/*    padding: 20px;*/
+/*    font-family: 'Noto Sans KR', sans-serif;*/
+/*}*/
 
 .demandFormMandemand-management-header {
     display: flex;
@@ -12,7 +20,7 @@
     margin-bottom: 30px;
 }
 
-.demandFormMandemand-management-header h1 {
+.demandFormMandemand-management-header-h1 {
     font-size: 24px;
     font-weight: 700;
     color: #333;

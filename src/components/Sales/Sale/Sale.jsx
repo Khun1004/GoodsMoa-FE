@@ -9,7 +9,8 @@ import { LoginContext } from "../../../contexts/LoginContext";
 import SearchBanner from '../../Public/SearchBanner';
 import './Sale.css';
 import Category from '../../public/Category/Category';
-
+import BestsellerList from "../../public/BestsellerList.jsx";
+import { getBestsellerByType } from "../../../api/publicService";
 const API_BASE_URL = 'http://localhost:8080';
 
 const Sale = ({ showBanner = true, showCustomProducts = true }) => {
@@ -162,11 +163,22 @@ const Sale = ({ showBanner = true, showCustomProducts = true }) => {
                             setSearchQuery={setSearchQuery}
                             handleSearchKeyPress={handleSearchKeyPress}
                         />
-                        <Category gap={90} />
+                        <Category gap={90}/>
+                        <hr className="sale-divider"/>
+
+                        {/* ✅ 베스트셀러 컴포넌트 추가 */}
+                        {!isSearching && (
+                            <BestsellerList
+                                apiFn={getBestsellerByType}
+                                type="product"
+                                heading="인기 판매 제품"
+                                liked={liked}
+                                onLike={handleLike}
+                                onCardClick={handleProductClick}
+                            />
+                        )}
                     </>
                 )}
-
-                <hr className="sale-divider" />
 
                 <div className='saleProductFrame'>
                     {showBanner && !isSearching && (

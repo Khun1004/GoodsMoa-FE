@@ -148,6 +148,13 @@
     bottom: 25px;
 }
 
+.bestseller-divider {
+    margin: 40px 0 20px 0;
+    border-bottom: 1px solid #ccc;
+    width: 100%;
+}
+
+
 .sale-grid,
 .saleWrite-grid {
     display: grid;

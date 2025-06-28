@@ -69,6 +69,13 @@ const DemandParticipate = () => {
         }
     };
 
+    const getFullImageUrl = (url) => {
+        if (!url) return null;
+        return url.startsWith("http")
+            ? url
+            : `http://localhost:8080/${url.replace(/^\/+/, "")}`;
+    };
+
     const handleDelete = async (orderId) => {
         if(window.confirm('정말 삭제하시겠습니까?')) {
             try {
@@ -166,15 +173,15 @@ const DemandParticipate = () => {
                             </p>
                         </div>
 
-                        <div className="demandParti-stat-item">
-                            <div className="demandParti-stat-icon">
-                                <Bell size={24}/>
-                            </div>
-                            <p className="demandParti-stat-label">관심 상품</p>
-                            <p className="demandParti-stat-value">{userData.favorites}개</p>
-                            {/*<p className="demandParti-stat-label">새 알림</p>*/}
-                            {/*<p className="demandParti-stat-value">{userData.notifications}개</p>*/}
-                        </div>
+                        {/*<div className="demandParti-stat-item">*/}
+                        {/*    <div className="demandParti-stat-icon">*/}
+                        {/*        <Bell size={24}/>*/}
+                        {/*    </div>*/}
+                        {/*    <p className="demandParti-stat-label">관심 상품</p>*/}
+                        {/*    <p className="demandParti-stat-value">{userData.favorites}개</p>*/}
+                        {/*    /!*<p className="demandParti-stat-label">새 알림</p>*!/*/}
+                        {/*    /!*<p className="demandParti-stat-value">{userData.notifications}개</p>*!/*/}
+                        {/*</div>*/}
                     </div>
                 </div>
 
@@ -193,12 +200,12 @@ const DemandParticipate = () => {
                         >
                             마감
                         </button>
-                        <button
-                            className={`demandParti-tab-button ${activeTab === 'notifications' ? 'active' : ''}`}
-                            onClick={() => setActiveTab('notifications')}
-                        >
-                            알림
-                        </button>
+                        {/*<button*/}
+                        {/*    className={`demandParti-tab-button ${activeTab === 'notifications' ? 'active' : ''}`}*/}
+                        {/*    onClick={() => setActiveTab('notifications')}*/}
+                        {/*>*/}
+                        {/*    알림*/}
+                        {/*</button>*/}
                     </div>
 
                     {/* 수요조사 참여내역 탭 */}
@@ -252,219 +259,127 @@ const DemandParticipate = () => {
                             <h2 className="demandParti-section-title">진행 중인 수요조사</h2>
 
                             <div className="demandParti-items-list">
-                                {userData.participations.length > 0 ? (
-                                    userData.participations.map(participation => (
-                                        <div
-                                            key={participation.id}
-                                            className="participation-item"
-                                            style={{
-                                                border: '1px solid #e5e7eb',
-                                                borderRadius: '12px',
-                                                padding: '20px',
-                                                marginBottom: '24px',
-                                                background: '#fff'
-                                            }}
-                                            onClick={() => handleDemandClick(participation.originalId)}
-                                        >
-                                            {/* 1. 윗줄: 이미지 + 제목/카테고리/참여일자 */}
-                                            <div style={{display: 'flex', alignItems: 'center', marginBottom: '14px'}}>
-                                                <img
-                                                    src={
-                                                        participation.thumbnail
-                                                            ? participation.thumbnail.startsWith('http')
-                                                                ? participation.thumbnail
-                                                                : `/api/file/${participation.thumbnail}`
-                                                            : placeholder100
-                                                    }
-                                                    alt={participation.title || ''}
-                                                    style={{
-                                                        width: '110px',
-                                                        height: '110px',
-                                                        objectFit: 'cover',
-                                                        borderRadius: '8px',
-                                                        flexShrink: 0,
-                                                        marginRight: '24px'
-                                                    }}
-                                                />
-                                                <div>
-                                                    <h3 style={{
-                                                        fontSize: '2rem',
-                                                        fontWeight: 700,
-                                                        margin: 0,
-                                                        marginBottom: '6px'
-                                                    }}>
-                                                        {participation.title}
-                                                    </h3>
-                                                    <p style={{margin: '0 0 4px 0'}}>카테고리: {participation.category}</p>
-                                                    <p style={{margin: 0}}>참여 일자: {participation.date}</p>
-                                                </div>
+                                {userData.participations.filter(p => p.state === "진행중").length > 0 ? (
+                                    userData.participations
+                                        .filter(participation => participation.state === "진행중")
+                                        .map(participation => (
+                                            <div
+                                                key={participation.id}
+                                                className="participation-item"
+                                                style={{
+                                                    border: '1px solid #e5e7eb',
+                                                    borderRadius: '12px',
+                                                    padding: '20px',
+                                                    marginBottom: '24px',
+                                                    background: '#fff'
+                                                }}
+                                                onClick={() => handleDemandClick(participation.originalId)}
+                                            >
+                                                {/* 1. 윗줄: 이미지 + 제목/카테고리/참여일자 */}
                                                 <div style={{
                                                     display: 'flex',
-                                                    flexDirection: 'column',
-                                                    gap: '8px',
-                                                    marginLeft: 'auto'
+                                                    alignItems: 'center',
+                                                    marginBottom: '14px'
                                                 }}>
-                                                    <button
-                                                        className="edit-btn"
-                                                        onClick={e => {
-                                                            e.stopPropagation();
-                                                            handleEdit(participation);
+                                                    <img
+                                                        src={
+                                                            participation.thumbnail
+                                                                ? participation.thumbnail.startsWith('http')
+                                                                    ? participation.thumbnail
+                                                                    : `/api/file/${participation.thumbnail}`
+                                                                : placeholder100
+                                                        }
+                                                        alt={participation.title || ''}
+                                                        style={{
+                                                            width: '110px',
+                                                            height: '110px',
+                                                            objectFit: 'cover',
+                                                            borderRadius: '8px',
+                                                            flexShrink: 0,
+                                                            marginRight: '24px'
                                                         }}
-                                                    >
-                                                        수정
-                                                    </button>
-                                                    <button
-                                                        className="delete-btn"
-                                                        onClick={e => {
-                                                            e.stopPropagation();
-                                                            handleDelete(participation.id);
-                                                        }}
-                                                    >
-                                                        삭제
-                                                    </button>
+                                                    />
+                                                    <div>
+                                                        <h3 style={{
+                                                            fontSize: '2rem',
+                                                            fontWeight: 700,
+                                                            margin: 0,
+                                                            marginBottom: '6px'
+                                                        }}>
+                                                            {participation.title}
+                                                        </h3>
+                                                        <p style={{margin: '0 0 4px 0'}}>카테고리: {participation.category}</p>
+                                                        <p style={{margin: 0}}>참여 일자: {participation.date}</p>
+                                                    </div>
+                                                    <div style={{
+                                                        display: 'flex',
+                                                        flexDirection: 'column',
+                                                        gap: '8px',
+                                                        marginLeft: 'auto'
+                                                    }}>
+                                                        <button
+                                                            className="edit-btn"
+                                                            onClick={e => {
+                                                                e.stopPropagation();
+                                                                handleEdit(participation);
+                                                            }}
+                                                        >
+                                                            수정
+                                                        </button>
+                                                        <button
+                                                            className="delete-btn"
+                                                            onClick={e => {
+                                                                e.stopPropagation();
+                                                                handleDelete(participation.id);
+                                                            }}
+                                                        >
+                                                            삭제
+                                                        </button>
+                                                    </div>
+                                                </div>
+
+                                                {/* 2. 아랫줄: 상품목록 */}
+                                                <div className="demandFormMandemand-products-section">
+                                                    <h3>구매 희망 상품 ({participation.products.length})</h3>
+                                                    <div className="demandFormMandemand-products-grid">
+                                                        {participation.products.map((product) => (
+                                                            <div key={product.id} className="demandFormManproduct-card">
+                                                                <img
+                                                                    src={getFullImageUrl(product.image)}
+                                                                    alt={product.name}
+                                                                />
+                                                                <h4>{product.name}</h4>
+                                                                <p>수량: {product.quantity}개</p>
+                                                            </div>
+                                                        ))}
+                                                    </div>
                                                 </div>
                                             </div>
-
-                                            {/* 2. 아랫줄: 상품목록 */}
-                                            <div className="participation-products" style={{marginBottom: '12px'}}>
-                                                {participation.products.map(product => (
-                                                    <div key={product.id} className="product-item" style={{
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        marginBottom: '6px'
-                                                    }}>
-                                                        <img src={product.image} alt={product.name} style={{
-                                                            width: '95px',
-                                                            height: '95px',
-                                                            objectFit: 'cover',
-                                                            borderRadius: '4px',
-                                                            marginRight: '8px'
-                                                        }}/>
-                                                        <div style={{textAlign: 'left', width: '100%'}}>
-                                                            <p style={{margin: 0, fontWeight: 500, fontSize: '1.5rem'}}>{product.name}</p>
-                                                            <p style={{
-                                                                margin: 0,
-                                                                fontSize: '1.3rem',
-                                                                color: '#6b7280'
-                                                            }}>{product.quantity}개</p>
-                                                        </div>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    ))
+                                        ))
                                 ) : (
-                                    <div className="demandParti-empty-state">
-                                        <p>참여한 상품이 없습니다.</p>
+                                    <div
+                                        className="demandParti-empty-state"
+                                        style={{
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            textAlign: 'center',
+                                            padding: '40px 0',
+                                            width: '100%',
+                                            minHeight: '200px' // 필요시 높이 추가
+                                        }}
+                                    >
+                                        <Heart size={40}/>
+                                        <p style={{marginTop: '16px', fontSize: '1.2rem', color: '#6b7280'}}>
+                                            참여한 수요조사 목록이 표시됩니다.
+                                        </p>
                                     </div>
                                 )}
                             </div>
                         </div>
                     )}
 
-                    {/*{activeTab === 'participations' && (*/}
-                    {/*    <div className="demandParti-tab-content">*/}
-                    {/*        <h2 className="demandParti-section-title">수요조사 참여내역</h2>*/}
-                    {/*        */}
-                    {/*        <div className="demandParti-items-list">*/}
-                    {/*            {userData.participations.length > 0 ? (*/}
-                    {/*                userData.participations.map(participation => (*/}
-                    {/*                        <div key={participation.id} className="participation-item">*/}
-                    {/*                            <img src={participation.thumbnail} alt={participation.title} />*/}
-                    {/*                            <div className="participation-info">*/}
-                    {/*                                <h3>{participation.title}</h3>*/}
-                    {/*                                <p>카테고리: {participation.category}</p>*/}
-                    {/*                                <p>참여 일자: {participation.date}</p>*/}
-
-                    {/*                                <div className="participation-products">*/}
-                    {/*                                    {participation.products.map(product => (*/}
-                    {/*                                        <div key={product.id} className="product-item">*/}
-                    {/*                                            <img src={product.image} alt={product.name}/>*/}
-                    {/*                                            <div>*/}
-                    {/*                                                <p>{product.name}</p>*/}
-                    {/*                                                <p>수량: {product.quantity}개</p>*/}
-                    {/*                                            </div>*/}
-                    {/*                                        </div>*/}
-                    {/*                                    ))}*/}
-                    {/*                                </div>*/}
-                    {/*                                <button onClick={() => handleEdit(participation)}>수정</button>*/}
-                    {/*                                <button onClick={() => handleDelete(participation.id)}>삭제</button>*/}
-                    {/*                            </div>*/}
-                    {/*                        </div>*/}
-                    {/*                ))*/}
-                    {/*                // userData.participations.map((item) => (*/}
-                    {/*                //     <div key={item.id} className="demandParti-item-card">*/}
-                    {/*                //         <div className="demandParti-item-header">*/}
-                    {/*                //             <div className="demandParti-item-image">*/}
-                    {/*                //                 <img src={item.thumbnail} alt={item.title} />*/}
-                    {/*                //             </div>*/}
-                    {/*                //*/}
-                    {/*                //             <div className="demandParti-item-details">*/}
-                    {/*                //                 <div className="demandParti-item-title-row">*/}
-                    {/*                //                     <h3>{item.title}</h3>*/}
-                    {/*                //                     <span className={`demandParti-status-badge ${getStatusColor(item.status)}`}>*/}
-                    {/*                //                         {item.status}*/}
-                    {/*                //                     </span>*/}
-                    {/*                //                 </div>*/}
-                    {/*                //*/}
-                    {/*                //                 <div className="demandParti-item-info">*/}
-                    {/*                //                     <div className="demandParti-info-row">*/}
-                    {/*                //                         <Calendar size={16} />*/}
-                    {/*                //                         <span>참여일: {item.date}</span>*/}
-                    {/*                //                     </div>*/}
-                    {/*                //*/}
-                    {/*                //                     <div className="demandParti-info-row">*/}
-                    {/*                //                         <Clock size={16} />*/}
-                    {/*                //                         <span>마감일: {item.deadline}</span>*/}
-                    {/*                //                     </div>*/}
-                    {/*                //*/}
-                    {/*                //                     {item.deliveryStatus && (*/}
-                    {/*                //                         <div className="demandParti-info-row">*/}
-                    {/*                //                             <Package size={16} />*/}
-                    {/*                //                             <span className={`demandParti-delivery-badge ${getDeliveryStatusColor(item.deliveryStatus)}`}>*/}
-                    {/*                //                                 {item.deliveryStatus}*/}
-                    {/*                //                             </span>*/}
-                    {/*                //                         </div>*/}
-                    {/*                //                     )}*/}
-                    {/*                //                 </div>*/}
-                    {/*                //             </div>*/}
-                    {/*                //         </div>*/}
-                    {/*                //*/}
-                    {/*                //         {item.status === "진행중" && (*/}
-                    {/*                //             <div className="demandParti-progress-section">*/}
-                    {/*                //                 <div className="demandParti-progress-header">*/}
-                    {/*                //                     <span>목표 달성률</span>*/}
-                    {/*                //                     <span>{item.progress}%</span>*/}
-                    {/*                //                 </div>*/}
-                    {/*                //                 <div className="demandParti-progress-bar">*/}
-                    {/*                //                     <div*/}
-                    {/*                //                         className="demandParti-progress-fill"*/}
-                    {/*                //                         style={{ width: `${item.progress}%` }}*/}
-                    {/*                //                     ></div>*/}
-                    {/*                //                 </div>*/}
-                    {/*                //             </div>*/}
-                    {/*                //         )}*/}
-                    {/*                //*/}
-                    {/*                //         <div className="demandParti-item-footer">*/}
-                    {/*                //             <p className="demandParti-item-price">{item.price.toLocaleString()}원</p>*/}
-                    {/*                //             <button*/}
-                    {/*                //                 className="demandParti-detail-button"*/}
-                    {/*                //                 onClick={() => navigate('/demandDetail', { state: { participation: item } })}*/}
-                    {/*                //             >*/}
-                    {/*                //                 <span>상세보기</span>*/}
-                    {/*                //                 <ChevronRight size={16} />*/}
-                    {/*                //             </button>*/}
-                    {/*                //         </div>*/}
-                    {/*                //     </div>*/}
-                    {/*                // ))*/}
-                    {/*            ) : (*/}
-                    {/*                <div className="demandParti-empty-state">*/}
-                    {/*                    <p>참여한 상품이 없습니다.</p>*/}
-                    {/*                </div>*/}
-                    {/*            )}*/}
-                    {/*        </div>*/}
-                    {/*    </div>*/}
-                    {/*)}*/}
 
                     {/* 마감된 수요조사 탭 */}
                     {activeTab === 'favorites' && (
@@ -472,144 +387,144 @@ const DemandParticipate = () => {
                             <h2 className="demandParti-section-title">마감된 수요조사</h2>
 
                             <div className="demandParti-items-list">
-                                {userData.participations.length > 0 ? (
-                                    userData.participations.map(participation => (
-                                        <div
-                                            key={participation.id}
-                                            className="participation-item"
-                                            style={{
-                                                border: '1px solid #e5e7eb',
-                                                borderRadius: '12px',
-                                                padding: '20px',
-                                                marginBottom: '24px',
-                                                background: '#fff'
-                                            }}
-                                            onClick={() => handleDemandClick(participation.originalId)}
-                                        >
-                                            {/* 1. 윗줄: 이미지 + 제목/카테고리/참여일자 */}
-                                            <div style={{display: 'flex', alignItems: 'center', marginBottom: '14px'}}>
-                                                <img
-                                                    src={
-                                                        participation.thumbnail
-                                                            ? participation.thumbnail.startsWith('http')
-                                                                ? participation.thumbnail
-                                                                : `/api/file/${participation.thumbnail}`
-                                                            : placeholder100
-                                                    }
-                                                    alt={participation.title || ''}
-                                                    style={{
-                                                        width: '110px',
-                                                        height: '110px',
-                                                        objectFit: 'cover',
-                                                        borderRadius: '8px',
-                                                        flexShrink: 0,
-                                                        marginRight: '24px'
-                                                    }}
-                                                />
-                                                <div>
-                                                    <h3 style={{
-                                                        fontSize: '2rem',
-                                                        fontWeight: 700,
-                                                        margin: 0,
-                                                        marginBottom: '6px'
-                                                    }}>
-                                                        {participation.title}
-                                                    </h3>
-                                                    <p style={{margin: '0 0 4px 0'}}>카테고리: {participation.category}</p>
-                                                    <p style={{margin: 0}}>참여 일자: {participation.date}</p>
-                                                </div>
-                                                <div style={{
-                                                    display: 'flex',
-                                                    flexDirection: 'column',
-                                                    gap: '8px',
-                                                    marginLeft: 'auto'
-                                                }}>
-                                                    <button
-                                                        className="edit-btn"
-                                                        onClick={e => {
-                                                            e.stopPropagation();
-                                                            handleEdit(participation);
-                                                        }}
-                                                    >
-                                                        수정
-                                                    </button>
-                                                    <button
-                                                        className="delete-btn"
-                                                        onClick={e => {
-                                                            e.stopPropagation();
-                                                            handleDelete(participation.id);
-                                                        }}
-                                                    >
-                                                        삭제
-                                                    </button>
-                                                </div>
-                                            </div>
-
-                                            {/* 2. 아랫줄: 상품목록 */}
-                                            <div className="participation-products" style={{marginBottom: '12px'}}>
-                                                {participation.products.map(product => (
-                                                    <div key={product.id} className="product-item" style={{
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        marginBottom: '6px'
-                                                    }}>
-                                                        <img src={product.image} alt={product.name} style={{
-                                                            width: '95px',
-                                                            height: '95px',
-                                                            objectFit: 'cover',
-                                                            borderRadius: '4px',
-                                                            marginRight: '8px'
-                                                        }}/>
-                                                        <div style={{textAlign: 'left', width: '100%'}}>
-                                                            <p style={{
-                                                                margin: 0,
-                                                                fontWeight: 500,
-                                                                fontSize: '1.5rem'
-                                                            }}>{product.name}</p>
-                                                            <p style={{
-                                                                margin: 0,
-                                                                fontSize: '1.3rem',
-                                                                color: '#6b7280'
-                                                            }}>{product.quantity}개</p>
-                                                        </div>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    ))
-                                ) : (
-                                    <div className="demandParti-empty-state">
-                                        <p>참여한 상품이 없습니다.</p>
+                                {userData.participations.filter(p => p.state === "마감").length > 0 ? (
+                                   userData.participations
+                                       .filter(participation => participation.state === "마감")
+                                       .map(participation => (
+                                           <div
+                                               key={participation.id}
+                                               className="participation-item"
+                                               style={{
+                                                   border: '1px solid #e5e7eb',
+                                                   borderRadius: '12px',
+                                                   padding: '20px',
+                                                   marginBottom: '24px',
+                                                   background: '#fff'
+                                               }}
+                                               onClick={() => handleDemandClick(participation.originalId)}
+                                           >
+                                               {/* 1. 윗줄: 이미지 + 제목/카테고리/참여일자 */}
+                                               <div style={{
+                                                   display: 'flex',
+                                                   alignItems: 'center',
+                                                   marginBottom: '14px'
+                                               }}>
+                                                   <img
+                                                       src={
+                                                           participation.thumbnail
+                                                               ? participation.thumbnail.startsWith('http')
+                                                                   ? participation.thumbnail
+                                                                   : `/api/file/${participation.thumbnail}`
+                                                               : placeholder100
+                                                       }
+                                                       alt={participation.title || ''}
+                                                       style={{
+                                                           width: '110px',
+                                                           height: '110px',
+                                                           objectFit: 'cover',
+                                                           borderRadius: '8px',
+                                                           flexShrink: 0,
+                                                           marginRight: '24px'
+                                                       }}
+                                                   />
+                                                   <div>
+                                                       <h3 style={{
+                                                           fontSize: '2rem',
+                                                           fontWeight: 700,
+                                                           margin: 0,
+                                                           marginBottom: '6px'
+                                                       }}>
+                                                           {participation.title}
+                                                       </h3>
+                                                       <p style={{margin: '0 0 4px 0'}}>카테고리: {participation.category}</p>
+                                                       <p style={{margin: 0}}>참여 일자: {participation.date}</p>
+                                                   </div>
+                                                   <div style={{
+                                                       display: 'flex',
+                                                       flexDirection: 'column',
+                                                       gap: '8px',
+                                                       marginLeft: 'auto'
+                                                   }}>
+                                                       <button
+                                                           className="edit-btn"
+                                                           onClick={e => {
+                                                               e.stopPropagation();
+                                                               handleEdit(participation);
+                                                           }}
+                                                       >
+                                                           수정
+                                                       </button>
+                                                       <button
+                                                           className="delete-btn"
+                                                           onClick={e => {
+                                                               e.stopPropagation();
+                                                               handleDelete(participation.id);
+                                                           }}
+                                                       >
+                                                           삭제
+                                                       </button>
+                                                   </div>
+                                               </div>
+                                               {/* 2. 아랫줄: 상품목록 */}
+                                               <div className="demandFormMandemand-products-section">
+                                                   <h3>구매 희망 상품 ({participation.products.length})</h3>
+                                                   <div className="demandFormMandemand-products-grid">
+                                                       {participation.products.map((product) => (
+                                                           <div key={product.id} className="demandFormManproduct-card">
+                                                               <img
+                                                                   src={getFullImageUrl(product.image)}
+                                                                   alt={product.name}
+                                                               />
+                                                               <h4>{product.name}</h4>
+                                                               <p>수량: {product.quantity}개</p>
+                                                           </div>
+                                                       ))}
+                                                   </div>
+                                               </div>
+                                               </div>
+                                               ))
+                                               ) : (
+                                               <div
+                                                   className="demandParti-empty-state"
+                                                   style={{
+                                                       display: 'flex',
+                                                       flexDirection: 'column',
+                                                       alignItems: 'center',
+                                                       justifyContent: 'center',
+                                                       textAlign: 'center',
+                                                       padding: '40px 0',
+                                                       width: '100%',
+                                                       minHeight: '200px' // 필요시 높이 추가
+                                                   }}
+                                               >
+                                                   <Heart size={40}/>
+                                                   <p style={{marginTop: '16px', fontSize: '1.2rem', color: '#6b7280'}}>
+                                                       마감된 수요조사 목록이 표시됩니다.
+                                                   </p>
+                                               </div>
+                                               )}
+                                           </div>
                                     </div>
-                                )}
+                                    )}
+
+                                {/*/!* 알림 탭 *!/*/}
+                                {/*{activeTab === 'notifications' && (*/}
+                                {/*    <div className="demandParti-tab-content">*/}
+                                {/*        <h2 className="demandParti-section-title">알림</h2>*/}
+                                {/*        <div className="demandParti-placeholder">*/}
+                                {/*            <Bell size={40}/>*/}
+                                {/*            <p>이 탭에서는 새로운 알림이 표시됩니다.</p>*/}
+                                {/*        </div>*/}
+                                {/*    </div>*/}
+                                {/*)}*/}
                             </div>
 
+                            {/* 계정 관리 섹션 */}
+                            <div className="demandParti-account-card">
+                                <h2 className="demandParti-section-title">계정 관리</h2>
 
-                            <div className="demandParti-placeholder">
-                                <Heart size={40}/>
-                                <p>이 탭에서는 마감된 수요조사 목록이 표시됩니다.</p>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* 알림 탭 */}
-                    {activeTab === 'notifications' && (
-                        <div className="demandParti-tab-content">
-                            <h2 className="demandParti-section-title">알림</h2>
-                            <div className="demandParti-placeholder">
-                                <Bell size={40}/>
-                                <p>이 탭에서는 새로운 알림이 표시됩니다.</p>
-                            </div>
-                        </div>
-                    )}
-                </div>
-
-                {/* 계정 관리 섹션 */}
-                <div className="demandParti-account-card">
-                    <h2 className="demandParti-section-title">계정 관리</h2>
-
-                    <div className="demandParti-account-menu">
-                        <button className="demandParti-menu-item">
+                                <div className="demandParti-account-menu">
+                                <button className="demandParti-menu-item">
                             <div className="demandParti-menu-icon">
                                 <User size={20}/>
                             </div>
