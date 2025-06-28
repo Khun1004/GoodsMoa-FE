@@ -144,9 +144,16 @@ export default function ChatApp() {
             return;
         }
 
-        api.get(`/chatroom/room/${currentRoomId}/messages`)
-        .then(res => setMessages(res.data))
-        .catch(() => setMessages([]));
+        const fetchMessages = async () => {
+          try {
+            const response = await api.get(`/chatroom/room/${currentRoomId}/messages`);
+            setMessages(response.data);
+          } catch (err) {
+            console.error("메시지 로딩 실패:", err);
+            setMessages([]);
+          }
+        };
+        fetchMessages();
 
         const client = new Client({
           webSocketFactory: () => new SockJS("http://localhost:8080/ws"),
@@ -191,27 +198,14 @@ export default function ChatApp() {
                               : msg
                       );
                   });
-                  fetch("/chatroom/rooms/list", { credentials: "include" })
-                    .then(res => res.json())
-                    .then(data => setChatRooms(Array.isArray(data) ? data : []));
+                  fetchChatRooms(); 
               });
               // --- 3. 채팅방 입장 후, 안 읽은 메시지 읽음 처리 요청 ---
-              fetch("http://localhost:8080/chat/read", {
-                method: "POST",
-                credentials: "include",
-                headers: {
-                    "Content-Type": "application/json",
-                    
-                },
-                body: JSON.stringify({ chatRoomId: currentRoomId })
-            })
-            .then(res => {
-                if (!res.ok) console.error("읽음 처리 API 호출 실패", res.statusText);
-                else console.log(`✅ 채팅방 ${currentRoomId} 입장, 읽음 처리 요청 완료.`);
-            })
-            .catch(err => console.error("❌ 읽음 처리 요청 에러:", err));
-      },
-      onStompError: (frame) => console.error("❌ STOMP 에러", frame),
+              api.post("/chat/read", { chatRoomId: currentRoomId })
+              .then(() => console.log(`✅ 채팅방 ${currentRoomId} 입장, 읽음 처리 요청 완료.`))
+              .catch(err => console.error("❌ 읽음 처리 요청 에러:", err));
+         },
+         onStompError: (frame) => console.error("❌ STOMP 에러", frame),
     });
     
       // --- 4. 연결 활성화 ---
