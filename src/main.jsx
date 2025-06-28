@@ -1,4 +1,4 @@
-import { StrictMode } from "react";
+// import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import App from "./App.jsx";
@@ -9,11 +9,11 @@ import "slick-carousel/slick/slick.css";
 import "./index.css";
 
 createRoot(document.getElementById("root")).render(
-  <StrictMode>
+/*  <StrictMode>*/
     <BrowserRouter> {/* ✅ Router 가장 바깥 */}
       <LoginContextProvider> {/* ✅ 로그인 컨텍스트 적용 */}
         <App />
       </LoginContextProvider>
     </BrowserRouter>
-  </StrictMode>
+ /* </StrictMode>*/
 );
