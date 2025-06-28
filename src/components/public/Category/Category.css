@@ -112,3 +112,15 @@
     background-color: #f0f0f0;
     transform: scale(1.1);
 }
+
+/* 선택된 카테고리 스타일 */
+.categoryMain-item.selected .categoryMain-icon {
+    background-color: #e0edfa;      /* 연한 파랑(원하는 색상) */
+    border: 2px solid #3b82f6;      /* 진한 파랑 테두리 */
+    color: #2563eb;                 /* 아이콘 색상 진하게 */
+    transition: all 0.15s;
+}
+.categoryMain-item.selected .categoryMain-name {
+    color: #2563eb; /* 텍스트 강조 색 */
+    font-weight: bold;
+}

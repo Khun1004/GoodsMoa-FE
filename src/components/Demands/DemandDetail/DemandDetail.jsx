@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import DemandService from '../../../api/DemandService.jsx';
+import api from '../../../api/api'; // ★ api 인스턴스 import!
+import DemandService from '../../../api/DemandService.jsx'; // 주문/수정용 서비스는 기존 그대로
 import './DemandDetail.css';
 
 const getFullImageUrl = (url) =>
@@ -23,15 +24,13 @@ const DemandDetail = () => {
     const [tab, setTab] = useState('desc');
 
     useEffect(() => {
-        const fetchDetail = async () => {
+        const getDemandDetail = async () => {
             setLoading(true);
             setError(null);
             try {
-                const res = await fetch(`http://localhost:8080/demand/${id}`, {
-                    credentials: "include",
-                });
-                if (!res.ok) throw new Error('서버 응답 에러');
-                const data = await res.json();
+                // ★ fetch → api.get 으로 교체
+                const res = await api.get(`/demand/${id}`, { withCredentials: true });
+                const data = res.data;
                 setDetail(data);
                 setQuantities(
                     data.products
@@ -39,12 +38,12 @@ const DemandDetail = () => {
                         : []
                 );
             } catch (err) {
-                setError(err.message);
+                setError(err.message || (err.response?.data?.message));
             } finally {
                 setLoading(false);
             }
         };
-        fetchDetail();
+        getDemandDetail();
     }, [id]);
 
     if (loading) return <div>로딩중...</div>;
@@ -87,7 +86,7 @@ const DemandDetail = () => {
         }
 
         try {
-            await DemandService.createOrder(id, productsPayload);
+            await DemandService.createOrder(id, productsPayload); // DemandService 내부에서도 api 인스턴스 써야함!
             alert('참여가 완료되었습니다!');
         } catch (error) {
             alert(`참여 중 오류: ${error.message}`);
@@ -151,8 +150,8 @@ const DemandDetail = () => {
                         <h2
                             className="DemandDetail-title"
                             style={{
-                                fontSize: "2.2rem",     // h2 기본보다 크게 (보통 35px 정도)
-                                fontWeight: 600,        // 적당히 굵게 (700이 완전 bold)
+                                fontSize: "2.2rem",
+                                fontWeight: 600,
                                 margin: 0,
                                 lineHeight: 1.25,
                             }}
