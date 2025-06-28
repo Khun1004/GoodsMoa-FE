@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { LoginContext } from "../../../contexts/LoginContext";
 import "./TradeDetail.css";
 import api from "../../../api/api";
+import { CgProfile } from "react-icons/cg";
 import { FaHeart } from 'react-icons/fa';
 
 const TradeDetail = () => {
@@ -62,6 +63,7 @@ const TradeDetail = () => {
       try {
         const res = await api.get(`/tradePost/${id}`);
         const data = res.data;
+        console.log("🔥 백엔드에서 받은 실제 데이터:", data);
         setTradePost(data);
         setDetailImages(data.productImages || []);
       } catch (err) {
@@ -221,11 +223,20 @@ const TradeDetail = () => {
           </div>
 
           <div className="tradeDetailProduct-info">
-            <h1 className="tradeDetailProduct">상품명 : {tradePost.title}</h1>
+            <div className="profile-mini">
+              {tradePost.userImage ? (
+                          <img src={tradePost.userProfileImage} alt="프로필" className="profile-pic-mini" />
+                        ) : (
+                          <CgProfile className="profile-pic-mini" />
+                        )}
+                <h1 className="user-name-mini">{tradePost.nickName || '작성자'}</h1>
+            </div>
+            <h2 className="tradeDetailProduct">상품명 : {tradePost.title}</h2>
             <p className="tradeDetailPrice">가격 : {tradePost.productPrice}원</p>
+            <span className="view-count">조회수 : {tradePost.views || 0}</span>
             {tradePost.hashtag && (
               <div className="tags-list">
-                {tradePost.hashtag.split(" ").map((tag, index) => (
+                {tradePost.hashtag.split(",").map((tag, index) => (
                   <span key={index} className="tag-item">#{tag.replace("#", "")}</span>
                 ))}
               </div>

@@ -82,7 +82,8 @@
 }
 
 .tradeDetailProduct, 
-.tradeDetailPrice {
+.tradeDetailPrice
+ {
   font-size: 1.3rem;
   color: black;
   font-weight: bold;
@@ -246,5 +247,27 @@
 }
 
 
+.profile-pic-mini {
+  /* ✨ 프로필 아이콘 크기를 키웠어! */
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  border: 1px solid #ccc;
+  object-fit: cover;
+}
 
-
+.user-name-mini {
+  /* ✨ 유저 이름 폰트 크기를 키웠어! */
+  font-size: 25px;
+  color: #000000; /* 가독성을 위해 조금 더 진하게 */
+}
+.view-count{
+  font-size: 20px; /* 14px */
+    color: #000000; /* 회색 계열 */
+}
+.profile-mini {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 2px;
+}
