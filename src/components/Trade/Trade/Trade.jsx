@@ -17,6 +17,7 @@ import { LoginContext } from "../../../contexts/LoginContext";
 import SearchBanner from '../../Public/SearchBanner';
 import './Trade.css';
 import Category from '../../public/Category/Category';
+import api from "../../../api/api";
 
 const Trade = ({ showBanner = true }) => {
   const { userInfo } = useContext(LoginContext);
@@ -63,54 +64,53 @@ const Trade = ({ showBanner = true }) => {
       return;
     }
     const isLiked = likedServerPosts[tradeId];
-    const url = isLiked
-      ? `http://localhost:8080/trade-like/${tradeId}`
-      : `http://localhost:8080/trade-like/like/${tradeId}`;
-    const method = isLiked ? "DELETE" : "POST";
     try {
-      const response = await fetch(url, {
-        method,
-        credentials: "include",
-        headers: { "Content-Type": "application/json" }
-      });
-      if (!response.ok) throw new Error("서버 요청 실패");
+      if (isLiked) {
+        // 좋아요 취소
+        await api.delete(`/trade-like/${tradeId}`);
+      } else {
+        // 좋아요 추가
+        await api.post(`/trade-like/like/${tradeId}`);
+      }
+      // 성공 시, 프론트엔드 상태를 바로 업데이트
       setLikedServerPosts(prev => ({ ...prev, [tradeId]: !isLiked }));
     } catch (error) {
-      alert("좋아요 처리 중 오류 발생");
+      console.error("좋아요 처리 중 오류 발생:", error);
+      alert("좋아요 처리 중 오류가 발생했습니다.");
     }
   };
 
+
   // 게시글 및 찜 상태 fetch
   useEffect(() => {
-    const fetchTradePosts = async () => {
+    const fetchTradeData = async () => {
       try {
-        const res = await fetch("http://localhost:8080/tradePost/post", {
-          method: "GET",
-          credentials: "include"
-        });
-        if (!res.ok) throw new Error("중고거래 글 불러오기 실패");
-        const data = await res.json();
-        const posts = data.content;
-        console.log("서버에서 받아온 posts:", posts);
+        // 1. 게시글 목록을 먼저 가져옵니다.
+        const postsRes = await api.get("/tradePost/post");
+        const posts = postsRes.data.content || [];
         setFetchedTradePosts(posts);
 
-        // 각 게시글의 찜 상태 조회
-        const updatedLikes = {};
-        for (const post of posts) {
-          try {
-            const likeRes = await fetch(`http://localhost:8080/trade-like/my-likes/${post.id}`, {
-              credentials: "include",
-            });
-            updatedLikes[post.id] = likeRes.ok;
-          } catch {}
+        // 2. 로그인 상태이고, 게시글이 있을 때만 '좋아요' 상태를 확인합니다.
+        if (userInfo && posts.length > 0) {
+          // 3. 모든 게시글의 ID를 하나의 배열로 모읍니다.
+          const postIds = posts.map(post => post.id);
+
+          // 4. 단 한 번의 API 호출로 모든 '좋아요' 상태를 가져옵니다. (N+1 문제 해결!)
+          // 이 API는 서버에 POST /trade-like/my-likes-status 로 구현되어 있어야 합니다.
+          const likesRes = await api.post('/trade-like/my-likes-status', { postIds });
+          setLikedServerPosts(likesRes.data);
+        } else {
+          // 로그인하지 않았으면 '좋아요' 상태를 비웁니다.
+          setLikedServerPosts({});
         }
-        setLikedServerPosts(updatedLikes);
       } catch (err) {
+        console.error("중고거래 게시글 로딩 실패:", err);
         setFetchedTradePosts([]);
       }
     };
-    fetchTradePosts();
-  }, []);
+
+    fetchTradeData();
+  }, [userInfo]);
 
   useEffect(() => {
     localStorage.setItem('liked', JSON.stringify(liked));
@@ -154,19 +154,19 @@ const Trade = ({ showBanner = true }) => {
   return (
     <div className="sale-container">
       {showBanner && (
-          <>
-            <SearchBanner
-                title="중고거래 검색:"
-                placeholder="중고거래 검색"
-                searchQuery={searchTerm}
-                setSearchQuery={setSearchTerm}
-                handleSearchKeyPress={(e) => {
-                  if (e.key === 'Enter') console.log('검색어:', searchTerm);
-                }}
-            />
-            <Category gap={90} /> {/* ✅ 카테고리 추가 */}
-            <hr className="sale-divider" />
-          </>
+        <>
+          <SearchBanner
+            title="중고거래 검색:"
+            placeholder="중고거래 검색"
+            searchQuery={searchTerm}
+            setSearchQuery={setSearchTerm}
+            handleSearchKeyPress={(e) => {
+              if (e.key === 'Enter') console.log('검색어:', searchTerm);
+            }}
+          />
+          <Category gap={90} /> {/* ✅ 카테고리 추가 */}
+          <hr className="sale-divider" />
+        </>
       )}
 
 
@@ -180,66 +180,69 @@ const Trade = ({ showBanner = true }) => {
             <h2 className="sale-heading">중고거래 제품</h2>
           </div>
         )}
-       <div className="sale-grid">
-  {filteredPosts.map((item) => (
-    <div key={item.id} className="sale-card">
-      {/* 썸네일 이미지를 감싸는 링크 */}
-      <Link to={`/tradeDetail/${item.id}`} state={{ item }}>
-        <div className="card-image-container">
-        {item.thumbnailImage ? (
-          <img
-            src={
-              item.thumbnailImage?.startsWith("http")
-                ? item.thumbnailImage
-                : `http://localhost:8080${item.thumbnailImage}?v=${Date.now()}`
-            }
-            alt={item.title}
-            className="sale-image"
-            onError={e => { e.target.src = "/placeholder.jpg"; }}
-          />
-        ) : (
-          <div className="no-image">이미지 없음</div>
-        )}
+        <div className="sale-grid">
+          {filteredPosts.map((item) => (
+            <div key={item.id} className="sale-card">
+              {/* 썸네일 이미지를 감싸는 링크 */}
+              <Link to={`/tradeDetail/${item.id}`} state={{ item }}>
+                <div className="card-image-container">
+                  {item.thumbnailImage ? (
+                    <img
+                      src={
+                        item.thumbnailImage?.startsWith("http")
+                          ? item.thumbnailImage
+                          : `http://localhost:8080${item.thumbnailImage}?v=${Date.now()}`
+                      }
+                      alt={item.title}
+                      className="sale-image"
+                      onError={e => { e.target.src = "/placeholder.jpg"; }}
+                    />
+                  ) : (
+                    <div className="no-image">이미지 없음</div>
+                  )}
 
-          <span className="sale-label">중고거래</span>
-        </div>
-      </Link>
+                  <span className="sale-label">중고거래</span>
+                </div>
+              </Link>
 
-      {/* ✅ [수정] 텍스트 정보를 담는 컨테이너 추가 */}
-      <div className="card-content-area">
-        <div className="profile-row-vertical">
-          <div className="profile-mini">
-            {item.userImage ? (
-              <img src={item.userImage} alt="프로필" className="profile-pic-mini" />
-            ) : (
-              <CgProfile className="profile-pic-mini" />
-            )}
-            <span className="user-name-mini">{item.userNickName || '작성자'}</span>
-          </div>
-          <span className="sale-product-title">{item.title}</span>
-        </div>
-        {/* 해시태그 */}
-        {item.hashtag && item.hashtag.trim() && (
-          <div className="tags-list">
-            {item.hashtag.split(" ").filter(tag => tag.trim() !== "").map((tag, idx) => (
-              <span key={idx} className="tag-item">{tag}</span>
-            ))}
-          </div>
-        )}
-      </div>
+              {/* ✅ [수정] 텍스트 정보를 담는 컨테이너 추가 */}
+              <div className="card-content-area">
+                {/* <div className="profile-row-vertical"> */}
+                <div className="profile-line">
+                  <div className="profile-mini">
+                    {item.userImage ? (
+                      <img src={item.userImage} alt="프로필" className="profile-pic-mini" />
+                    ) : (
+                      <CgProfile className="profile-pic-mini" />
+                    )}
+                    <span className="user-name-mini">{item.userNickName || '작성자'}</span>
+                  </div>
+                  {/* item.views는 서버에서 '조회수'에 해당하는 필드명으로 변경해야 할 수 있어! */}
+                  <span className="view-count">조회 {item.views || 0}</span>
+                </div>
+                <span className="sale-product-title">{item.title}</span>
+                {item.hashtag && item.hashtag.trim() && (
+                  <div className="tags-list">
+                    {item.hashtag.split(",").filter(tag => tag.trim() !== "").map((tag, idx) => (
+                      <span key={idx} className="tag-item">{tag}</span>
+                    ))}
+                  </div>
+                )}
+              </div>
 
-      {/* ✅ 좋아요 버튼을 이미지 컨테이너 안으로 옮김 */}
-    <button
-      className={`sale-like-button ${likedServerPosts[item.id] ? 'liked' : ''}`}
-      onClick={(e) => {
-        e.preventDefault(); // 링크로 이동 막기
-        handleServerLikeToggle(item.id);
-      }}
-    >
-      <FaHeart size={18} />
-    </button>
-      </div>
-  ))}
+
+              {/* ✅ 좋아요 버튼을 이미지 컨테이너 안으로 옮김 */}
+              <button
+                className={`sale-like-button ${likedServerPosts[item.id] ? 'liked' : ''}`}
+                onClick={(e) => {
+                  e.preventDefault(); // 링크로 이동 막기
+                  handleServerLikeToggle(item.id);
+                }}
+              >
+                <FaHeart size={18} />
+              </button>
+            </div>
+          ))}
           {/* 커스텀 상품(직접 등록) */}
           {isTradeSubmitted && savedTradeFormData && (
             <div className="customProductFrame">
