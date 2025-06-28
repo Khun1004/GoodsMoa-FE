@@ -4,27 +4,11 @@ import { CgProfile } from 'react-icons/cg';
 import { FaHeart } from 'react-icons/fa';
 import { SlSocialDropbox } from 'react-icons/sl';
 import { Link, useLocation } from 'react-router-dom';
-import welcomeVideo from '../../../assets/demandWelcome.mp4';
 import Demand1 from '../../../assets/demands/demand1.jpg';
 import './Demand.css';
-
-// 새로 만든 컴포넌트 import
-import DemandSearchBar from '../DemandSearchBar/DemandSearchBar';
 import Category from '../../public/Category/Category';
 import SearchBanner from "../../public/SearchBanner.jsx";
 import Spacer from "../../public/Spacer.jsx";
-
-const categoryOptions = [
-    { id: 0, name: '전체' },
-    { id: 1, name: '애니메이션' },
-    { id: 2, name: '아이돌' },
-    { id: 3, name: '순수창작' },
-    { id: 4, name: '게임' },
-    { id: 5, name: '영화' },
-    { id: 6, name: '드라마' },
-    { id: 7, name: '웹소설' },
-    { id: 8, name: '웹툰' },
-];
 
 const getFullThumbnailUrl = (thumbnailUrl) =>
     thumbnailUrl
@@ -41,20 +25,18 @@ const Demand = ({ showBanner = true }) => {
     const [liked, setLiked] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
-    const [savedDemandFormData, setSavedDemandFormData] = useState(null);
 
-    // ↓↓↓ 이 부분이 검색바에 넘겨줄 state
     const [searchTerm, setSearchTerm] = useState('');
-    const [category, setCategory] = useState(0); // id가 number면 number로!
+    const [category, setCategory] = useState(0);
     const [orderBy, setOrderBy] = useState('old');
     const [includeExpired, setIncludeExpired] = useState(true);
     const [includeScheduled, setIncludeScheduled] = useState(true);
-    // ↑↑↑
 
     const [page, setPage] = useState(0);
     const [totalPages, setTotalPages] = useState(0);
     const pageSize = 10;
 
+    // Sale와 동일하게, 검색/필터 변경마다 상품 불러오기
     const fetchDemandProducts = useCallback(
         _.debounce(async () => {
             setLoading(true);
@@ -98,138 +80,128 @@ const Demand = ({ showBanner = true }) => {
 
     if (error) return <div>에러 발생: {error}</div>;
 
+    const filteredProducts = demandProducts.filter(item => {
+        const query = searchTerm.toLowerCase();
+        return item.title?.toLowerCase().includes(query) ||
+            item.hashtag?.toLowerCase().includes(query) ||
+            item.nickname?.toLowerCase().includes(query);
+    });
+
+    const isSearching = searchTerm.trim().length > 0;
+
     return (
         <div className="container">
             <div className="demand-container">
-                {/* 검색/필터 컴포넌트 분리 */}
-                <Spacer height={20} />
-                <SearchBanner
-                    title="수요조사 검색:"
-                    placeholder="수요조사 검색"
-                    searchQuery={searchTerm}
-                    setSearchQuery={setSearchTerm}
-                    handleSearchKeyPress={(e) => {
-                        if (e.key === 'Enter') console.log('검색어:', searchTerm);
-                    }}
-                />
-                <Category gap={90} />
+                {/* 1. 검색, 카테고리, Divider */}
+                {showBanner && (
+                    <>
+                        <Spacer height={20} />
+                        <SearchBanner
+                            title="수요조사 검색:"
+                            placeholder="수요조사 검색"
+                            searchQuery={searchTerm}
+                            setSearchQuery={setSearchTerm}
+                            handleSearchKeyPress={(e) => {
+                                if (e.key === 'Enter') console.log('검색어:', searchTerm);
+                            }}
+                        />
+                        <Category gap={90} />
+                    </>
+                )}
                 <hr className="sale-divider" />
 
-                {/* 이하 기존 코드 동일! */}
-                <div className="demandProductFrame">
+                {/* 2. 헤더 (Sale과 동일 위치) */}
+                {showBanner && !isSearching && (
                     <div className="demand-header">
                         <div className="demand-icon">
-                            <SlSocialDropbox className="demandbox-icon"/>
-                            <FaHeart className="heart-icon"/>
+                            <SlSocialDropbox className="demandbox-icon" />
+                            <FaHeart className="heart-icon" />
                         </div>
                         <h2 className="demand-heading">수요조사</h2>
                     </div>
+                )}
 
-                    {loading && <div className="loading-box"
-                                     style={{textAlign: 'center', margin: '40px 0', fontSize: '18px', color: '#888'}}>🔄
-                        로딩중입니다...</div>}
-                    {!loading && demandProducts.length === 0 && <div className="no-search-result" style={{
-                        textAlign: 'center',
-                        margin: '40px 0',
-                        fontSize: '18px',
-                        color: '#888'
-                    }}>검색결과 없음</div>}
-
-                    {!loading && demandProducts.length > 0 && (
-                        [...Array(Math.ceil(demandProducts.length / 5))].map((_, frameIndex) => (
-                            <div key={frameIndex} className={`demandFrame demandFrame-${frameIndex}`}>
-                                <div className="demand-grid">
-                                    {demandProducts.slice(frameIndex * 5, frameIndex * 5 + 5).map((item, index) => {
-                                        const globalIndex = frameIndex * 5 + index;
-                                        return (
-                                            <div key={item.id || globalIndex} className="demand-card">
-
-                                                <Link to={`/demandDetail/${item.id.replace(/^DEMAND_/, '')}`} state={{
-                                                    product: item,
-                                                    saleLabel: '수요거래',
-                                                    products: demandProducts
-                                                }}>
-                                                    <img src={getFullThumbnailUrl(item.thumbnailUrl)} alt={item.title}
-                                                         className="demand-image"/>
-                                                </Link>
-                                                <span className="demand-label">수요조사</span>
-                                                <button
-                                                    className={`demand-like-button ${liked[globalIndex] ? 'liked' : ''}`}
-                                                    onClick={() => {
-                                                        const newLiked = [...liked];
-                                                        newLiked[globalIndex] = !newLiked[globalIndex];
-                                                        setLiked(newLiked);
-                                                        localStorage.setItem('demandLiked', JSON.stringify(newLiked));
-                                                    }}>
-                                                    <FaHeart size={18}/>
-                                                </button>
-                                                <p
-                                                    className="demand-product-name"
-                                                    style={{
-                                                        fontWeight: "bold",
-                                                        fontSize: "1.5rem",
-                                                        margin: 0,
-                                                        lineHeight: 1.3,
-                                                        maxWidth: "13em",         // 글자 10~11자 정도 너비 (글꼴 따라 조정)
-                                                        overflow: "hidden",
-                                                        whiteSpace: "nowrap",
-                                                        textOverflow: "ellipsis",
-                                                        display: "block",         // 필요 시 명확히 block으로
-                                                    }}
-                                                    title={item.title} // 전체 제목 툴팁
-                                                >
-                                                    {item.title}
-                                                </p>
-
-
-                                                <div>
-                                                    {item.hashtag
-                                                        .split(',')
-                                                        .map(tag => tag.trim())
-                                                        .filter(tag => tag.length > 0)
-                                                        .map((tag, idx) => (
-                                                            <span
-                                                                key={idx}
-                                                                style={{
-                                                                    background: "#dedede",
-                                                                    display: "inline-block",
-                                                                    borderRadius: "20px",
-                                                                    padding: "2px 10px",
-                                                                    fontSize: "24px",
-                                                                    textAlign: "center",
-                                                                    minWidth: "80px",
-                                                                    marginRight: "8px",    // 태그끼리 간격
-                                                                    fontWeight: "400",
-                                                                }}
-                                                            >
-        #{tag}
-      </span>
-                                                        ))}
-                                                </div>
-
-
-                                                <div className="demand-profile-info">
-                                                    {item.profileUrl ? (
-                                                        <img src={item.profileUrl} alt="profile"
-                                                             className="profile-pic"/>
-                                                    ) : (
-                                                        <CgProfile className="profile-pic"/>
-                                                    )}
-                                                    {item.nickname}
-                                                </div>
-
-
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            </div>
-                        ))
+                {/* 3. 상품 그리드 (Sale의 sale-grid → demand-grid) */}
+                <div className="demand-grid">
+                    {loading && (
+                        <div className="loading-box" style={{
+                            textAlign: 'center',
+                            margin: '40px 0',
+                            fontSize: '18px',
+                            color: '#888'
+                        }}>🔄 로딩중입니다...</div>
                     )}
+                    {!loading && (isSearching ? filteredProducts : demandProducts).length === 0 && (
+                        <div className="no-search-result" style={{
+                            textAlign: 'center',
+                            margin: '40px 0',
+                            fontSize: '18px',
+                            color: '#888'
+                        }}>
+                            "{searchTerm}"에 대한 검색 결과가 없습니다.
+                        </div>
+                    )}
+
+                    {!loading && (isSearching ? filteredProducts : demandProducts).map((item, idx) => (
+                        <div key={item.id || idx} className="demand-card">
+                            <Link to={`/demandDetail/${item.id.replace(/^DEMAND_/, '')}`} state={{
+                                product: item,
+                                saleLabel: '수요거래',
+                                products: demandProducts
+                            }}>
+                                <img
+                                    src={getFullThumbnailUrl(item.thumbnailUrl)}
+                                    alt={item.title}
+                                    className="demand-image"
+                                />
+                            </Link>
+                            <span className="demand-label">수요조사</span>
+                            <button
+                                className={`demand-like-button ${liked[idx] ? 'liked' : ''}`}
+                                onClick={() => {
+                                    const newLiked = [...liked];
+                                    newLiked[idx] = !newLiked[idx];
+                                    setLiked(newLiked);
+                                    localStorage.setItem('demandLiked', JSON.stringify(newLiked));
+                                }}
+                            >
+                                <FaHeart size={18} />
+                            </button>
+                            <div className="demand-profile-block">
+                                <div className="demand-profile-row">
+                                    {item.profileUrl ? (
+                                        <img
+                                            src={item.profileUrl}
+                                            alt="profile"
+                                            className="profile-pic"
+                                        />
+                                    ) : (
+                                        <CgProfile className="profile-pic" />
+                                    )}
+                                    <span className="demand-user-name-mini">{item.nickname}</span>
+                                </div>
+                                <div className="demand-product-title">{item.title}</div>
+                            </div>
+                            {item.hashtag && (
+                                <div className="tags-container">
+                                    <div className="tags-list">
+                                        {item.hashtag
+                                            .split(',')
+                                            .map(tag => tag.trim())
+                                            .filter(tag => tag.length > 0)
+                                            .map((tag, tIdx) => (
+                                                <span key={tIdx} className="tag-item">#{tag}</span>
+                                            ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    ))}
                 </div>
 
-                <div className="pagination" style={{textAlign: 'center', marginTop: '30px'}}>
-                    {Array.from({length: totalPages}, (_, i) => (
+                {/* 4. 페이지네이션 */}
+                <div className="pagination" style={{ textAlign: 'center', marginTop: '30px' }}>
+                    {Array.from({ length: totalPages }, (_, i) => (
                         <button
                             key={i}
                             onClick={() => setPage(i)}
