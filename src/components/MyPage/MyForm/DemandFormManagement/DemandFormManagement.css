@@ -111,14 +111,14 @@
 }
 
 .demandFormMandemand-products-section,
-.demandFormMandemand-description-section,
-.demandFormMandemand-stats-section {
+.demandFormMandemand-description-section {
     padding: 24px;
     border-bottom: 1px solid #e9ecef;
 }
 
 .demandFormMandemand-products-section h3,
-.demandFormMandemand-description-section h3 {
+.demandFormMandemand-description-section h3
+.demandFormManproduct-card p{
     font-size: 18px;
     font-weight: 600;
     margin-bottom: 16px;
@@ -139,8 +139,25 @@
     transition: transform 0.3s;
 }
 
+.demandFormManproduct-card img {
+    width: 100%;
+    height: 65%;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
 .demandFormManproduct-card:hover {
     transform: translateY(-5px);
+}
+
+.demandFormManproduct-card p{
+    font-size: 20px;
+    font-weight: 600;          /* 약간 두껍게 */
+    color: #333;               /* 짙은 회색으로 눈에 부담 적게 */
+    line-height: 1.4;          /* 줄 간격 여유 있게 */
+    margin: 8px 0;             /* 위아래 여백 줘서 답답하지 않게 */
+    letter-spacing: 0.02em;
+    padding-left: 10px;
 }
 
 .demandFormManproduct-thumbnail {

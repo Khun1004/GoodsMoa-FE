@@ -241,7 +241,7 @@
     word-break: break-all; 
     text-align: left;
   }
-  .view-count {
+  .view-counts {
     /* ✨ 조회수 폰트 크기를 키웠어! */
     font-size: 0.875rem; /* 14px */
     color: #6b7280; /* 회색 계열 */

@@ -26,7 +26,7 @@ import "./MyPage.css";
 function MyPage() {
     const navigate = useNavigate();
     const location = useLocation();
-    const [activePage, setActivePage] = useState(null);
+    const [activePage, setActivePage] = useState("myInformation");
     const [editingAddress, setEditingAddress] = useState(false);
     const [menuOpen, setMenuOpen] = useState(false);
     const sectionRef = useRef(null);

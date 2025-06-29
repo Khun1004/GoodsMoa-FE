@@ -11,6 +11,7 @@ import './Sale.css';
 import Category from '../../public/Category/Category';
 import BestsellerList from "../../public/BestsellerList.jsx";
 import { getBestsellerByType } from "../../../api/publicService";
+import SortSelect from "../../public/SortSelect.jsx";
 const API_BASE_URL = 'http://localhost:8080';
 
 const Sale = ({ showBanner = true, showCustomProducts = true }) => {
@@ -23,6 +24,15 @@ const Sale = ({ showBanner = true, showCustomProducts = true }) => {
     const [posts, setPosts] = useState([]);
     const [saleFormDataList, setSaleFormDataList] = useState(() => JSON.parse(localStorage.getItem('saleFormDataList')) || []);
     const [apiResponseList, setApiResponseList] = useState(() => JSON.parse(localStorage.getItem('apiResponseList')) || []);
+    const [sortOrder, setSortOrder] = useState('latest');
+
+    //나중에 API연동할떄 바꾸셈 적절히
+    const sortOptions = [
+        { label: '최신순', value: 'latest' },
+        { label: '인기순', value: 'popular' },
+        { label: '찜순', value: 'likes' },
+        { label: '등록일순', value: 'createdAt' },
+    ];
 
     // 상품글 조회
     useEffect(() => {
@@ -184,10 +194,19 @@ const Sale = ({ showBanner = true, showCustomProducts = true }) => {
                     {showBanner && !isSearching && (
                         <div className='sale-header'>
                             <div className='sale-icon'>
-                                <SlSocialDropbox className='salebox-icon' />
-                                <FaHeart className='heart-icon' />
+                                <SlSocialDropbox className='salebox-icon'/>
+                                <FaHeart className='heart-icon'/>
                             </div>
                             <h2 className="sale-heading">판매 제품</h2>
+
+                            {/* ✅ 정렬 셀렉트 박스 (오른쪽 정렬용 wrapper) */}
+                            <div style={{marginLeft: 'auto'}}>
+                                <SortSelect
+                                    options={sortOptions}
+                                    selected={sortOrder}
+                                    onChange={setSortOrder}
+                                />
+                            </div>
                         </div>
                     )}
 
