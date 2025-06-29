@@ -1,0 +1,178 @@
+/* ManagementComponents.css */
+
+/* --- Page Layout --- */
+.management-container {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+    font-family: 'Pretendard', sans-serif;
+  }
+  
+  .management-header {
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  
+  .management-title {
+    font-size: 2.25rem;
+    font-weight: 800;
+    color: #111827;
+  }
+  
+  /* --- Loading & Error --- */
+  .loading-container, .error-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 60vh;
+  }
+  .loading-spinner {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #3498db;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  
+  /* --- Empty State --- */
+  .empty-state-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 1rem;
+    text-align: center;
+    background-color: #f9fafb;
+    border-radius: 0.75rem;
+  }
+  .empty-state-icon {
+    background-color: #e5e7eb;
+    padding: 1.5rem;
+    border-radius: 50%;
+    margin-bottom: 1.5rem;
+  }
+  .empty-state-icon svg { width: 4rem; height: 4rem; color: #4b5563; }
+  .empty-state-title { font-size: 1.5rem; font-weight: 700; color: #111827; margin-bottom: 0.5rem; }
+  .empty-state-description { color: #6b7280; margin-bottom: 2rem; }
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background-color: #3b82f6;
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  .btn-primary:hover { background-color: #2563eb; }
+  
+  /* --- List & Card --- */
+  .management-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+  }
+  .mgmt-card {
+    background-color: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.75rem;
+    overflow: hidden;
+    cursor: pointer;
+    transition: box-shadow 0.2s, transform 0.2s;
+  }
+  .mgmt-card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1); }
+  .mgmt-card-thumbnail {
+    position: relative;
+    width: 100%;
+    padding-top: 75%; /* 4:3 Aspect Ratio */
+  }
+  .mgmt-card-thumbnail-img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .mgmt-card-status {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.6rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: white;
+  }
+  .status-public { background-color: #10b981; }
+  .status-private { background-color: #6b7280; }
+  .status-selling { background-color: #3b82f6; }
+  .mgmt-card-content { padding: 1rem; }
+  .mgmt-card-title { font-size: 1.125rem; font-weight: 700; color: #1f2937; margin-bottom: 0.75rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .mgmt-card-badges { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem; }
+  .badge { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.75rem; padding: 0.25rem 0.6rem; border-radius: 9999px; background-color: #f3f4f6; color: #4b5563; }
+  .badge svg { width: 0.8rem; height: 0.8rem; }
+  .mgmt-card-footer { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #e5e7eb; padding-top: 0.75rem; }
+  .mgmt-card-footer-text { font-size: 0.875rem; color: #6b7280; }
+  .mgmt-card-actions { display: flex; gap: 0.5rem; }
+  .action-btn { background: none; border: 1px solid #d1d5db; border-radius: 50%; width: 32px; height: 32px; display: flex; justify-content: center; align-items: center; cursor: pointer; transition: background-color 0.2s, color 0.2s; }
+  .action-btn:hover { background-color: #f3f4f6; }
+  .action-btn.delete:hover { background-color: #fee2e2; color: #ef4444; }
+  .action-btn.delete.confirm { background-color: #ef4444; color: white; }
+  .action-btn svg { width: 1rem; height: 1rem; }
+  
+  /* --- Detail View --- */
+  .detail-view-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+  }
+  .detail-back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-weight: 600;
+      color: #4b5563;
+      background: none;
+      border: none;
+      cursor: pointer;
+  }
+  .detail-actions { display: flex; gap: 0.75rem; }
+  .btn-edit { background-color: #3b82f6; }
+  .btn-delete { background-color: #ef4444; }
+  .btn-delete.confirm { background-color: #dc2626; }
+  /* ... other detail styles ... */
+  
+  /* --- Section Card --- */
+  .section-card {
+    background-color: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  .section-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .section-title svg { width: 1.25rem; height: 1.25rem; }

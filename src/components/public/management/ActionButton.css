@@ -1,0 +1,40 @@
+.action-button {
+    border: none;
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    justify-content: center; /* 가로 중앙 정렬 */
+    align-items: center; /* 세로 중앙 정렬 */
+    cursor: pointer;
+    display : flex;
+    gap : 5px;
+    transition: all 0.2s;
+    color: white;
+    white-space: nowrap;
+  }
+  
+  .action-button:hover {
+    filter: brightness(1.1);
+    transform: translateY(-2px);
+  }
+  
+  .action-button.variant-default {
+    background: #8b95a1;
+  }
+  
+  .action-button.variant-pull {
+    background: #fbbf24; /* 끌어올림 */
+  }
+  
+  .action-button.variant-edit {
+    background: #5288e3; /* 수정 */
+  }
+  
+  .action-button.variant-convert {
+    background: #26b37a; /* 판매글 변환 */
+  }
+  
+  .action-button.variant-delete {
+    background: #e05252; /* 삭제 */
+  }
