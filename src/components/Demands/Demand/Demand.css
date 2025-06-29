@@ -108,17 +108,37 @@
 
 /* 프로필/유저명/제목 */
 .demand-profile-block {
+    /*display: flex;*/
+    /*flex-direction: column;*/
+    /*align-items: flex-start;*/
+    /*margin-bottom: 8px;*/
+    /*margin-top: 10px;*/
+    /*padding-left: 5px;*/
     display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    margin-bottom: 8px;
-    margin-top: 10px;
-    padding-left: 5px;
+    flex-direction: column; /* 자식 요소들을 세로로 쌓음 */
+    align-items: flex-start; /* 자식들을 왼쪽으로 정렬 */
+    margin-top: 8px;
+    text-align: left; /* 내부 텍스트 기본 정렬을 왼쪽으로 설정 */
 }
+
+.demand-profile-line{
+    /* 프로필 정보와 조회수를 한 줄에 담는 컨테이너 */
+    display: flex; /* 자식 요소(프로필, 조회수)를 가로로 배치 */
+    justify-content: space-between; /* 양쪽 끝으로 밀어내기! */
+    align-items: center; /* 세로 중앙 정렬 */
+    width: 100%; /* 부모 요소의 전체 너비를 차지 */
+    margin-bottom: 4px; /* 제목과의 간격 */
+}
+
 .demand-profile-row {
+    /*display: flex;*/
+    /*align-items: center;*/
+    /*gap: 6px;*/
+    /*margin-bottom: 2px;*/
+    /* 프로필 정보와 조회수를 한 줄에 담는 컨테이너 */
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 5px;
     margin-bottom: 2px;
 }
 .profile-pic {
