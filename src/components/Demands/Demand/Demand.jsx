@@ -165,7 +165,15 @@ const Demand = ({ showBanner = true }) => {
                                 if (e.key === 'Enter') console.log('검색어:', searchTerm);
                             }}
                         />
-                        <Category gap={90} />
+                        <Category
+                            gap={90}
+                            selectedId={category}
+                            onCategoryClick={(id) => {
+                                setCategory(id);
+                                setPage(0);
+                            }}
+                        />
+
                         <hr className="sale-divider" />
 
                         {!isSearching && (
