@@ -229,11 +229,15 @@ const TradeDetail = () => {
                         ) : (
                           <CgProfile className="profile-pic-mini" />
                         )}
-                <h1 className="user-name-mini">{tradePost.nickName || '작성자'}</h1>
+                <span className="user-name-minis">{tradePost.nickName || '작성자'}</span>
             </div>
-            <h2 className="tradeDetailProduct">상품명 : {tradePost.title}</h2>
+            <h1 className="trade-maintitle">
+                            {tradePost.title || tradePost.name || "상품 제목"}
+                        </h1>
+            <p className="trade-category">카테고리: {tradePost.categoryName || "미정"}</p>
+            <p className="tradeDetailProduct">상품명 : {tradePost.title}</p>
             <p className="tradeDetailPrice">가격 : {tradePost.productPrice}원</p>
-            <span className="view-count">조회수 : {tradePost.views || 0}</span>
+            <p className="view-count">조회수 : {tradePost.views || 0}</p>
             {tradePost.hashtag && (
               <div className="tags-list">
                 {tradePost.hashtag.split(",").map((tag, index) => (
