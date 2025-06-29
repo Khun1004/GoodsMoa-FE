@@ -93,7 +93,6 @@ const DemandFormManagement = () => {
   };
 
 
-  // ✅ [수정] 끌어올림: status 200이 아니면 서버 메시지 그대로 알림!
   const handlePull = async (id) => {
     try {
       const res = await api.post(`/demand/pull/${id}`);
@@ -104,13 +103,18 @@ const DemandFormManagement = () => {
           alert("끌어올림 성공!");
         }
         fetchDemandList();
+      } else if (res.status === 429) {
+        alert("최근 5일 이내에 끌어올림을 사용하셨습니다.");
       } else {
-        // 200이 아니면 메시지 바로 출력
         const msg = res.data?.message || `에러: status ${res.status}`;
         alert(msg);
       }
     } catch (err) {
-      const msg = err.response?.data?.message || err.message;
+      const status = err.response?.status;
+      const msg =
+          status === 429
+              ? "최근 5일 이내에 끌어올림을 사용하셨습니다."
+              : err.response?.data?.message || err.message;
       alert(msg);
       console.error("❌ [handlePull] 에러:", err);
     }
@@ -263,7 +267,11 @@ const DemandFormManagement = () => {
                                 cursor: "pointer",
                                 transition: "background 0.2s",
                               }}
-                              onClick={() => handlePull(formData.id)}
+
+                              onClick={(e) => {
+                                  e.stopPropagation();
+                                  handlePull(formData.id)
+                              }}
                           >
                             끌어올림
                           </button>
@@ -298,7 +306,10 @@ const DemandFormManagement = () => {
                                 cursor: "pointer",
                                 transition: "background 0.2s",
                               }}
-                              onClick={() => handleConvert(formData.id)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleConvert(formData.id)
+                              }}
                           >
                             판매글 변환
                           </button>
@@ -314,7 +325,10 @@ const DemandFormManagement = () => {
                                 cursor: "pointer",
                                 transition: "background 0.2s",
                               }}
-                              onClick={() => handleDelete(formData.id)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDelete(formData.id)
+                              }}
                           >
                             삭제
                           </button>

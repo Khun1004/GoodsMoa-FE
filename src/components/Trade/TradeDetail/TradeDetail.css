@@ -80,13 +80,17 @@
   font-size: 1.5rem;
   font-weight: bold;
 }
-
-.tradeDetailProduct, 
-.tradeDetailPrice
- {
-  font-size: 1.3rem;
-  color: black;
+.tradeDetailPrice{
+  font-size: 18px;
+  color: #555555;
   font-weight: bold;
+  margin-top: 10px;
+}
+.tradeDetailProduct 
+
+ {
+  font-size: 18px;
+  color: #555555;
   margin-top: 10px;
 }
 
@@ -256,18 +260,30 @@
   object-fit: cover;
 }
 
-.user-name-mini {
+.user-name-minis {
   /* ✨ 유저 이름 폰트 크기를 키웠어! */
   font-size: 25px;
   color: #000000; /* 가독성을 위해 조금 더 진하게 */
 }
 .view-count{
-  font-size: 20px; /* 14px */
-    color: #000000; /* 회색 계열 */
+  font-size: 18px; /* 14px */
+  color: #555555; /* 회색 계열 */
+  margin-top: 10px;
 }
 .profile-mini {
   display: flex;
   align-items: center;
   gap: 5px;
   margin-bottom: 2px;
+}
+
+.trade-maintitle {
+  font-size: 50px;
+  font-weight: bold;
+}
+.trade-category{
+font-size: 18px;
+    margin: 4px 0;
+    color: #555555;
+    text-align: left;
 }

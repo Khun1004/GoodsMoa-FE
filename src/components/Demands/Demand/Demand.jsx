@@ -191,40 +191,42 @@ const Demand = ({ showBanner = true }) => {
                             </button>
 
                             <div className="demand-profile-block">
-                                <div className="demand-profile-row">
-                                    {item.profileUrl ? (
-                                        <img
-                                            src={item.profileUrl}
-                                            alt="profile"
-                                            className="profile-pic"
-                                        />
-                                    ) : (
-                                        <CgProfile className="profile-pic"/>
-                                    )}
-                                    <span className="demand-user-name-mini">{item.nickname}</span>
+                                <div className="demand-profile-line">
+                                    <div className="demand-profile-row">
+                                        {item.userImage ? (
+                                            <img
+                                                src={item.userImage}
+                                                alt="profile"
+                                                className="profile-pic"
+                                            />
+                                        ) : (
+                                            <CgProfile className="profile-pic"/>
+                                        )}
+                                        <span className="demand-user-name-mini">{item.userNickName || '작성자'}</span>
+                                    </div>
+                                    <span className="view-count">조회수: {item.views || 0}</span>
                                 </div>
-                                <span className="view-count">조회 {item.views || 0}</span>
+
                                 <div className="demand-product-title">{item.title}</div>
-                            </div>
-                            {item.hashtag && (
-                                <div className="tags-container">
+
+                                {item.hashtag && item.hashtag.trim() && (
                                     <div className="tags-list">
                                         {item.hashtag
                                             .split(',')
                                             .map(tag => tag.trim())
                                             .filter(tag => tag.length > 0)
-                                            .map((tag, tIdx) => (
-                                                <span key={tIdx} className="tag-item">#{tag}</span>
+                                            .map((tag, idx) => (
+                                                <span key={idx} className="tag-item">#{tag}</span>
                                             ))}
                                     </div>
-                                </div>
-                            )}
+                                )}
+                            </div>
                         </div>
                     ))}
                 </div>
 
                 <div className="pagination">
-                    {Array.from({ length: totalPages }, (_, i) => (
+                    {Array.from({length: totalPages}, (_, i) => (
                         <button
                             key={i}
                             onClick={() => setPage(i)}

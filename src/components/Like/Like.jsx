@@ -467,14 +467,7 @@ const Like = () => {
                                                 </div>
                                             </div>
                                         </div>
-                                        <div className="like-status-badge">
-                      <span
-                          className={`like-status ${post.tradeStatus === '판매중' ? 'public' : 'private'}`}
-                      >
-                        <Eye className="like-icon-xs"/>
-                          {post.tradeStatus}
-                      </span>
-                                        </div>
+                                        
                                     </div>
                                     <div className="like-card-content">
                                         <div className="like-card-header">
