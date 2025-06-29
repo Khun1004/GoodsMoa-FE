@@ -1,3 +1,4 @@
+// DemandWrite.jsx 수정된 구조 예시
 import React, { useRef, useState, useEffect } from "react";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
@@ -37,23 +38,37 @@ const DemandWrite = ({ description, setDescription, descriptionImages, setDescri
     };
 
     return (
-        <div className="demandwrite-modal-backdrop">
-            <div className="demandwrite-modal-content">
-                <h2>상세설명 작성</h2>
-                <ReactQuill
-                    ref={quillRef}
-                    value={content}
-                    onChange={setContent}
-                    className="demandwrite-quill"
-                    placeholder="상세설명을 입력하세요..."
-                />
-                <div className="demandwrite-upload-box">
-                    <label>이미지 넣기:</label>
-                    <input type="file" accept="image/*" onChange={handleImageUpload} />
+        <div className="demandwrite-wrapper">
+            <div className="demandwrite-container">
+                <h2 className="demandwrite-title">상세 설명 작성</h2>
+
+                <div className="editor-container">
+                    <ReactQuill
+                        ref={quillRef}
+                        value={content}
+                        onChange={setContent}
+                        className="demandwrite-editor"
+                        placeholder="상세설명을 입력하세요..."
+                    />
                 </div>
+
+                <div className="image-upload-section">
+                    <label htmlFor="image-upload" className="saleWriteUpload-button">
+                        + 이미지 추가
+                    </label>
+                    <input
+                        type="file"
+                        id="image-upload"
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                        className="image-upload-input"
+                    />
+                </div>
+
+
                 <div className="demandwrite-btn-group">
-                    <button type="button" className="demandwrite-btn" onClick={handleSave}>저장</button>
-                    <button type="button" className="demandwrite-btn cancel" onClick={handleCancel}>취소</button>
+                    <button className="demandwrite-submit" onClick={handleSave}>저장</button>
+                    <button className="demandwrite-cancel" onClick={handleCancel}>취소</button>
                 </div>
             </div>
         </div>
