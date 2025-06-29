@@ -273,7 +273,6 @@ const DemandParticipate = () => {
                                                     marginBottom: '24px',
                                                     background: '#fff'
                                                 }}
-                                                onClick={() => handleDemandClick(participation.originalId)}
                                             >
                                                 {/* 1. 윗줄: 이미지 + 제목/카테고리/참여일자 */}
                                                 <div style={{
@@ -291,8 +290,8 @@ const DemandParticipate = () => {
                                                         }
                                                         alt={participation.title || ''}
                                                         style={{
-                                                            width: '110px',
-                                                            height: '110px',
+                                                            width: '230px',
+                                                            height: '140px',
                                                             objectFit: 'cover',
                                                             borderRadius: '8px',
                                                             flexShrink: 0,
@@ -319,10 +318,7 @@ const DemandParticipate = () => {
                                                     }}>
                                                         <button
                                                             className="edit-btn"
-                                                            onClick={e => {
-                                                                e.stopPropagation();
-                                                                handleEdit(participation);
-                                                            }}
+                                                            onClick={() => handleDemandClick(participation.originalId)}
                                                         >
                                                             수정
                                                         </button>
@@ -348,8 +344,8 @@ const DemandParticipate = () => {
                                                                     src={getFullImageUrl(product.image)}
                                                                     alt={product.name}
                                                                 />
-                                                                <h4>{product.name}</h4>
-                                                                <p>수량: {product.quantity}개</p>
+                                                                <p>{product.name}</p>
+                                                                <p>{product.quantity}개</p>
                                                             </div>
                                                         ))}
                                                     </div>
