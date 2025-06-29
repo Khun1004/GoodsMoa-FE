@@ -199,10 +199,11 @@ const Demand = ({ showBanner = true }) => {
                                                 className="profile-pic"
                                             />
                                         ) : (
-                                            <CgProfile className="profile-pic" />
+                                            <CgProfile className="profile-pic"/>
                                         )}
                                         <span className="demand-user-name-mini">{item.nickname}</span>
                                     </div>
+                                    <span className="view-count">조회 {item.views || 0}</span>
                                     <div className="demand-product-title">{item.title}</div>
                                 </div>
                                 {item.hashtag && (

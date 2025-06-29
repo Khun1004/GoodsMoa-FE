@@ -1,8 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../../../api/api'; // ★ api 인스턴스 import!
 import DemandService from '../../../api/DemandService.jsx'; // 주문/수정용 서비스는 기존 그대로
 import './DemandDetail.css';
+import {LoginContext} from "../../../contexts/LoginContext.jsx";
+import {FaHeart} from "react-icons/fa";
+import {CgProfile} from "react-icons/cg";
 
 const getFullImageUrl = (url) =>
     url
@@ -14,14 +17,29 @@ const getFullImageUrl = (url) =>
 const DemandDetail = () => {
     const { id } = useParams();
     const navigate = useNavigate();
-
+    const { userInfo } = useContext(LoginContext);
     const [detail, setDetail] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [isLike, setLiked] = useState(false);
 
     const [activeIndex, setActiveIndex] = useState(0);
     const [quantities, setQuantities] = useState([]);
     const [tab, setTab] = useState('desc');
+
+    const handleLikeToggle = async () => {
+        if (!userInfo) {
+            alert("로그인이 필요합니다.");
+            return;
+        }
+        const url = `/demand/like/${id}`
+        try {
+            await api.post(url);
+            setLiked(prev => !prev);
+        } catch (error) {
+            alert("찜 상태를 변경하는 데 실패했습니다.");
+        }
+    };
 
     useEffect(() => {
         const getDemandDetail = async () => {
@@ -37,7 +55,10 @@ const DemandDetail = () => {
                         ? data.products.map(product => product.defaultValue ?? 0)
                         : []
                 );
+                setLiked(data.likeStatus);
+                console.log('찜 like여부', isLike)
             } catch (err) {
+                setLiked(false);
                 setError(err.message || (err.response?.data?.message));
             } finally {
                 setLoading(false);
@@ -129,6 +150,37 @@ const DemandDetail = () => {
         });
     };
 
+    const handleChatClick = async () => {
+        const sellerId = detail?.userId;
+        if (!userInfo) {
+            alert("로그인이 필요합니다.");
+            return;
+        }
+        if (!sellerId) {
+            alert("판매자 정보가 없습니다.");
+            return;
+        }
+        if (userInfo.id === sellerId) {
+            alert("자기 자신과는 채팅할 수 없습니다.");
+            return;
+        }
+        try {
+            const res = await api.post("/chatroom/create", {
+                buyerId: userInfo.id,
+                sellerId: sellerId
+            });
+            const roomData = res.data;
+            window.open(`/chat-app?roomId=${roomData.id}`, "_blank", "width=1000,height=800,resizable=yes");
+        } catch (error) {
+            if (error.response && error.response.status === 409) {
+                const roomData = error.response.data;
+                window.open(`/chat-app?roomId=${roomData.id}`, "_blank", "width=1000,height=800,resizable=yes");
+            } else {
+                alert("채팅방 생성에 실패했습니다.");
+            }
+        }
+    };
+
     // 합계 계산
     const totalItems = quantities.reduce((sum, qty) => sum + (qty > 0 ? qty : 0), 0);
     const totalPrice = products.reduce(
@@ -141,12 +193,48 @@ const DemandDetail = () => {
             <div className="DemandDetail-container">
                 {/* 메인 상품 영역 */}
                 <div className="DemandDetail-product-main">
-                    <img
-                        src={products[activeIndex]?.imageUrl ? getFullImageUrl(products[activeIndex].imageUrl) : mainImage}
-                        alt={detail.title}
-                        className="DemandDetail-main-image"
-                    />
+                    <div className="DemandDetail-image-wrapper">
+                        <img
+                            src={products[activeIndex]?.imageUrl ? getFullImageUrl(products[activeIndex].imageUrl) : mainImage}
+                            alt={detail.title}
+                            className="DemandDetail-main-image"
+                        />
+                    </div>
                     <div className="DemandDetail-product-info">
+                        <div className="profile-mini"
+                             style={{display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px', marginTop: '14px'}}>
+                            {detail.userImage ? (
+                                <img
+                                    src={detail.userImage}
+                                    alt="프로필"
+                                    style={{
+                                        width: '40px',
+                                        height: '40px',
+                                        borderRadius: '50%',
+                                        border: '1px solid #ccc',
+                                        objectFit: 'cover',
+                                    }}
+                                />
+                            ) : (
+                                <CgProfile
+                                    style={{
+                                        width: '40px',
+                                        height: '40px',
+                                        borderRadius: '50%',
+                                        border: '1px solid #ccc',
+                                        objectFit: 'cover',
+                                    }}
+                                />
+                            )}
+                            <span
+                                style={{
+                                    fontSize: '25px',
+                                    color: '#000',
+                                }}
+                            >
+                                {detail.userName || '작성자'}
+                            </span>
+                        </div>
                         <h2
                             className="DemandDetail-title"
                             style={{
@@ -154,32 +242,12 @@ const DemandDetail = () => {
                                 fontWeight: 600,
                                 margin: 0,
                                 lineHeight: 1.25,
+                                paddingTop: 20,
+                                paddingBottom: 20
                             }}
                         >
                             {detail.title}
                         </h2>
-
-                        <p className="DemandDetail-hashtag" style={{margin: 0}}>
-                            {detail.hashtag && detail.hashtag.split(' ').map((tag, i) =>
-                                    <span
-                                        key={i}
-                                        style={{
-                                            background: "#dedede",
-                                            display: "inline-block",
-                                            borderRadius: "16px",
-                                            padding: "4px 14px",
-                                            fontSize: "18px",
-                                            fontWeight: 400,
-                                            marginRight: "8px",
-                                            marginBottom: "4px",
-                                            verticalAlign: "middle",
-                                        }}
-                                    >
-      #{tag}
-    </span>
-                            )}
-                        </p>
-
                         <div className="DemandDetail-stock-info">
                             <span className='DemandDetailInfoName'>
                                 수요 조사 기간: {formatDate(detail.startTime)} ~ {formatDate(detail.endTime)}
@@ -187,6 +255,40 @@ const DemandDetail = () => {
                             <span className='DemandDetailInfoName'>카테고리: {detail.category}</span>
                             <span className='DemandDetailInfoName'>조회수: {detail.views}</span>
                         </div>
+                        <p className="DemandDetail-hashtag" style={{margin: 0}}>
+                            {detail.hashtag && detail.hashtag.split(' ').map((tag, i) =>
+                                <span
+                                    key={i}
+                                    style={{
+                                        background: "#dedede",
+                                        display: "inline-block",
+                                        borderRadius: "10px",
+                                        padding: "4px 14px",
+                                        fontSize: "18px",
+                                        fontWeight: 550,
+                                        marginRight: "8px",
+                                        marginBottom: "20px",
+                                        verticalAlign: "middle"
+                                    }}
+                                >
+                                      #{tag}
+                                    </span>
+                            )}
+                        </p>
+
+
+                        <div className="DemandDetail-actions">
+                            <button className="DemandDetail-report-btn" onClick={handleReport}>🚨 신고하기</button>
+                            <button className="DemandDetail-chat-btn"
+                                    onClick={handleChatClick}>
+                                채팅하기
+                            </button>
+                            <button className={`detail-like-button ${isLike ? 'liked' : ''}`}
+                                    onClick={handleLikeToggle}>
+                                <FaHeart size={20}/>
+                            </button>
+                        </div>
+
                         {/* 옵션 썸네일 목록 */}
                         {products.length > 0 && (
                             <div className="DemandDetail-thumbnails">
@@ -202,16 +304,13 @@ const DemandDetail = () => {
                                             width: 60,
                                             height: 60,
                                             marginRight: 8,
+                                            marginTop: "20px",
                                             border: activeIndex === i ? '2px solid #3498db' : '1px solid #eee'
                                         }}
                                     />
                                 ))}
                             </div>
                         )}
-                        <div className="DemandDetail-actions">
-                            <button className="DemandDetail-report-btn" onClick={handleReport}>🚨 신고하기</button>
-                            <button className="DemandDetail-chat-btn">채팅하기</button>
-                        </div>
                     </div>
                 </div>
 
@@ -226,19 +325,18 @@ const DemandDetail = () => {
                                     style={{
                                         border: activeIndex === index ? '3px solid #3498db' : '1px solid #eee'
                                     }}
+                                    onClick={() => setActiveIndex(index)}
                                 >
                                     <img
                                         src={getFullImageUrl(product.imageUrl)}
                                         alt={product.name}
                                         className="DemandDetailProduct-thumbnail"
-                                        onClick={() => setActiveIndex(index)}
-                                        style={{ cursor: 'pointer' }}
+                                        style={{cursor: 'pointer'}}
                                     />
                                     <div className="DemandDetailProduct-info">
                                         <p>{product.name}</p>
                                         <p>{product.price.toLocaleString()}원</p>
                                         <div className="demandDetail-controls">
-                                            <p>수량</p>
                                             <div className="demandDetailQuantity">
                                                 <button
                                                     onClick={() => {
@@ -246,15 +344,51 @@ const DemandDetail = () => {
                                                             updateQuantity(index, (quantities[index] || 0) - 1);
                                                         }
                                                     }}
-                                                >-</button>
-                                                <span className='demandDetailQuntitySpan'>{quantities[index] || 0}</span>
+                                                >-
+                                                </button>
+                                                <input
+                                                    type="number"
+                                                    className="demandDetailQuantityInput"
+                                                    value={quantities[index] || 0}
+                                                    min={0}
+                                                    max={10}
+                                                    onChange={(e) => {
+                                                        let value = parseInt(e.target.value) || 0;
+                                                        value = Math.max(0, Math.min(10, value)); // 0~10 사이로 제한
+                                                        updateQuantity(index, value);
+                                                    }}
+                                                    style={{
+                                                        width: '50px',
+                                                        textAlign: 'center',
+                                                        fontSize: '16px',
+                                                        padding: '6px',
+                                                        borderRadius: '6px',
+                                                        border: '1px solid #ccc',
+                                                        position: 'relative',
+                                                        top: '5px'  // 아래로 4px 이동
+                                                    }}
+                                                />
                                                 <button
                                                     onClick={() => {
-                                                        updateQuantity(index, (quantities[index] || 0) + 1);
+                                                        if ((quantities[index] || 0) < 10) {
+                                                            updateQuantity(index, (quantities[index] || 0) + 1);
+                                                        }
                                                     }}
-                                                >+</button>
+                                                >+
+                                                </button>
                                             </div>
                                         </div>
+                                    </div>
+                                    <div>
+                                        <p
+                                            className="DemandDetailProduct-item-achivement"
+                                            style={{
+                                                backgroundColor: product.achievementRate >= 100 ? '#dcfce7' : '#e0edff',
+                                                color: product.achievementRate >= 100 ? '#16a34a' : '#2563eb'
+                                            }}
+                                        >
+                                            {Math.round(product.achievementRate)}%
+                                        </p>
                                     </div>
                                 </div>
                             ))}
@@ -264,7 +398,7 @@ const DemandDetail = () => {
 
                 {/* 요약 정보 및 결제/수정 버튼 */}
                 <div className="DemandDetail-summary">
-                    <div className="demandDetailCheck">
+                <div className="demandDetailCheck">
                         {totalItems > 0 ? (
                             products
                                 .map((item, idx) => ({ ...item, quantity: quantities[idx] }))
@@ -301,7 +435,6 @@ const DemandDetail = () => {
                     )}
 
                     <div className="DemandDetail-summary-buttons">
-                        <button className="DemandDetail-like-btn">찜하기</button>
                         {isEditMode ? (
                             <button
                                 className="DemandDetail-participate-btn"
