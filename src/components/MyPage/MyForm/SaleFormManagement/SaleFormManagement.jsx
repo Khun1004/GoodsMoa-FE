@@ -65,7 +65,26 @@ const SaleFormManagement = () => {
 
     const handleFormClick = (form) => {
         if (!form?.id) return;
-        navigate(`/saledetail/${form.id}`);
+
+        navigate(`/person`, {
+            state: {
+                product: form,
+                products: form.products,
+                selectedImage: form.thumbnailUrl || form.image || null,
+                productReviews: [],
+                start_time: form.startTime,
+                end_time: form.endTime,
+                saleLabel: "판매",
+                isPublic: form.isPublic,
+                privateCode: form.password,
+                description: form.content,
+                hashtags: form.hashtag?.split(',') || [],
+                from: "saleForm",
+                userName: form.nickname || "사용자 이름",
+                profileImage: form.profileUrl || null,
+                category: form.categoryName || form.category
+            }
+        });
     };
 
     const formatDate = (dateString) => !dateString ? '미정' : new Date(dateString).toLocaleDateString('ko-KR');
