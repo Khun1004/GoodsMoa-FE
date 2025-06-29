@@ -1,53 +1,54 @@
 import React from 'react';
-import { IoMdSearch } from "react-icons/io";
+import { IoMdSearch } from 'react-icons/io';
 
 const SearchBanner = ({
-                          placeholder = "검색어를 입력하세요",
+                          // title = '검색:',
+                          placeholder = '검색어 입력',
                           searchQuery,
                           setSearchQuery,
                           handleSearchKeyPress,
-                          selectedOption,
-                          setSelectedOption,
-                          selectOptions = ["전체","제목", "해시태그", "내용"] // 🔹 기본값 설정
+                          handleSearchSubmit,
+                          searchType,
+                          setSearchType
                       }) => {
     return (
-        <div style={styles.banner}>
-            <div style={styles.searchBox}>
-                {/* 🔽 드롭다운 */}
-                <select
-                    value={selectedOption}
-                    onChange={(e) => setSelectedOption(e.target.value)}
-                    style={styles.select}
-                >
-                    {selectOptions.map((option, index) => (
-                        <option key={index} value={option.toLowerCase()}>
-                            {option}
-                        </option>
-                    ))}
+        <div className="search-banner">
+            {/*{title && <span className="search-banner-title">{title}</span>}*/}
 
+            <select
+                value={searchType}
+                onChange={(e) => setSearchType(e.target.value)}  // 이 부분 꼭 있어야 함
+                className="search-banner-select"
+            >
+                <option value="ALL">전체</option>
+                <option value="TITLE">제목</option>
+                <option value="DESCRIPTION">내용</option>
+                <option value="HASHTAG">해시태그</option>
+            </select>
 
-                </select>
-
-                {/* 🔍 검색 인풋 */}
-                <div style={styles.inputWrapper}>
-                    <input
-                        type="text"
-                        placeholder={placeholder}
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        onKeyPress={handleSearchKeyPress}
-                        style={styles.input}
-                    />
-                </div>
-
-                {/* 🔘 돋보기 버튼 */}
-                <button style={styles.searchButton} onClick={() => handleSearchKeyPress({ key: 'Enter' })}>
-                    <IoMdSearch />
-                </button>
+            <div className="search-banner-input-wrapper">
+                <input
+                    type="text"
+                    className="search-banner-input"
+                    placeholder={placeholder}
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyPress={handleSearchKeyPress}
+                />
             </div>
+
+            <button
+                className="search-banner-button"
+                onClick={handleSearchSubmit}
+            >
+                <IoMdSearch />
+            </button>
         </div>
     );
 };
+
+// export default SearchBanner;
+
 
 const styles = {
     banner: {

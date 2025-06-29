@@ -13,6 +13,7 @@ import { getBestsellerByType } from "../../../api/publicService";
 import api from "../../../api/api";
 import _ from "lodash";
 import Trade1 from '../../../assets/demands/demand1.jpg';
+import Spacer from "../../public/Spacer.jsx";
 
 const Trade = ({ showBanner = true }) => {
   const { userInfo } = useContext(LoginContext);
@@ -26,7 +27,8 @@ const Trade = ({ showBanner = true }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchType, setSearchType] = useState('ALL');
   const [category, setCategory] = useState(0);
   const [orderBy, setOrderBy] = useState('latest');
   const [includeExpired, setIncludeExpired] = useState(true);
@@ -71,7 +73,8 @@ const Trade = ({ showBanner = true }) => {
     setError(null);
     try {
       const params = {
-        query: searchTerm,
+        search_type: searchType.toUpperCase(),
+        query: searchQuery,
         category,
         order_by: orderBy,
         include_expired: includeExpired,
@@ -92,7 +95,7 @@ const Trade = ({ showBanner = true }) => {
     } finally {
       setLoading(false);
     }
-  }, [searchTerm, category, orderBy, includeExpired, includeScheduled, page]);
+  }, [searchType, searchQuery, category, orderBy, includeExpired, includeScheduled, page]);
 
   useEffect(() => {
     const debounceFetch = _.debounce(() => {
@@ -103,25 +106,6 @@ const Trade = ({ showBanner = true }) => {
   }, [fetchTradeProducts]);
 
   // 서버 좋아요 토글
-  const handleServerLikeToggle = async (tradeId) => {
-    if (!userInfo) {
-      alert("로그인이 필요합니다.");
-      return;
-    }
-    const isLiked = likedServerPosts[tradeId];
-    try {
-      if (isLiked) {
-        await api.delete(`/trade-like/${tradeId}`);
-      } else {
-        await api.post(`/trade-like/like/${tradeId}`);
-      }
-      setLikedServerPosts(prev => ({ ...prev, [tradeId]: !isLiked }));
-    } catch (error) {
-      console.error("좋아요 처리 중 오류:", error);
-      alert("좋아요 처리 중 오류 발생");
-    }
-  };
-
   const handleLike = async (id) => {
     const numericId = getNumericId(id);
     try {
@@ -182,26 +166,32 @@ const Trade = ({ showBanner = true }) => {
 
   // 검색용
   const filteredProducts = tradeProducts.filter(item => {
-    const query = searchTerm.toLowerCase();
+    const query = searchQuery.toLowerCase();
     return (
         item.title?.toLowerCase().includes(query) ||
         item.hashtag?.toLowerCase().includes(query) ||
         item.nickname?.toLowerCase().includes(query)
     );
   });
-  const isSearching = searchTerm.trim().length > 0;
+
+  const handleSearchSubmit = () => {
+    setPage(0);
+  };
+
+  const isSearching = searchQuery.trim().length > 0;
 
   return (
       <div className="sale-container">
         {showBanner && (
             <>
               <SearchBanner
-                  title="중고거래 검색:"
                   placeholder="중고거래 검색"
-                  searchQuery={searchTerm}
-                  setSearchQuery={setSearchTerm}
+                  searchQuery={searchQuery}
+                  setSearchQuery={setSearchQuery}
+                  searchType={searchType}
+                  setSearchType={setSearchType}
                   handleSearchKeyPress={(e) => {
-                    if (e.key === 'Enter') console.log('검색어:', searchTerm);
+                    if (e.key === 'Enter') handleSearchSubmit();
                   }}
               />
               <Category
@@ -213,7 +203,7 @@ const Trade = ({ showBanner = true }) => {
                   }}
               />
 
-              {searchTerm.trim().length === 0 && (
+              {searchQuery.trim().length === 0 && (
                   <BestsellerList
                       apiFn={getBestsellerByType}
                       type="trade"
@@ -253,7 +243,7 @@ const Trade = ({ showBanner = true }) => {
           <div className="sale-grid">
             {loading && <div className="loading-box">🔄 로딩중입니다...</div>}
             {!loading && (isSearching ? filteredProducts : tradeProducts).length === 0 && (
-                <div className="no-search-result">"{searchTerm}"에 대한 검색 결과가 없습니다.</div>
+                <div className="no-search-result">"{searchQuery}"에 대한 검색 결과가 없습니다.</div>
             )}
             {(isSearching ? filteredProducts : tradeProducts).map((item) => {
               const id = getNumericId(item.id);

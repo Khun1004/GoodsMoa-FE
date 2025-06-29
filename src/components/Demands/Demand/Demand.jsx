@@ -12,7 +12,8 @@ import Spacer from "../../public/Spacer.jsx";
 import SortSelect from "../../public/SortSelect.jsx";
 import BestsellerList from "../../public/BestsellerList.jsx";
 import { getBestsellerByType } from "../../../api/publicService";
-import api from '../../../api/api'; // axios 인스턴스
+import api from '../../../api/api';
+import {IoMdSearch} from "react-icons/io"; // axios 인스턴스
 
 const getFullThumbnailUrl = (thumbnailUrl) =>
     thumbnailUrl
@@ -37,7 +38,11 @@ const Demand = ({ showBanner = true }) => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
-    const [searchTerm, setSearchTerm] = useState('');
+    const initialQueryFromLocation = new URLSearchParams(location.search).get("q") || "";
+    const [searchQuery, setSearchQuery] = useState('');
+    const [searchType, setSearchType] = useState('ALL');
+    const [currentPage, setCurrentPage] = useState(1);
+
     const [category, setCategory] = useState(0);
     const [orderBy, setOrderBy] = useState('latest');
     const [includeExpired, setIncludeExpired] = useState(true);
@@ -62,7 +67,8 @@ const Demand = ({ showBanner = true }) => {
         setError(null);
         try {
             const params = {
-                query: searchTerm,
+                search_type: searchType.toUpperCase(),
+                query: searchQuery,
                 category,
                 order_by: orderBy,
                 include_expired: includeExpired,
@@ -83,7 +89,7 @@ const Demand = ({ showBanner = true }) => {
         } finally {
             setLoading(false);
         }
-    }, [searchTerm, category, orderBy, includeExpired, includeScheduled, page]);
+    }, [searchType, searchQuery, category, orderBy, includeExpired, includeScheduled, page]);
 
     // debounce 효과용 useEffect
     useEffect(() => {
@@ -140,7 +146,7 @@ const Demand = ({ showBanner = true }) => {
 
 
     const filteredProducts = demandProducts.filter(item => {
-        const query = searchTerm.toLowerCase();
+        const query = searchQuery.toLowerCase();
         return (
             item.title?.toLowerCase().includes(query) ||
             item.hashtag?.toLowerCase().includes(query) ||
@@ -148,22 +154,28 @@ const Demand = ({ showBanner = true }) => {
         );
     });
 
-    const isSearching = searchTerm.trim().length > 0;
+    const handleSearchSubmit = () => {
+        setPage(0);
+    };
+
+    const isSearching = searchQuery.trim().length > 0;
 
     return (
         <div className="container">
             <div className="demand-container">
                 {showBanner && (
                     <>
-                        <Spacer height={20} />
+                        <Spacer height={20}/>
                         <SearchBanner
-                            title="수요조사 검색:"
                             placeholder="수요조사 검색"
-                            searchQuery={searchTerm}
-                            setSearchQuery={setSearchTerm}
+                            searchQuery={searchQuery}
+                            setSearchQuery={setSearchQuery}
+                            searchType={searchType}
+                            setSearchType={setSearchType}
                             handleSearchKeyPress={(e) => {
-                                if (e.key === 'Enter') console.log('검색어:', searchTerm);
+                                if (e.key === 'Enter') handleSearchSubmit();
                             }}
+                            // handleSearchSubmit={handleSearchSubmit}
                         />
                         <Category
                             gap={60}
@@ -174,7 +186,7 @@ const Demand = ({ showBanner = true }) => {
                             }}
                         />
 
-                        <hr className="sale-divider" />
+                        <hr className="sale-divider"/>
 
                         {!isSearching && (
                             <BestsellerList
@@ -191,7 +203,7 @@ const Demand = ({ showBanner = true }) => {
                                 }}
                                 onCardClick={(item) =>
                                     navigate(`/demandDetail/${getNumericId(item.id || item.demandPostId)}`, {
-                                        state: { product: item },
+                                        state: {product: item},
                                     })
                                 }
                             />
@@ -201,19 +213,19 @@ const Demand = ({ showBanner = true }) => {
 
                 <div className="demand-header">
                     <div className="demand-icon">
-                        <SlSocialDropbox className="demandbox-icon" />
-                        <FaHeart className="heart-icon" />
+                        <SlSocialDropbox className="demandbox-icon"/>
+                        <FaHeart className="heart-icon"/>
                     </div>
                     <h2 className="demand-heading">수요조사</h2>
-                    <div style={{ marginLeft: 'auto' }}>
-                        <SortSelect options={sortOptions} selected={orderBy} onChange={setOrderBy} />
+                    <div style={{marginLeft: 'auto'}}>
+                        <SortSelect options={sortOptions} selected={orderBy} onChange={setOrderBy}/>
                     </div>
                 </div>
 
                 <div className="demand-grid">
                     {loading && <div className="loading-box">🔄 로딩중입니다...</div>}
                     {!loading && (isSearching ? filteredProducts : demandProducts).length === 0 && (
-                        <div className="no-search-result">"{searchTerm}"에 대한 검색 결과가 없습니다.</div>
+                        <div className="no-search-result">"{searchQuery}"에 대한 검색 결과가 없습니다.</div>
                     )}
 
                     {!loading &&
@@ -221,7 +233,7 @@ const Demand = ({ showBanner = true }) => {
                             const id = getNumericId(item.id || item.demandPostId);
                             return (
                                 <div key={id || idx} className="demand-card">
-                                    <Link
+                                <Link
                                         to={`/demandDetail/${id}`}
                                         state={{
                                             product: item,
