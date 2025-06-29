@@ -12,16 +12,21 @@ import BestsellerList from "../../public/BestsellerList.jsx";
 import { getBestsellerByType, searchBoardPosts } from "../../../api/publicService";
 import productService from "../../../api/ProductService";
 import SortSelect from "../../public/SortSelect.jsx";
+import { useCallback } from 'react';
 
 const Sale = ({ showBanner = true, showCustomProducts = true }) => {
     const [userName, setUserName] = useState(() => localStorage.getItem('userName') || "사용자 이름");
     const { profileImage, userInfo } = useContext(LoginContext);
     const [liked, setLiked] = useState({});
     const [searchQuery, setSearchQuery] = useState("");
+    const [searchType, setSearchType] = useState('ALL');
     const [posts, setPosts] = useState([]);
     const [sortOrder, setSortOrder] = useState('new');
     const [selectedCategory, setSelectedCategory] = useState(0); // ⭐️ 추가됨
     const navigate = useNavigate();
+    const [page, setPage] = useState(0);
+    const [totalPages, setTotalPages] = useState(0);
+    const pageSize = 10;
 
     const getPostIdKey = (id) => {
         if (typeof id === 'string' && id.includes('_')) {
@@ -37,11 +42,12 @@ const Sale = ({ showBanner = true, showCustomProducts = true }) => {
         { label: '등록일순', value: 'old' }
     ];
 
-    const fetchProductPosts = async () => {
+    const fetchProductPosts = useCallback(async () => {
         try {
             const res = await searchBoardPosts({
                 path: '/product',
                 board_type: 'PRODUCT',
+                search_type: searchType.toUpperCase(),
                 query: searchQuery,
                 category: selectedCategory, // ⭐️ 반영됨
                 order_by: sortOrder,
@@ -62,11 +68,11 @@ const Sale = ({ showBanner = true, showCustomProducts = true }) => {
         } catch (err) {
             console.error('❌ 상품글 검색 실패:', err);
         }
-    };
+    }, [searchType, sortOrder, searchQuery, selectedCategory]);
 
     useEffect(() => {
         fetchProductPosts();
-    }, [sortOrder, searchQuery, selectedCategory]); // ⭐️ 추가됨
+    }, [fetchProductPosts]);
 
     useEffect(() => {
         const fetchLikedPosts = async () => {
@@ -142,6 +148,9 @@ const Sale = ({ showBanner = true, showCustomProducts = true }) => {
         }
     };
 
+    const handleSearchSubmit = () => {
+        setPage(0);
+    };
     const isSearching = searchQuery.trim().length > 0;
 
     return (
@@ -150,11 +159,14 @@ const Sale = ({ showBanner = true, showCustomProducts = true }) => {
                 {showBanner && (
                     <>
                         <SearchBanner
-                            title="판매 상품 검색:"
-                            placeholder=" 판매상품 검색"
+                            placeholder="판매상품 검색"
                             searchQuery={searchQuery}
                             setSearchQuery={setSearchQuery}
-                            handleSearchKeyPress={handleSearchKeyPress}
+                            searchType={searchType}
+                            setSearchType={setSearchType}
+                            handleSearchKeyPress={(e) => {
+                                if (e.key === 'Enter') handleSearchSubmit();
+                            }}
                         />
                         <Category
                             gap={90}

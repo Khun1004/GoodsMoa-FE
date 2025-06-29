@@ -203,11 +203,13 @@ const Trade = ({ showBanner = true }) => {
                   }}
               />
 
+              <hr className="sale-divider"/>
+
               {searchQuery.trim().length === 0 && (
                   <BestsellerList
                       apiFn={getBestsellerByType}
                       type="trade"
-                      heading="인기 중고거래 제품"
+                      heading="인기 중고거래"
                       liked={tradeProducts.reduce((acc, item) => {
                         const id = getNumericId(item.id || item.demandPostId);
                         acc[id] = item.liked;
@@ -218,7 +220,7 @@ const Trade = ({ showBanner = true }) => {
                       }}
                       onCardClick={(item) =>
                           navigate(`/tradeDetail/${getNumericId(item.id || item.demandPostId)}`, {
-                            state: { product: item },
+                            state: {product: item},
                           })
                       }
                   />
@@ -233,7 +235,7 @@ const Trade = ({ showBanner = true }) => {
                   <SlSocialDropbox className='salebox-icon'/>
                   <FaHeart className='heart-icon'/>
                 </div>
-                <h2 className="sale-heading">중고거래 제품</h2>
+                <h2 className="sale-heading">중고거래</h2>
                 <div style={{marginLeft: 'auto'}}>
                   <SortSelect options={sortOptions} selected={orderBy} onChange={setOrderBy}/>
                 </div>
