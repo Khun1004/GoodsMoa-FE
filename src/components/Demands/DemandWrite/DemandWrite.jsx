@@ -24,18 +24,53 @@ const DemandWrite = ({ description, setDescription, descriptionImages, setDescri
         onClose();
     };
 
-    const handleImageUpload = (e) => {
+    const handleImageUpload = async (e) => {
         const file = e.target.files[0];
         if (!file) return;
-        setImages(prev => [...prev, file]);
+        const resizedFile = await resizeImage(file);
+        setImages(prev => [...prev, resizedFile]);
         const reader = new FileReader();
         reader.onload = (event) => {
             const quill = quillRef.current.getEditor();
             const range = quill.getSelection(true);
             quill.insertEmbed(range ? range.index : 0, "image", event.target.result);
         };
-        reader.readAsDataURL(file);
+        reader.readAsDataURL(resizedFile);
     };
+
+    const resizeImage = (file, maxSize = 450) => {
+        return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    let { width, height } = img;
+
+                    if (width > height && width > maxSize) {
+                        height = (maxSize / width) * height;
+                        width = maxSize;
+                    } else if (height > maxSize) {
+                        width = (maxSize / height) * width;
+                        height = maxSize;
+                    }
+
+                    const canvas = document.createElement("canvas");
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext("2d");
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    canvas.toBlob((blob) => {
+                        const resizedFile = new File([blob], file.name, { type: file.type });
+                        resolve(resizedFile);
+                    }, file.type, 0.9); // 압축 품질 조절 가능
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+    };
+
 
     return (
         <div className="demandwrite-wrapper">
