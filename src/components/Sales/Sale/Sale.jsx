@@ -33,7 +33,7 @@ const Sale = ({ showBanner = true, showCustomProducts = true }) => {
     const sortOptions = [
         { label: '최신순', value: 'new' },
         { label: '인기순', value: 'view' },
-        { label: '찜순', value: 'likes' },
+        { label: '찜순', value: 'like' },
         { label: '등록일순', value: 'old' }
     ];
 
@@ -110,11 +110,12 @@ const Sale = ({ showBanner = true, showCustomProducts = true }) => {
     const handleProductClick = async (post) => {
         try {
             const detailedPost = post;
+            const numericPostId = parseInt(getPostIdKey(post.id), 10);
             navigate('/person', {
                 state: {
                     product: {
                         ...detailedPost,
-                        id: detailedPost.id,
+                        id: numericPostId,
                         name: detailedPost.title,
                         price: detailedPost.price,
                         image: detailedPost.thumbnailUrl,
