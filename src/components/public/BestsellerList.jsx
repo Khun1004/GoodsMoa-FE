@@ -17,6 +17,11 @@ const extractPostId = (fullId) => {
 const BestsellerList = ({ apiFn, type, heading, liked = {}, onLike, onCardClick }) => {
     const [posts, setPosts] = useState([]);
 
+
+    // BestsellerList.jsx
+    useEffect(() => {
+        console.log("✅ BestsellerList received liked props:", liked);
+    }, [liked]);
     // 베스트셀러 리스트 가져오기
     useEffect(() => {
         const fetchBestsellers = async () => {
