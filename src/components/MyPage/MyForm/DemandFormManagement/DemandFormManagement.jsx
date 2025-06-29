@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../../../../api/api";
+import ProductService from "../../../../api/ProductService";
 import ManagementPageLayout from '../../../public/management/ManagementPageLayout';
 import ManagementCard from '../../../public/management/ManagementCard';
 import ActionButton from '../../../public/management/ActionButton';
@@ -103,6 +104,20 @@ const DemandFormManagement = () => {
     };
     return map[name] || null;
   };
+  function getImageExtension(fileOrImage) {
+    // File 객체일 때
+    if (fileOrImage && fileOrImage.name) {
+      const match = fileOrImage.name.match(/\.([a-zA-Z0-9]+)$/);
+      return match ? match[1].toLowerCase() : 'jpg';
+    }
+    // 문자열(파일명)일 때
+    if (typeof fileOrImage === 'string') {
+      const match = fileOrImage.match(/\.([a-zA-Z0-9]+)$/);
+      return match ? match[1].toLowerCase() : 'jpg';
+    }
+    // 그 외에는 기본값
+    return 'jpg';
+  }
 
   const handleConvert = async (id) => {
     try {
@@ -112,25 +127,67 @@ const DemandFormManagement = () => {
       const categoryName = getCategoryName(data.category);
       const categoryId = getCategoryId(categoryName);
 
+      // 1. 썸네일 처리 (기존과 동일)
+      const proxyUrl = "https://cors-anywhere.herokuapp.com/";
+      const thumbResponse = await fetch(proxyUrl + imageUrl);
+      if (!thumbResponse.ok) throw new Error("썸네일 이미지 다운로드 실패");
+      const thumbBlob = await thumbResponse.blob();
+      const thumbnailFile = new File([thumbBlob], 'thumbnail.jpg', { type: thumbBlob.type });
+      const processedThumbImage = await ProductService.processImageForUpload({ file: thumbnailFile });
+      const thumbExtension = getImageExtension(processedThumbImage.file);
+
+      // 2. 상품 이미지 처리 (새로 추가)
+      const processedProducts = await Promise.all(
+          (data.products || []).map(async (prod, i) => {
+            // 2-1. 상품 이미지 다운로드
+            const prodImageUrl = getFullImageUrl(prod.imageUrl);
+            const prodResponse = await fetch(proxyUrl + prodImageUrl);
+            if (!prodResponse.ok) throw new Error(`상품 이미지 ${i} 다운로드 실패`);
+
+            // 2-2. 파일 변환
+            const prodBlob = await prodResponse.blob();
+            const prodFile = new File([prodBlob], `product_${i}.jpg`, { type: prodBlob.type });
+
+            // 2-3. 이미지 최적화
+            const processedProdImage = await ProductService.processImageForUpload({ file: prodFile });
+            return {
+              id: `temp_${i + 1}`,
+              name: prod.name,
+              price: prod.price,
+              quantity: 1,
+              maxQuantity: 1,
+              image: { // 2-4. 썸네일과 동일한 구조
+                file: processedProdImage.file,
+                preview: URL.createObjectURL(processedProdImage.file),
+                extension: getImageExtension(processedProdImage.file),
+                uploadPath: 'productPost/product'
+              },
+              images: [{ // 2-5. images도 동일 구조 (배열 유지)
+                file: processedProdImage.file,
+                preview: URL.createObjectURL(processedProdImage.file),
+                extension: getImageExtension(processedProdImage.file),
+                uploadPath: 'productPost/product'
+              }],
+              imageUpdated: false
+            };
+          })
+      );
+
       navigate('/saleform', {
         state: {
           from: 'management',
-          image: imageUrl,
+          image: {
+            file: processedThumbImage.file,      // 최적화된 파일 객체
+            preview: URL.createObjectURL(processedThumbImage.file), // Blob URL
+            extension: thumbExtension,
+            uploadPath: 'productPost/thumbnail'
+          },
           title: data.title,
           description: data.description,
           category: categoryName,
           categoryId: categoryId,
           hashtag: (data.hashtag || '').split(',').map(t => t.trim()).filter(Boolean),
-          products: (data.products || []).map((prod, i) => ({
-            id: `temp_${i + 1}`,
-            name: prod.name,
-            price: prod.price,
-            quantity: 1,
-            maxQuantity: 1,
-            image: getFullImageUrl(prod.imageUrl),
-            images: [getFullImageUrl(prod.imageUrl)],
-            imageUpdated: false
-          })),
+          products: processedProducts,
           start_time: data.startTime?.split(' ')[0] || '',
           end_time: data.endTime?.split(' ')[0] || '',
           contentImages: [],
@@ -138,7 +195,7 @@ const DemandFormManagement = () => {
           isPublic: true,
           privateCode: "",
           isPermanent: false,
-          postId: data.id
+          // postId: data.id
         }
       });
     } catch (err) {
