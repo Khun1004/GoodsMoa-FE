@@ -5,6 +5,7 @@ import './Category.css';
 import Divider from '../Divider.jsx';
 
 const mainCategories = [
+    { id: 0, name: "전체", icon: "😊" },
     { id: 1, name: "애니메이션", icon: "🎬" },
     { id: 2, name: "아이돌", icon: "🎤" },
     { id: 3, name: "순수창작", icon: "🎨" },
@@ -18,7 +19,7 @@ const mainCategories = [
 const Category = ({
                       title,
                       categories = mainCategories,
-                      gap = 94,
+                      gap = 70,
                       onCategoryClick,
                       selectedId,      // 선택된 카테고리 id
                   }) => {
