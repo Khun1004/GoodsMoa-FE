@@ -652,10 +652,10 @@ const SaleDetail = () => {
                                                 alt={`상품 이미지 ${index + 1}`}
                                                 className="person-image-thumbnail"
                                                 onClick={() => onImageClick(imageUrl)} // 클릭 시에도 반영
-                                               /* onMouseEnter={() => {
+                                                onMouseEnter={() => {
                                                     setSelectedImage(imageUrl);
                                                     setSelectedProduct(prod); // ← 이걸 추가해줘야 오른쪽 정보가 바뀜!
-                                                }}*/
+                                                }}
                                                 onError={(e) => {
                                                     e.target.onerror = null;
                                                     e.target.src = placeholderImage;
