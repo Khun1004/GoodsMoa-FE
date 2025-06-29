@@ -151,11 +151,6 @@ const SaleDetail = () => {
         if (contextProfileImage) setProfileImage(contextProfileImage);
     }, [contextProfileImage]);
 
-    useEffect(() => {
-        if (userInfo?.nickname) setUserName(userInfo.nickname);
-        if (userInfo?.profileImage) setProfileImage(userInfo.profileImage);
-    }, [userInfo]);
-
     // 좋아요 상태 가져오기
     useEffect(() => {
         const fetchLikedInfo = async () => {
