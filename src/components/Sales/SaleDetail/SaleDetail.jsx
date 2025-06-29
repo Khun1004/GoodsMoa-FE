@@ -42,10 +42,16 @@ const SaleDetail = () => {
 
     const [userName, setUserName] = useState(
         product?.nickname || "사용자 이름"
-    );
+    )
+
     useEffect(() => {
-        console.log('product ::: ',product);
-    }, []);
+        if (contextProfileImage) setProfileImage(contextProfileImage);
+    }, [contextProfileImage]);
+
+    useEffect(() => {
+        if (userInfo?.nickname) setUserName(userInfo.nickname);
+        if (userInfo?.profileImage) setProfileImage(userInfo.profileImage);
+    }, [userInfo]);
 
     // 좋아요 상태 가져오기
     useEffect(() => {
@@ -159,22 +165,22 @@ const SaleDetail = () => {
 
     const isValidProductImage = () => {
         if (!selectedImage) return false;
-
+    
         // 썸네일 이미지인지 확인 (URL에 'thumbnail'이 포함되어 있는지 체크)
         if (selectedImage.includes('/thumbnail/')) {
             return false;
         }
-
+    
         const selectedFileName = selectedImage.split('/').pop();
         const candidates = product?.products || products || [];
-
+    
         if (candidates.length > 0) {
             return candidates.some(prod => {
                 const prodImage = prod.image || prod.preview || prod.src || "";
                 return prodImage.includes(selectedFileName);
             });
         }
-
+    
         const mainImage = product.image || product.src || "";
         return mainImage.includes(selectedFileName);
     };
@@ -288,7 +294,7 @@ const SaleDetail = () => {
     const handleCancelClick = (productToRemove) => {
         const updatedProducts = wantedProducts.filter(product => product !== productToRemove);
         setWantedProducts(updatedProducts);
-
+        
         // 마지막 상품이 삭제되면 selectedImage와 selectedProduct를 초기화
         if (updatedProducts.length === 0) {
             setSelectedImage(initialSelectedImage || product.src || product.image || null);
@@ -299,18 +305,18 @@ const SaleDetail = () => {
     const increaseQuantity = (product) => {
         // 재고 확인 (selectedProduct.stock 또는 product.stock 사용)
         const stock = selectedProduct.stock || product.stock || Infinity;
-
+        
         // 최대 구매 가능 수량 확인
         const maxQty = Math.min(
             stock,
             product.maxQuantity || product.maxPurchase || 99
         );
-
+    
         if (product.quantity >= maxQty) {
             alert(`${maxQty}개만 구매할 수 있습니다.`);
             return;
         }
-
+    
         setWantedProducts(wantedProducts.map(p =>
             p.id === product.id ? {
                 ...p,
@@ -391,12 +397,12 @@ const SaleDetail = () => {
 
     const isMainProductImage = () => {
         if (!selectedImage || !product) return false;
-
+      
         const mainImage = product.image || product.src || "";
         const selectedFileName = selectedImage.split('/').pop();
-
+        
         return mainImage.includes(selectedFileName);
-    };
+      };
 
     // Placeholder image for when images are missing
     const placeholderImage = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300' viewBox='0 0 300 300'%3E%3Crect width='300' height='300' fill='%23f0f0f0'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial' font-size='24' fill='%23999999'%3E이미지 없음%3C/text%3E%3C/svg%3E";
@@ -434,7 +440,7 @@ const SaleDetail = () => {
 
                     {/* Person Right */}
                     <div className='person-right'>
-                        <div className="person-profile">
+                     <div className="person-profile">
                             <label className="person-user-profile">
                                 {profileImage ? (
                                     <img
@@ -458,7 +464,7 @@ const SaleDetail = () => {
                         </h1>
 
                         <div className="person-info">
-                            <p className="person-sale-period">
+                        <p className="person-sale-period">
                                 판매기간: {
                                 product.isPermanent
                                     ? "상시판매"
@@ -468,9 +474,8 @@ const SaleDetail = () => {
                             }
                             </p>
                             <p className="person-category">카테고리: {category || product.category || "미정"}</p>
-                            <p className='person-products'>상품명: {selectedProduct.name || product.name || "상품명"}</p>
+                            <p className='person-products'>상품명: {selectedProduct.name || "상품명"}</p>
                             <p className="person-price">가격: {formatPrice(selectedProduct.price || product.price)} 원</p>
-
                             <p className="person-stock">
                                 재고: {
                                 selectedProduct.quantity !== undefined ? selectedProduct.quantity :
@@ -480,8 +485,9 @@ const SaleDetail = () => {
                                     selectedProduct.maxPurchase ? ` / ${selectedProduct.maxPurchase}` : ""
                             }
                             </p>
-
-
+                            <p className="view-count">조회수 : {product.views || 0}</p>
+                            
+                            
                         </div>
 
                         {/* Tags Section */}
@@ -511,47 +517,47 @@ const SaleDetail = () => {
                         <div className="personImageFrameRight">
                             {Array.isArray(product.products) && product.products.length > 0 ? (
                                 product.products.map((prod, index) => {
-                                    const thumbnailSrc = prod.image || prod.preview || prod.src;
+                                const thumbnailSrc = prod.image || prod.preview || prod.src;
 
-                                    if (!thumbnailSrc) return null;
+                                if (!thumbnailSrc) return null;
 
-                                    return (
-                                        <div key={index} className="thumbnail-container">
-                                            <img
-                                                src={thumbnailSrc.startsWith('http') ? thumbnailSrc : `${API_BASE_URL}/${thumbnailSrc}`}
-                                                alt={`상품 이미지 ${index + 1}`}
-                                                className="person-image-thumbnail"
-                                                onClick={() => onImageClick(thumbnailSrc.startsWith('http') ? thumbnailSrc : `${API_BASE_URL}/${thumbnailSrc}`)}
-                                                onError={(e) => {
-                                                    e.target.onerror = null;
-                                                    e.target.src = placeholderImage;
-                                                }}
-                                            />
-                                            <p className="product-name">{prod.name || `상품 ${index + 1}`}</p>
-                                        </div>
-                                    );
+                                return (
+                                    <div key={index} className="thumbnail-container">
+                                    <img
+                                        src={thumbnailSrc.startsWith('http') ? thumbnailSrc : `${API_BASE_URL}/${thumbnailSrc}`}
+                                        alt={`상품 이미지 ${index + 1}`}
+                                        className="person-image-thumbnail"
+                                        onClick={() => onImageClick(thumbnailSrc.startsWith('http') ? thumbnailSrc : `${API_BASE_URL}/${thumbnailSrc}`)}
+                                        onError={(e) => {
+                                        e.target.onerror = null;
+                                        e.target.src = placeholderImage;
+                                        }}
+                                    />
+                                    <p className="product-name">{prod.name || `상품 ${index + 1}`}</p>
+                                    </div>
+                                );
                                 })
                             ) : product.image ? (
                                 <div className="thumbnail-container">
-                                    <img
-                                        src={product.image.startsWith('http') ? product.image : `${API_BASE_URL}/${product.image}`}
-                                        alt="상품 이미지"
-                                        className="person-image-thumbnail"
-                                        onClick={() => onImageClick(product.image.startsWith('http') ? product.image : `${API_BASE_URL}/${product.image}`)}
-                                        onError={(e) => {
-                                            e.target.onerror = null;
-                                            e.target.src = placeholderImage;
-                                        }}
-                                    />
-                                    <p className="product-name">{product.name || "상품"}</p>
+                                <img
+                                    src={product.image.startsWith('http') ? product.image : `${API_BASE_URL}/${product.image}`}
+                                    alt="상품 이미지"
+                                    className="person-image-thumbnail"
+                                    onClick={() => onImageClick(product.image.startsWith('http') ? product.image : `${API_BASE_URL}/${product.image}`)}
+                                    onError={(e) => {
+                                    e.target.onerror = null;
+                                    e.target.src = placeholderImage;
+                                    }}
+                                />
+                                <p className="product-name">{product.name || "상품"}</p>
                                 </div>
                             ) : (
                                 <div className="thumbnail-container">
-                                    <img src={placeholderImage} alt="이미지 없음" className="person-image-thumbnail" />
-                                    <p className="product-name">이미지 없음</p>
+                                <img src={placeholderImage} alt="이미지 없음" className="person-image-thumbnail" />
+                                <p className="product-name">이미지 없음</p>
                                 </div>
                             )}
-                        </div>
+                            </div>
                     </div>
                 </div>
             </div>
@@ -627,13 +633,13 @@ const SaleDetail = () => {
                             alert("구매할 상품을 먼저 추가해 주세요.");
                             return;
                         }
-                        navigate('/purchase', {
-                            state: {
-                                wantedProducts,
-                                saleLabel,
-                                shippingMethods,
-                                product: location.state?.product
-                            }
+                        navigate('/purchase', { 
+                            state: { 
+                                wantedProducts, 
+                                saleLabel, 
+                                shippingMethods, 
+                                product: location.state?.product 
+                            } 
                         });
                     }}
                     // disabled={wantedProducts.length === 0} // 주석 처리 또는 제거
@@ -710,7 +716,7 @@ const SaleDetail = () => {
                                               <span className="person-review-rating">
                                                 {"★".repeat(Math.round(review.rating)) + "☆".repeat(5 - Math.round(review.rating))}
                                               </span>
-                                                <span className="person-review-date">
+                                                                                    <span className="person-review-date">
                                                 {new Date(review.createdAt).toLocaleDateString()}
                                               </span>
                                             </div>

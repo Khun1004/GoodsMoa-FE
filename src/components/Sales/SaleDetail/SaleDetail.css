@@ -8,14 +8,14 @@
     display: flex;
     background: white;
     overflow: hidden;
-    width: 800px;
+    width: 1200px;
     max-width: 90%;
 }
 
 .person-left {
     width: 100%;
     background: #fff;
-    padding: 16px;
+    padding: 12px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -31,8 +31,8 @@
 }
 
 .personImageFrameLeft img {
-    width: 100%;
-    max-width: 500px;
+    width: 450px;
+    max-width: 600px;
     height: auto;
     border-radius: 12px;
     border: 1px solid black;
@@ -58,9 +58,12 @@
 .personImageFrameRight {
     display: flex;
     flex-wrap: wrap;
-    justify-content: flex-start;
     gap: 15px;
     margin-top: 20px;
+    width: 100%;
+    justify-content: flex-start;
+    align-items: center;
+    overflow: visible;
 }
 
 .needORlike {
@@ -88,13 +91,13 @@
 
 .person-username {
     font-size: 25px;
-    color: #474545;
+    color: #000000;
     margin-top: 20px;
 }
 
 .person-right {
     width: 100%;
-    padding: 24px;
+    padding: 12px;
     display: flex;
     flex-direction: column;
 }
@@ -175,13 +178,15 @@
     padding-bottom: 10px;
 }
 
+
 .person-image-thumbnail {
-    width: 80px;
-    height: 80px;
+    width: 100px;
+    height: 100px;
     object-fit: cover;
     border-radius: 8px;
     border: 1px solid black;
     cursor: pointer;
+    flex-shrink: 0;   
     transition: transform 0.2s ease-in-out;
 }
 
@@ -666,16 +671,16 @@ button {
         flex-direction: column;
         gap: 10px;
     }
-
+    
     .person-review-rating-date {
         align-items: flex-start;
         width: 100%;
     }
-
+    
     .person-review-images {
         justify-content: center;
     }
-
+    
     .person-review-image {
         width: 80px;
         height: 80px;
@@ -803,3 +808,9 @@ button {
 .person-container .sale-like-button.liked {
     color: red;
 }
+
+.view-count{
+    font-size: 18px; /* 14px */
+    color: #555555; /* 회색 계열 */
+    margin-top: 10px;
+  }
