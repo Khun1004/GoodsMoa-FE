@@ -82,22 +82,44 @@ const DemandFormManagement = () => {
     }
   };
 
+  const getCategoryName = (id) => {
+    const map = {
+      1: "애니메이션", 2: "아이돌", 3: "순수창작", 4: "게임",
+      5: "영화", 6: "드라마", 7: "웹소설", 8: "웹툰"
+    };
+    return map[id] || "";
+  };
+
+  const getCategoryId = (name) => {
+    const map = {
+      "애니메이션": 1,
+      "아이돌": 2,
+      "순수창작": 3,
+      "게임": 4,
+      "영화": 5,
+      "드라마": 6,
+      "웹소설": 7,
+      "웹툰": 8
+    };
+    return map[name] || null;
+  };
 
   const handleConvert = async (id) => {
     try {
       const res = await api.post(`/demand/convert/${id}`, {}, { withCredentials: true });
       const data = res.data;
       const imageUrl = getFullImageUrl(data.imageUrl);
-      const productImageUrls = (data.products || []).map(prod => getFullImageUrl(prod.imageUrl));
+      const categoryName = getCategoryName(data.category);
+      const categoryId = getCategoryId(categoryName);
 
       navigate('/saleform', {
         state: {
-          from: 'demand',
+          from: 'management',
           image: imageUrl,
-          productImageUrls,
           title: data.title,
           description: data.description,
-          category: getCategoryName(data.category),
+          category: categoryName,
+          categoryId: categoryId,
           hashtag: (data.hashtag || '').split(',').map(t => t.trim()).filter(Boolean),
           products: (data.products || []).map((prod, i) => ({
             id: `temp_${i + 1}`,
@@ -122,14 +144,6 @@ const DemandFormManagement = () => {
     } catch (err) {
       alert("판매글 변환 실패: " + (err.response?.data?.message || err.message));
     }
-  };
-
-  const getCategoryName = (id) => {
-    const map = {
-      1: "애니메이션", 2: "아이돌", 3: "순수창작", 4: "게임",
-      5: "영화", 6: "드라마", 7: "웹소설", 8: "웹툰"
-    };
-    return map[id] || "";
   };
 
   const handleDelete = async (id) => {
@@ -179,7 +193,20 @@ const DemandFormManagement = () => {
                   actionButtons={
                     <>
                       <ActionButton variant="pull" onClick={(e) => { handlePull(form.id); }}>끌어올림</ActionButton>
-                      <ActionButton variant="edit" onClick={(e) => { }}>수정</ActionButton>
+                      <ActionButton
+                          variant="edit"
+                          onClick={() => {
+                            navigate('/demandform', {
+                              state: {
+                                isEdit: true,
+                                formData: form
+                              }
+                            });
+                          }}
+                      >
+                        수정
+                      </ActionButton>
+
                       <ActionButton variant="convert" onClick={(e) => { handleConvert(form.id); }}>판매글 변환</ActionButton>
                       <ActionButton variant="delete" onClick={(e) => { handleDelete(form.id); }}>삭제</ActionButton>
                     </>
