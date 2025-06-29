@@ -24,9 +24,9 @@ const SaleFormManagement = () => {
     const [selectedForm, setSelectedForm] = useState(null);
     const [viewMode, setViewMode] = useState('list');
     const [confirmDelete, setConfirmDelete] = useState(null);
-    const [activeTab, setActiveTab] = useState('상세 정보');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [detailLoading, setDetailLoading] = useState(false);
 
     // 헬퍼 함수들은 원본 그대로 유지
     const getImageExtension = (img) => {
@@ -56,12 +56,16 @@ const SaleFormManagement = () => {
         hashtag: form.hashtag || '',
         category: form.category?.name || form.category || null,
         categoryId: form.categoryId || null,
+        categoryName: form.categoryName || form.category?.name || form.category || null,
+        productCount: Array.isArray(form.products) ? form.products.length : 0,
         products: Array.isArray(form.products) ? form.products.map((product, pIndex) => ({ id: product.id || `temp_${Date.now()}_${pIndex}`, name: product.name || '상품 이름 없음', price: Number(product.price) || 0, quantity: Number(product.quantity) || 0, maxQuantity: Number(product.maxQuantity) || 1, image: product.image || null, images: product.image ? [product.image] : [], imageUpdated: product.imageUpdated || false, })) : [],
         delivers: Array.isArray(form.delivers) ? form.delivers.map(method => ({ id: method.id || null, name: method.name || '택배', price: Number(method.price) || 3000, })) : [{ name: '택배', price: 3000 }],
         contentImages: form.contentImages || [],
         user: form.user || { id: null, name: localStorage.getItem('userName') || '판매자' },
     });
     
+
+
     useEffect(() => {
         const fetchUserForms = async () => {
             setLoading(true);
@@ -93,13 +97,17 @@ const SaleFormManagement = () => {
     };
 
     const handleFormClick = (form) => {
-        setSelectedForm(form);
-        setViewMode('detail');
-    };
-
-    const handleBackToList = () => {
-        setViewMode('list');
-        setSelectedForm(null);
+        if (!form || !form.id) return;
+        const transformImage = (img) => (typeof img === 'string' && (img.startsWith('http') || img.startsWith('blob:'))) ? img : (typeof img === 'object' && img.preview ? img : img);
+        navigate(`/saledetail/${form.id}`, {
+            state: {
+                from: 'management', postId: form.id, title: form.title, category: form.category || '', description: form.content, image: transformImage(form.thumbnailImage, form.id),
+                hashtag: typeof form.hashtag === 'string' ? form.hashtag.split(',').filter(tag => tag.trim()) : (Array.isArray(form.hashtag) ? form.hashtag : []),
+                shippingMethods: form.delivers,
+                products: form.products.map((product, index) => ({ ...product, image: transformImage(product.image, form.id, true, index), images: product.image ? [transformImage(product.image, form.id, true, index)] : [], isExisting: !String(form.id).startsWith('temp_'), imageUpdated: false, })),
+                isPublic: form.isPublic, privateCode: form.password, start_time: form.startTime, end_time: form.endTime, isPermanent: form.isPermanent, contentImages: form.contentImages || [],
+            },
+        });
     };
 
     const handleEdit = (form) => {
@@ -147,92 +155,93 @@ const SaleFormManagement = () => {
     // ManagementPageLayout이 로딩, 에러, 빈 배열 상태를 모두 관리.
     return (
         <ManagementPageLayout
-            pageTitle="판매 폼 관리"
-            isLoading={loading}
-            error={error}
-            data={forms}
-            emptyStateProps={{
-                title: "등록된 판매 폼이 없습니다", description: "새로운 판매 폼을 만들어서 상품을 판매해보세요!", buttonText: "새 판매 폼 만들기", onButtonClick: () => navigate('/saleform'),
-            }}
+            pageTitle="판매 폼 관리" isLoading={loading} error={error} data={forms}
+            emptyStateProps={{ title: "등록된 판매 폼이 없습니다", description: "새로운 판매 폼을 만들어서 상품을 판매해보세요!", buttonText: "새 판매 폼 만들기", onButtonClick: () => navigate('/saleform') }}
         >
             {viewMode === 'list' ? (
-                // ----------------- 🖥️ 목록 뷰 -----------------
                 <div className="management-grid">
-                    {forms.map((form) => {
-                        const statusProps = form.isPublic ? { type: 'public', icon: <Eye size={14} />, text: '공개' } : { type: 'private', icon: <Lock size={14} />, text: '비공개' };
-                        const badges = [{ icon: <Package size={14} />, text: form.category || '미분류' }, { icon: <Calendar size={14} />, text: form.isPermanent ? '상시' : '기간' }];
-                        return (
-                            <ManagementCard
-                                key={form.id} item={form} statusType={statusProps.type} statusIcon={statusProps.icon} statusText={statusProps.text} badges={badges}
-                                footerText={`상품 ${form.products?.length || 0}개`}
-                                onCardClick={() => handleFormClick(form)}
-                                actionButtons={
-                                    <>
-                                        <ActionButton variant="edit" onClick={() => handleEdit(form)}><Edit2 size={16} /></ActionButton>
-                                        <ActionButton variant="delete" onClick={() => handleDelete(form)}>{confirmDelete === form.id ? '확인' : <Trash2 size={16} />}</ActionButton>
-                                    </>
-                                }
-                            />
-                        );
-                    })}
+                    {forms.map((form) => (
+                        <ManagementCard
+                            key={form.id} item={form}
+                            statusType={form.isPublic ? 'public' : 'private'}
+                            statusIcon={form.isPublic ? <Eye size={14} /> : <Lock size={14} />}
+                            statusText={form.isPublic ? '공개' : '비공개'}
+                            badges={
+                                [  { icon: <Package size={14} />, text: form.categoryName || '미분류' },
+                                    { icon: <Calendar size={14} />, text: (form.startTime && form.endTime) ? `${formatDate(form.startTime)} ~ ${formatDate(form.endTime)}` : (form.isPermanent ? '상시' : '기간') }
+                                  ]}
+                            footerText={`상품 ${form.productCount}개`}
+                            onCardClick={() => handleFormClick(form)}
+                            actionButtons={
+                                <>
+                                    <ActionButton variant="edit" onClick={() => handleEdit(form)}>수정하기</ActionButton>
+                                    <ActionButton variant="delete" onClick={() => handleDelete(form)}>{confirmDelete === form.id ? '확인' : '삭제하기' }</ActionButton>
+                                </>
+                            }
+                        />
+                    ))}
                 </div>
             ) : (
-                // ----------------- 🔎 상세 뷰 -----------------
-                selectedForm && (
+                detailLoading ? (
+                    <div className="loading-container"><div className="loading-spinner"></div></div>
+                ) : selectedForm && (
                     <DetailView
                         onBack={handleBackToList}
                         headerActions={
                             <>
                                 <ActionButton variant="edit" onClick={() => handleEdit(selectedForm)}><Edit2 size={16} /> 수정하기</ActionButton>
-                                <ActionButton variant="delete" onClick={() => handleDelete(selectedForm)}><Trash2 size={16} />{confirmDelete === selectedForm.id ? '삭제 확인' : '삭제하기'}</ActionButton>
+                                <ActionButton variant="delete" onClick={() => handleDelete(selectedForm)}>{confirmDelete === selectedForm.id ? '삭제 확인' : '삭제하기'}</ActionButton>
                             </>
                         }
                     >
                         <SectionCard>
                            <div className="saleFormManage-detail-main">
                                 <div className="saleFormManage-detail-image">
-                                    <img src={getImageSrc(selectedForm.thumbnailImage, selectedForm.id)} alt={selectedForm.title} className="saleFormManage-detail-thumbnail"/>
+                                    <img src={getImageSrc(selectedForm.thumbnailImage)} alt={selectedForm.title} className="saleFormManage-detail-thumbnail"/>
                                 </div>
                                 <div className="saleFormManage-detail-info">
                                    <h1 className="saleFormManage-detail-title">{selectedForm.title}</h1>
                                    <div className="saleFormManage-detail-badges">
-                                        {/* ▼ [완성] 상세 뷰의 뱃지 데이터 매핑 */}
-                                        {selectedForm.category && <span className="saleFormManage-badge badge-category"><Package size={14} />{selectedForm.category}</span>}
-                                        <span className={`saleFormManage-badge ${selectedForm.isPublic ? 'badge-public' : 'badge-private'}`}>{selectedForm.isPublic ? <Eye size={14} /> : <Lock size={14} />}{selectedForm.isPublic ? '공개' : '비공개'}</span>
-                                        <span className="saleFormManage-badge badge-date"><Calendar size={14} />{selectedForm.isPermanent ? '상시판매' : `${formatDate(selectedForm.startTime)} ~ ${formatDate(selectedForm.endTime)}`}</span>
+                                        {/* ▼ [DTO 매칭] categoryName을 직접 사용하도록 수정 */}
+                                        {selectedForm.categoryName && <span className="saleFormManage-badge badge-category"><Package size={14} />{selectedForm.categoryName}</span>}
+                                        
+                                        <span className={`saleFormManage-badge ${selectedForm.isPublic === true ? 'badge-public' : 'badge-private'}`}>{selectedForm.isPublic === true ? <Eye size={14} /> : <Lock size={14} />}{selectedForm.isPublic === true ? '공개' : '비공개'}</span>
+                                        
+                                        {/* ▼ [DTO 매칭] isPermanent 필드 대신 startTime 유무로 '상시판매' 여부 판단 */}
+                                        <span className="saleFormManage-badge badge-date"><Calendar size={14} />{!selectedForm.startTime ? '상시판매' : `${formatDate(selectedForm.startTime)} ~ ${formatDate(selectedForm.endTime)}`}</span>
                                    </div>
-                                   {!selectedForm.isPublic && selectedForm.password && ( <div className="saleFormManage-password-notice"><Lock size={16} /><span>비공개 코드: <code>{selectedForm.password}</code></span></div> )}
+                                   {/* ▼ [DTO 매칭] DTO에 password 필드가 없으므로 관련 UI 제거 */}
                                 </div>
                             </div>
                         </SectionCard>
-                        <SectionCard title="상세 설명"><div dangerouslySetInnerHTML={{ __html: selectedForm.content || "내용 없음" }} /></SectionCard>
+                        
+                        <SectionCard title="상세 설명"><div dangerouslySetInnerHTML={{ __html: selectedForm.content || "작성된 설명이 없습니다." }} /></SectionCard>
+                        
                         <div className="saleFormManage-info-grid">
                             <SectionCard title="배송 정보" icon={<Truck size={20}/>}>
                                 <div className="saleFormManage-delivery-list">
-                                    {selectedForm.delivers?.map((method, index) => ( <div key={index} className="saleFormManage-delivery-item"><span>{method.name || '택배'}</span><span>{Number(method.price || 0).toLocaleString()}원</span></div> ))}
+                                    {selectedForm.delivers?.length > 0 ? selectedForm.delivers.map((method, index) => (<div key={method.id || index} className="saleFormManage-delivery-item"><span>{method.name || '택배'}</span><span>{Number(method.price || 0).toLocaleString()}원</span></div>)) : <p>설정된 배송 방법이 없습니다.</p>}
                                 </div>
                             </SectionCard>
                             <SectionCard title="태그" icon={<Hash size={20}/>}>
                                 <div className="saleFormManage-hashtag-list">
-                                    {/* ▼ [완성] 상세 뷰의 태그 데이터 매핑 */}
-                                    {parseHashtags(selectedForm.hashtag).length > 0 ? ( parseHashtags(selectedForm.hashtag).map((tag, index) => ( <span key={index} className="saleFormManage-hashtag">#{tag}</span> ))) 
-                                    : ( <span className="saleFormManage-no-tags">등록된 태그가 없습니다</span> )}
+                                    {parseHashtags(selectedForm.hashtag).length > 0 ? (parseHashtags(selectedForm.hashtag).map((tag, index) => ( <span key={index} className="saleFormManage-hashtag">#{tag}</span> ))) : ( <span className="saleFormManage-no-tags">등록된 태그가 없습니다</span> )}
                                 </div>
                             </SectionCard>
                         </div>
-                        <SectionCard title={`판매 상품 (${selectedForm.products?.length || 0}개)`}>
+
+                        <SectionCard title={`등록 상품 (${selectedForm.products?.length || 0}개)`}>
                             <div className="saleFormManage-products-grid">
-                               {selectedForm.products?.map((product, index) => (
-                                    // ▼ [완성] 상세 뷰의 상품 카드 데이터 매핑
+                               {selectedForm.products?.length > 0 ? selectedForm.products.map((product, index) => (
                                     <div key={product.id || index} className="saleFormManage-product-card">
-                                        {product.image && ( <div className="saleFormManage-product-image"><img src={getImageSrc(product.image, selectedForm.id, true, index)} alt={product.name} className="saleFormManage-product-img"/></div> )}
+                                        {product.image && ( <div className="saleFormManage-product-image"><img src={getImageSrc(product.image)} alt={product.name} className="saleFormManage-product-img"/></div> )}
                                         <div className="saleFormManage-product-info">
                                             <h3 className="saleFormManage-product-name">{product.name || '상품 이름 없음'}</h3>
                                             <p className="saleFormManage-product-price">{product.price ? `${Number(product.price).toLocaleString()}원` : '가격 미정'}</p>
                                             <div className="saleFormManage-product-stock"><span>재고: {product.quantity || 0}개</span><span>최대 {product.maxQuantity || 1}개</span></div>
                                         </div>
                                     </div>
-                               ))}
+                               )) : <p>등록된 상품이 없습니다.</p>}
                             </div>
                         </SectionCard>
                     </DetailView>
