@@ -166,7 +166,7 @@ const Demand = ({ showBanner = true }) => {
                             }}
                         />
                         <Category
-                            gap={90}
+                            gap={60}
                             selectedId={category}
                             onCategoryClick={(id) => {
                                 setCategory(id);
