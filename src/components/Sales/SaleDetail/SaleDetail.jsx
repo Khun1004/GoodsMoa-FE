@@ -16,6 +16,10 @@ const SaleDetail = () => {
     const [liked, setLiked] = useState({});
     const [likedInfo, setLikedInfo] = useState(null);
     const [likeError, setLikeError] = useState(null);
+
+    const [ddescription, setDdescription] = useState( "");
+    const [sellerId, setSellerId] = useState(null);
+    const [fetchedProducts, setFetchedProducts] = useState([]);
     const {
         product,
         products = [],
@@ -43,6 +47,105 @@ const SaleDetail = () => {
     const [userName, setUserName] = useState(
         product?.nickname || "사용자 이름"
     )
+
+    useEffect(() => {
+        if (!product?.id) return;
+
+        const fetchProductDetail = async () => {
+            try {
+                const response = await fetch(`http://localhost:8080/product/post-detail/${product.id}`, {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                if (!response.ok) {
+                    console.error("❌ 상품글 상세 조회 실패 (status:", response.status, ")");
+                    return;
+                }
+
+                const data = await response.json();
+                console.log("✅ 상품 상세 조회 성공! 응답 데이터:", data);
+                setSellerId(data.userId); // 여기서 저장!!
+
+                setDdescription(data.content);
+                if (data.products) {
+                    setFetchedProducts(data.products); // ← 네가 따로 만든 상태
+                    setSelectedProduct(data.products[0] || {});
+                    setSelectedImage(data.products[0]?.image || null);
+
+                }
+
+                if (data.delivers) {
+                    console.log("🚚 배송방식(delivers):", data.delivers);
+                }
+
+                if (data.categoryName) {
+                    setCategory(data.categoryName);
+                }
+
+            } catch (err) {
+                console.error("❌ 상품 상세 조회 중 에러 발생:", err);
+            }
+        };
+
+        fetchProductDetail();
+    }, [product?.id]);
+
+
+
+    useEffect(() => {
+        // 상품 ID가 없으면 실행 안 함
+        if (!product?.id) return;
+
+        const fetchProductDetail = async () => {
+            console.log("📦 상품 상세 정보 조회 시작됨 (id:", product.id, ")");
+
+            try {
+                // fetch로 상품 상세 정보 조회 요청
+                const response = await fetch(`http://localhost:8080/product/post-detail/${product.id}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                // 응답이 성공인지 확인
+                if (!response.ok) {
+                    console.error("❌ 상품글 상세 조회 실패 (status:", response.status, ")");
+                    return;
+                }
+
+                // JSON 파싱
+                const data = await response.json();
+                console.log("✅ 상품 상세 조회 성공! 응답 데이터:", data);
+
+                // product 안의 하위 상품들 덮어쓰기
+                if (data.products) {
+                    setSelectedProduct(data.products[0] || {});  // 첫 번째 상품으로 기본 설정
+                    setSelectedImage(data.products[0]?.image || null);  // 대표 이미지도 세팅
+                    console.log("📷 대표 이미지 설정:", data.products[0]?.image);
+                }
+
+                // 배송 방식 업데이트
+                if (data.delivers) {
+                    console.log("🚚 배송방식(delivers) 정보 업데이트:", data.delivers);
+                    // shippingMethods 상태 따로 관리 중이면 여기에 setShippingMethods(data.delivers);
+                }
+
+                // 카테고리 업데이트
+                if (data.categoryName) {
+                    console.log("📂 카테고리 업데이트:", data.categoryName);
+                    setCategory(data.categoryName);
+                }
+
+            } catch (err) {
+                console.error("❌ 상품 상세 조회 중 에러 발생:", err);
+            }
+        };
+
+        fetchProductDetail();
+    }, [product?.id]);
+
 
     useEffect(() => {
         if (contextProfileImage) setProfileImage(contextProfileImage);
@@ -164,26 +267,42 @@ const SaleDetail = () => {
     };
 
     const isValidProductImage = () => {
-        if (!selectedImage) return false;
-    
-        // 썸네일 이미지인지 확인 (URL에 'thumbnail'이 포함되어 있는지 체크)
-        if (selectedImage.includes('/thumbnail/')) {
+
+
+        if (!selectedImage) {
+
             return false;
         }
-    
-        const selectedFileName = selectedImage.split('/').pop();
-        const candidates = product?.products || products || [];
-    
-        if (candidates.length > 0) {
-            return candidates.some(prod => {
-                const prodImage = prod.image || prod.preview || prod.src || "";
-                return prodImage.includes(selectedFileName);
-            });
+
+        if (selectedImage.includes('/thumbnail/')) {
+
+            return false;
         }
-    
+
+        const selectedFileName = selectedImage.split('/').pop();
+
+
+        const candidates = fetchedProducts.length > 0
+            ? fetchedProducts
+            : (product?.products || products || []);
+
+        if (candidates.length > 0) {
+            const match = candidates.some(prod => {
+                const prodImage = prod.image || prod.preview || prod.src || "";
+                const match = prodImage.includes(selectedFileName);
+
+                return match;
+            });
+            console.log("✅ 매칭 결과:", match);
+            return match;
+        }
+
         const mainImage = product.image || product.src || "";
-        return mainImage.includes(selectedFileName);
+        const match = mainImage.includes(selectedFileName);
+        console.log(`🖼️ 메인이미지 검사: ${mainImage} vs ${selectedFileName} → ${match}`);
+        return match;
     };
+
 
     useEffect(() => {
         if (from === 'saleForm' && product.products) {
@@ -203,28 +322,29 @@ const SaleDetail = () => {
     // 채팅 실행하는 메서드
     const handleChatClick = async () => {
         console.log("✅ handleChatClick 호출됨");
-        // 실제 데이터 구조에 맞게 판매자 ID 추출
-        const sellerId = product?.sellerId || product?.userId;
+
+        // 여기서 상태값 sellerId 를 직접 사용하거나, 복사해서 씀
+        const currentSellerId = sellerId;
+
         if (!userInfo) {
             alert("로그인이 필요합니다.");
             return;
         }
-        if (!sellerId) {
+        if (!currentSellerId) {
             alert("판매자 정보가 없습니다.");
             return;
         }
-        if (userInfo.id === sellerId) {
+        if (userInfo.id === currentSellerId) {
             alert("자기 자신과는 채팅할 수 없습니다.");
             return;
         }
 
-        // 채팅방 생성 요청 (title 필드 없이)
         const res = await fetch("http://localhost:8080/chatroom/create", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-                buyerId: userInfo.id,   // 구매자 ID
-                sellerId: sellerId      // 판매자 ID
+                buyerId: userInfo.id,
+                sellerId: currentSellerId,
             }),
             credentials: "include"
         });
@@ -233,13 +353,13 @@ const SaleDetail = () => {
             const roomData = await res.json();
             window.open(`/chat-app?roomId=${roomData.id}`, "_blank", "width=1000,height=800,resizable=yes");
         } else if (res.status === 409) {
-            // 이미 채팅방이 존재하는 경우(중복)
             const roomData = await res.json();
             window.open(`/chat-app?roomId=${roomData.id}`, "_blank", "width=1000,height=800,resizable=yes");
         } else {
             alert("채팅방 생성에 실패했습니다.");
         }
     };
+
 
     const onImageClick = (image) => {
         setSelectedImage(image);
@@ -294,7 +414,7 @@ const SaleDetail = () => {
     const handleCancelClick = (productToRemove) => {
         const updatedProducts = wantedProducts.filter(product => product !== productToRemove);
         setWantedProducts(updatedProducts);
-        
+
         // 마지막 상품이 삭제되면 selectedImage와 selectedProduct를 초기화
         if (updatedProducts.length === 0) {
             setSelectedImage(initialSelectedImage || product.src || product.image || null);
@@ -305,18 +425,18 @@ const SaleDetail = () => {
     const increaseQuantity = (product) => {
         // 재고 확인 (selectedProduct.stock 또는 product.stock 사용)
         const stock = selectedProduct.stock || product.stock || Infinity;
-        
+
         // 최대 구매 가능 수량 확인
         const maxQty = Math.min(
             stock,
             product.maxQuantity || product.maxPurchase || 99
         );
-    
+
         if (product.quantity >= maxQty) {
             alert(`${maxQty}개만 구매할 수 있습니다.`);
             return;
         }
-    
+
         setWantedProducts(wantedProducts.map(p =>
             p.id === product.id ? {
                 ...p,
@@ -397,17 +517,21 @@ const SaleDetail = () => {
 
     const isMainProductImage = () => {
         if (!selectedImage || !product) return false;
-      
+
         const mainImage = product.image || product.src || "";
         const selectedFileName = selectedImage.split('/').pop();
-        
+
         return mainImage.includes(selectedFileName);
       };
 
     // Placeholder image for when images are missing
     const placeholderImage = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300' viewBox='0 0 300 300'%3E%3Crect width='300' height='300' fill='%23f0f0f0'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial' font-size='24' fill='%23999999'%3E이미지 없음%3C/text%3E%3C/svg%3E";
 
+
+
+
     return (
+
         <div className='container'>
             <div className="person-container">
                 <div className="person-product-card">
@@ -440,7 +564,7 @@ const SaleDetail = () => {
 
                     {/* Person Right */}
                     <div className='person-right'>
-                     <div className="person-profile">
+                        <div className="person-profile">
                             <label className="person-user-profile">
                                 {profileImage ? (
                                     <img
@@ -452,7 +576,7 @@ const SaleDetail = () => {
                                         }}
                                     />
                                 ) : (
-                                    <CgProfile className="personProfile-icon" />
+                                    <CgProfile className="personProfile-icon"/>
                                 )}
                             </label>
                             <span className="person-username">
@@ -464,7 +588,7 @@ const SaleDetail = () => {
                         </h1>
 
                         <div className="person-info">
-                        <p className="person-sale-period">
+                            <p className="person-sale-period">
                                 판매기간: {
                                 product.isPermanent
                                     ? "상시판매"
@@ -481,13 +605,12 @@ const SaleDetail = () => {
                                 selectedProduct.quantity !== undefined ? selectedProduct.quantity :
                                     selectedProduct.stock !== undefined ? selectedProduct.stock : "무제한"
                             } {
-                                selectedProduct.maxQuantity ? ` / ${selectedProduct.maxQuantity}` :
-                                    selectedProduct.maxPurchase ? ` / ${selectedProduct.maxPurchase}` : ""
+
                             }
                             </p>
                             <p className="view-count">조회수 : {product.views || 0}</p>
-                            
-                            
+
+
                         </div>
 
                         {/* Tags Section */}
@@ -505,59 +628,67 @@ const SaleDetail = () => {
 
                         <div className='person-button'>
                             <span className='person-report' onClick={handleReportClick}>
-                                <AiFillAlert className='report-icon' /> 신고하기
+                                <AiFillAlert className='report-icon'/> 신고하기
                             </span>
-                            <div style={{ display: 'flex', alignItems: 'center' }}>
+                            <div style={{display: 'flex', alignItems: 'center'}}>
                                 <button className="person-chatting" onClick={handleChatClick}>채팅하기</button>
-                                <LikeButton postId={product.id} liked={liked} handleLike={handleLike} />
+                                <LikeButton postId={product.id} liked={liked} handleLike={handleLike}/>
                             </div>
                         </div>
 
                         {/* Thumbnail Image List */}
                         <div className="personImageFrameRight">
-                            {Array.isArray(product.products) && product.products.length > 0 ? (
-                                product.products.map((prod, index) => {
-                                const thumbnailSrc = prod.image || prod.preview || prod.src;
+                            {Array.isArray(fetchedProducts) && fetchedProducts.length > 0 ? (
+                                fetchedProducts.map((prod, index) => {
+                                    const thumbnailSrc = prod.image || prod.preview || prod.src;
+                                    if (!thumbnailSrc) return null;
 
-                                if (!thumbnailSrc) return null;
+                                    const imageUrl = thumbnailSrc.startsWith('http') ? thumbnailSrc : `${API_BASE_URL}/${thumbnailSrc}`;
 
-                                return (
-                                    <div key={index} className="thumbnail-container">
-                                    <img
-                                        src={thumbnailSrc.startsWith('http') ? thumbnailSrc : `${API_BASE_URL}/${thumbnailSrc}`}
-                                        alt={`상품 이미지 ${index + 1}`}
-                                        className="person-image-thumbnail"
-                                        onClick={() => onImageClick(thumbnailSrc.startsWith('http') ? thumbnailSrc : `${API_BASE_URL}/${thumbnailSrc}`)}
-                                        onError={(e) => {
-                                        e.target.onerror = null;
-                                        e.target.src = placeholderImage;
-                                        }}
-                                    />
-                                    <p className="product-name">{prod.name || `상품 ${index + 1}`}</p>
-                                    </div>
-                                );
+                                    return (
+                                        <div key={index} className="thumbnail-container">
+                                            <img
+                                                src={imageUrl}
+                                                alt={`상품 이미지 ${index + 1}`}
+                                                className="person-image-thumbnail"
+                                                onClick={() => onImageClick(imageUrl)} // 클릭 시에도 반영
+                                               /* onMouseEnter={() => {
+                                                    setSelectedImage(imageUrl);
+                                                    setSelectedProduct(prod); // ← 이걸 추가해줘야 오른쪽 정보가 바뀜!
+                                                }}*/
+                                                onError={(e) => {
+                                                    e.target.onerror = null;
+                                                    e.target.src = placeholderImage;
+                                                }}
+                                            />
+                                            <p className="product-name">{prod.name || `상품 ${index + 1}`}</p>
+                                        </div>
+                                    );
                                 })
                             ) : product.image ? (
+                                // 기존 product.image만 있는 경우도 처리 유지
                                 <div className="thumbnail-container">
-                                <img
-                                    src={product.image.startsWith('http') ? product.image : `${API_BASE_URL}/${product.image}`}
-                                    alt="상품 이미지"
-                                    className="person-image-thumbnail"
-                                    onClick={() => onImageClick(product.image.startsWith('http') ? product.image : `${API_BASE_URL}/${product.image}`)}
-                                    onError={(e) => {
-                                    e.target.onerror = null;
-                                    e.target.src = placeholderImage;
-                                    }}
-                                />
-                                <p className="product-name">{product.name || "상품"}</p>
+                                    <img
+                                        src={product.image.startsWith('http') ? product.image : `${API_BASE_URL}/${product.image}`}
+                                        alt="상품 이미지"
+                                        className="person-image-thumbnail"
+                                        onClick={() => onImageClick(product.image.startsWith('http') ? product.image : `${API_BASE_URL}/${product.image}`)}
+                                        onError={(e) => {
+                                            e.target.onerror = null;
+                                            e.target.src = placeholderImage;
+                                        }}
+                                    />
+                                    <p className="product-name">{product.name || "상품"}</p>
                                 </div>
                             ) : (
                                 <div className="thumbnail-container">
-                                <img src={placeholderImage} alt="이미지 없음" className="person-image-thumbnail" />
-                                <p className="product-name">이미지 없음</p>
+                                    <img src={placeholderImage} alt="이미지 없음" className="person-image-thumbnail"/>
+                                    <p className="product-name">이미지 없음</p>
                                 </div>
                             )}
-                            </div>
+                        </div>
+
+
                     </div>
                 </div>
             </div>
@@ -567,7 +698,8 @@ const SaleDetail = () => {
                     wantedProducts.map((product, index) => (
                         <div key={index} className='wanted-product'>
                             <div className="image-container">
-                                <img src={product.image || placeholderImage} alt={product.name} className="wanted-image" />
+                                <img src={product.image || placeholderImage} alt={product.name}
+                                     className="wanted-image"/>
                                 <div className="sale-labelProduct">
                                     {saleLabel} <span className="separator"> &gt; </span> {product.name}
                                     <span className="separator"> &gt; </span> {category || product.category || "미정"}
@@ -633,13 +765,13 @@ const SaleDetail = () => {
                             alert("구매할 상품을 먼저 추가해 주세요.");
                             return;
                         }
-                        navigate('/purchase', { 
-                            state: { 
-                                wantedProducts, 
-                                saleLabel, 
-                                shippingMethods, 
-                                product: location.state?.product 
-                            } 
+                        navigate('/purchase', {
+                            state: {
+                                wantedProducts,
+                                saleLabel,
+                                shippingMethods,
+                                product: location.state?.product
+                            }
                         });
                     }}
                     // disabled={wantedProducts.length === 0} // 주석 처리 또는 제거
@@ -670,12 +802,13 @@ const SaleDetail = () => {
             <div className='personReviewFrame'>
                 {activeTab === '상세 설명' ? (
                     <div className='person-description'>
-                        <p dangerouslySetInnerHTML={{ __html: description || fixedContent || product.description || "상품 설명이 없습니다." }} />
+                        <p dangerouslySetInnerHTML={{__html: ddescription || fixedContent || product.description || "상품 설명이 없습니다."}}/>
+
                     </div>
                 ) : (
                     productReviews.length > 0 ? (
                         <>
-                            <div className="reviews-summary">
+                        <div className="reviews-summary">
                                 <div className="average-rating">
                                     <h3 className='average-ratingTitle'>평균 평점</h3>
                                     <div className="big-rating">
