@@ -136,17 +136,17 @@
 }
 
 .person-chatting {
-    background: #ffd700;
-    color: black;
+    background: #3498db;
+    color: #ffffff;
     border: none;
-    padding: 8px 16px;
+    padding: 7px 11px;
     font-size: 14px;
-    border-radius: 12px;
+    border-radius: 10px;
     cursor: pointer;
 }
 
 .person-chatting:hover {
-    background: #ffcc00;
+    background: #2d87c3;
 }
 
 .tags-list {
@@ -279,7 +279,7 @@
 }
 
 .person-buy, .person-cart-btn {
-    background: #e60012;
+    background-color: #3498db;
     color: white;
     border: none;
     padding: 12px 20px;
@@ -292,7 +292,7 @@
 }
 
 .person-buy:hover, .person-cart-btn:hover {
-    background: #cc0000;
+    background-color: #2d87c3;
 }
 
 /* person-details-tabs */
