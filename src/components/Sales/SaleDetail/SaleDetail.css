@@ -87,8 +87,8 @@
 }
 
 .person-username {
-    font-size: 14px;
-    color: #a7a6a6;
+    font-size: 25px;
+    color: #474545;
     margin-top: 20px;
 }
 
@@ -666,16 +666,16 @@ button {
         flex-direction: column;
         gap: 10px;
     }
-    
+
     .person-review-rating-date {
         align-items: flex-start;
         width: 100%;
     }
-    
+
     .person-review-images {
         justify-content: center;
     }
-    
+
     .person-review-image {
         width: 80px;
         height: 80px;
