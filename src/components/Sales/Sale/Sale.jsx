@@ -218,16 +218,22 @@ const Sale = ({ showBanner = true, showCustomProducts = true }) => {
                                         src={post.thumbnailImage || placeholderImage}
                                         alt={post.title}
                                         className="sale-image"
-                                        onError={(e) => { e.target.src = placeholderImage; }}
+                                        onError={(e) => {
+                                            e.target.src = placeholderImage;
+                                        }}
                                     />
                                 </div>
                                 <span className="sale-label">판매</span>
                                 <button
                                     className={`sale-like-button ${liked[post.id] ? 'liked' : ''}`}
-                                    onClick={(e) => { e.stopPropagation(); handleLike(post.id); }}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleLike(post.id);
+                                    }}
                                 >
-                                    <FaHeart size={18} />
+                                    <FaHeart size={18}/>
                                 </button>
+
                                 <div className="sale-profile-block">
                                     <div className="sale-profile-row">
                                         {post.userImage ? (
@@ -235,15 +241,18 @@ const Sale = ({ showBanner = true, showCustomProducts = true }) => {
                                                 src={`http://localhost:8080/${post.userImage}`}
                                                 alt="작성자"
                                                 className="sale-profile-pic-mini"
-                                                onError={(e) => { e.target.src = placeholderImage; }}
+                                                onError={(e) => {
+                                                    e.target.src = placeholderImage;
+                                                }}
                                             />
                                         ) : (
-                                            <CgProfile className="sale-profile-pic-mini" />
+                                            <CgProfile className="sale-profile-pic-mini"/>
                                         )}
                                         <span className="sale-user-name-mini">{post.userNickName}</span>
                                     </div>
-                                    <div className="sale-product-title">{post.title}</div>
+                                    <span className="view-count">조회수: {post.views || 0}</span>
                                 </div>
+                                <div className="sale-product-title">{post.title}</div>
                                 {post.hashtag && (
                                     <div className="tags-container">
                                         <div className="tags-list">

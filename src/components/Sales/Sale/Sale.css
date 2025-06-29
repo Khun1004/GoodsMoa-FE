@@ -351,10 +351,15 @@
 }
 
 .sale-profile-block {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    margin-bottom: 8px;
+    /*display: flex;*/
+    /*flex-direction: column;*/
+    /*align-items: flex-start;*/
+    /*margin-bottom: 8px;*/
+    display: flex; /* 자식 요소(프로필, 조회수)를 가로로 배치 */
+    justify-content: space-between; /* 양쪽 끝으로 밀어내기! */
+    align-items: center; /* 세로 중앙 정렬 */
+    width: 100%; /* 부모 요소의 전체 너비를 차지 */
+    margin-bottom: 4px; /* 제목과의 간격 */
 }
 
 .sale-profile-row {

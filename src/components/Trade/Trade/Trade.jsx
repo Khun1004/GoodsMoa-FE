@@ -171,7 +171,7 @@ const Trade = ({ showBanner = true }) => {
                         )}
                         <span className="user-name-mini">{item.userNickName || '작성자'}</span>
                       </div>
-                      <span className="view-count">조회수 : {item.views || 0}</span>
+                      <span className="view-count">조회수: {item.views || 0}</span>
                     </div>
                     <span className="sale-product-title">{item.title}</span>
                     {item.hashtag && item.hashtag.trim() && (

@@ -204,7 +204,7 @@ const Demand = ({ showBanner = true }) => {
                                         )}
                                         <span className="demand-user-name-mini">{item.userNickName || '작성자'}</span>
                                     </div>
-                                    <span className="view-count">조회 {item.views || 0}</span>
+                                    <span className="view-count">조회수: {item.views || 0}</span>
                                 </div>
 
                                 <div className="demand-product-title">{item.title}</div>
