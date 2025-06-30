@@ -31,14 +31,42 @@ const SaleFormManagement = () => {
         fetchUserForms();
     }, []);
 
+    const placeholderImage = 'https://your-bucket.s3.amazonaws.com/default-product.jpg'; // 실제 기본이미지로 변경
+
     const handleEdit = (form) => {
         navigate('/saleform', {
             state: {
+                from: 'management',
                 isEditMode: true,
-                formTradeData: form
+                title: form.title,
+                description: form.content || '',
+                category: form.categoryName || '',
+                categoryId: form.categoryId || 0,
+                image: {
+                    preview: form.thumbnailImage || placeholderImage,
+                    file: null,
+                    extension: (form.thumbnailImage || placeholderImage).split('.').pop() || 'jpg',
+                    uploadPath: 'productPost/thumbnail'
+                },
+                products: (form.products || []).map((prod, i) => ({
+                    ...prod,
+                    image: prod.imageUrl || placeholderImage,
+                    images: [prod.imageUrl || placeholderImage],
+                    imageUpdated: false
+                })),
+                hashtag: form.hashtag ? form.hashtag.split(',').map(tag => tag.trim()) : [],
+                start_time: form.startTime || '',
+                end_time: form.endTime || '',
+                contentImages: form.contentImages || [],
+                shippingMethods: form.shippingMethods || [{ name: '택배', price: '3000' }],
+                isPublic: form.isPublic !== undefined ? form.isPublic : true,
+                privateCode: form.privateCode || "",
+                isPermanent: form.isPermanent || false,
+                postId: form.id // 수정할 글 ID
             }
         });
     };
+
 
     const handleDelete = async (form) => {
         if (!form?.id) {

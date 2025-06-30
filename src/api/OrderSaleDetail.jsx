@@ -101,7 +101,7 @@ class OrderSaleDetail {
 
     async requestTossPayment(orderData) {
         try {
-            const response = await this.request('/payment/toss', 'POST', orderData);
+            const response = await this.request('/api/payment/toss', 'POST', orderData);
             console.log('/payment/toss 후에 나온 값 :::', response);
             return response;
         } catch (error) {
@@ -111,7 +111,7 @@ class OrderSaleDetail {
     }
 
     async confirmTossPayment(paymentKey, orderCode, amount) {
-        return this.request(`/payment/success?paymentKey=${paymentKey}&orderCode=${orderCode}&amount=${amount}`, 'GET');
+        return this.request(`/api/payment/success?paymentKey=${paymentKey}&orderCode=${orderCode}&amount=${amount}`, 'GET');
     }
 
     // 주문 내역 조회

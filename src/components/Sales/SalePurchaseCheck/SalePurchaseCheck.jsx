@@ -130,13 +130,6 @@ export function SalePurchaseCheck() {
                 failUrl: `http://localhost:5177/payment/fail`,
             });
     
-            // Navigate to success page with order data
-            navigate('/payment/success', {
-                state: {
-                    orderInfo: completeOrderData
-                }
-            });
-    
         } catch (error) {
             console.error("Payment error:", error);
             alert("결제 요청 중 오류가 발생했습니다. 다시 시도해주세요.");

@@ -36,7 +36,8 @@ const SaleDetail = () => {
         userName: userNameProp,
         profileImage: profileImageProp
     } = location.state || {};
-    const shippingMethods = product?.shippingMethods || [];
+
+    const [shippingMethods, setShippingMethods] = useState(product?.delivers || []);
 
     const { profileImage: contextProfileImage, userInfo } = useContext(LoginContext);
 
@@ -129,7 +130,7 @@ const SaleDetail = () => {
                 // 배송 방식 업데이트
                 if (data.delivers) {
                     console.log("🚚 배송방식(delivers) 정보 업데이트:", data.delivers);
-                    // shippingMethods 상태 따로 관리 중이면 여기에 setShippingMethods(data.delivers);
+                    setShippingMethods(data.delivers);
                 }
 
                 // 카테고리 업데이트
@@ -150,11 +151,6 @@ const SaleDetail = () => {
     useEffect(() => {
         if (contextProfileImage) setProfileImage(contextProfileImage);
     }, [contextProfileImage]);
-
-    useEffect(() => {
-        if (userInfo?.nickname) setUserName(userInfo.nickname);
-        if (userInfo?.profileImage) setProfileImage(userInfo.profileImage);
-    }, [userInfo]);
 
     // 좋아요 상태 가져오기
     useEffect(() => {

@@ -50,6 +50,11 @@
 .demandwrite-editor .ql-editor {
   min-height: 350px;
   padding: 20px;
+  max-height: 600px;      /* ✅ 최대 높이 제한 */
+  overflow-y: auto;       /* ✅ 내용 넘칠 때 스크롤 */
+  line-height: 1.6;
+
+
 }
 
 .image-upload-section {
