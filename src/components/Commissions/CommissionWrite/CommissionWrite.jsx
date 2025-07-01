@@ -1,170 +1,165 @@
 import React, { useEffect, useRef, useState } from "react";
-import { CiImageOn } from "react-icons/ci";
-import { FaAlignCenter, FaAlignJustify, FaAlignLeft, FaAlignRight, FaBold, FaCaretDown, FaItalic, FaPaintBrush, FaStrikethrough, FaUnderline } from "react-icons/fa";
-import { IoIosArrowBack } from "react-icons/io";
-import { LuRedo2, LuUndo2 } from "react-icons/lu";
-import { PiListBulletsBold } from "react-icons/pi";
-import { RiFontSize } from "react-icons/ri";
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css";
 import { useLocation, useNavigate } from "react-router-dom";
 import "./CommissionWrite.css";
 
 const CommissionWrite = () => {
-    const navigate = useNavigate();
     const location = useLocation();
-    const editorRef = useRef(null);
-    const [content, setContent] = useState("");
-    const [color, setColor] = useState("#000000");
+    const navigate = useNavigate();
+    const [content, setContent] = useState(location.state?.content || "");
+    const [images, setImages] = useState(location.state?.contentImages || []);
+    const quillRef = useRef(null);
+    const fileInputRef = useRef(null);
 
     useEffect(() => {
-        if (editorRef.current) {
-            if (location.state?.description) {
-                editorRef.current.innerHTML = location.state.description;
-                setContent(location.state.description);
-            } else {
-                editorRef.current.innerHTML = "";
-                setContent("");
-            }
+        const quill = quillRef.current?.getEditor();
+        if (quill) {
+            const toolbar = quill.getModule("toolbar");
+            toolbar.addHandler("image", () => {
+                fileInputRef.current?.click();
+            });
         }
-    }, [location.state?.description]);
+    }, []);
 
-    const handleCommand = (command, value = null) => {
-        document.execCommand(command, false, value);
-    };
+    const handleImageUpload = async (e) => {
+        const files = Array.from(e.target.files);
+        if (files.length === 0) return;
 
-    const handleImageUpload = (event) => {
-        const file = event.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const image = `<img src="${e.target.result}" alt="Uploaded Image" />`;
-                const editor = editorRef.current;
-                editor.focus();
-                document.execCommand("insertHTML", false, image);
-                setContent(editor.innerHTML);
-            };
-            reader.readAsDataURL(file);
+        const newImages = files.map((file) => {
+            const preview = URL.createObjectURL(file);
+            const extension = file.name.split('.').pop().toLowerCase();
+            const url = preview; // 로컬 preview URL 그대로 사용
+            return { file, preview, url, extension };
+        });
+
+        setImages((prev) => [...prev, ...newImages]);
+
+        if (quillRef.current) {
+            const quill = quillRef.current.getEditor();
+            const range = quill.getSelection(true) || { index: quill.getLength() };
+            newImages.forEach(img => {
+                quill.insertEmbed(range.index, "image", img.url);
+                range.index += 1;
+            });
+            setContent(quill.root.innerHTML);
         }
+
+        e.target.value = "";
     };
 
-    const handleColorChange = (event) => {
-        const selectedColor = event.target.value;
-        setColor(selectedColor);
-        document.execCommand("foreColor", false, selectedColor);
-    };
-
-    const handleSave = () => {
-        const description = editorRef.current.innerHTML;
+    const handleSubmit = () => {
         navigate("/commissionForm", {
             state: {
-                ...location.state, // 기존 데이터 유지
-                description,       // 본문만 업데이트
-            }
+                image: location.state?.image || null,
+                title: location.state?.title || "",
+                category: location.state?.category || "",
+                maxCount: location.state?.maxCount || "",
+                minPrice: location.state?.minPrice || "",
+                maxPrice: location.state?.maxPrice || "",
+                tags: location.state?.tags || [],
+                applicationForms: location.state?.applicationForms || [{ title: "", reqContent: "" }],
+                content,
+                contentImages: images,
+                from: "write",
+            },
         });
-    };    
+    };
+
+    const modules = {
+        toolbar: [
+            [{ 'header': [1, 2, 3, false] }],
+            ['bold', 'italic', 'underline', 'strike'],
+            [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+            [{ 'color': [] }, { 'background': [] }],
+            [{ 'align': [] }],
+            ['link', 'image'],
+            ['clean']
+        ],
+    };
+
+    const formats = [
+        'header', 'bold', 'italic', 'underline', 'strike',
+        'list', 'bullet', 'color', 'background', 'align', 'link', 'image'
+    ];
 
     return (
-        <div className="container">
-            <div className="sale-write-container">
-                <header className="sale-write-header">
-                    <button 
-                        type="button"
-                        className="back-button" 
-                        onClick={() => navigate(-1)}
-                    >
-                        <IoIosArrowBack />
-                    </button>
-                    <h2 className="title">본문</h2>
-                    <button 
-                        type="button"
-                        className="save-button" 
-                        onClick={handleSave}
-                    >
-                        저장
-                    </button>
-                </header>
+        <div className="commission-write-wrapper">
+            <div className="commission-write-container">
+                <h1 className="commission-write-title">커미션 상세 설명 작성</h1>
 
-                {/* 상단 툴바 */}
-                <div className="toolbar">
-                    <button onClick={() => alert("추가 기능 준비 중!")}>+</button>
-                    
-                    <label htmlFor="imageUpload" 
-                        className="CiImageOn"
-                        style={{ cursor: "pointer" }}>
-                        <CiImageOn />
-                    </label>
-                    <input 
-                        type="file" 
-                        id="imageUpload" 
-                        accept="image/*" 
-                        style={{ display: "none" }} 
-                        onChange={handleImageUpload} 
+                <div className="editor-container">
+                    <ReactQuill
+                        ref={quillRef}
+                        value={content}
+                        onChange={setContent}
+                        modules={modules}
+                        formats={formats}
+                        placeholder="커미션 상세 설명을 입력하세요..."
+                        className="commission-write-editor"
                     />
-
-                    <button onClick={() => handleCommand("undo")}>
-                        <LuUndo2 />
-                    </button>
-                    <button onClick={() => handleCommand("redo")}>
-                        <LuRedo2 />
-                    </button>
                 </div>
 
-                {/* 텍스트 편집 툴바 */}
-                <div className="editor-toolbar">
-                    <button onClick={() => handleCommand("bold")}>
-                        <b><FaBold /></b>
-                    </button>
-                    <button onClick={() => handleCommand("italic")}>
-                        <i><FaItalic /></i>
-                    </button>
-                    <button onClick={() => handleCommand("underline")}>
-                        <FaUnderline />
-                    </button>
-                    <button onClick={() => handleCommand("strikeThrough")}>
-                        <FaStrikethrough />
-                    </button>
-                    <button onClick={() => handleCommand("justify")}>
-                        <FaAlignJustify />
-                    </button>
-                    <button onClick={() => handleCommand("justifyLeft")}>
-                        <FaAlignLeft />
-                    </button>
-                    <button onClick={() => handleCommand("justifyCenter")}>
-                        <FaAlignCenter />
-                    </button>
-                    <button onClick={() => handleCommand("justifyRight")}>
-                        <FaAlignRight />
-                    </button>
-                    <button onClick={() => handleCommand("fontSize", "5")}>
-                        <RiFontSize />
-                    </button>
-                    <button onClick={() => handleCommand("fontSize", "2")}>
-                        <p>fontsize</p>
-                        <FaCaretDown />
-                    </button>
-                    <button onClick={() => handleCommand("insertUnorderedList")}>
-                        <PiListBulletsBold />
-                    </button>
-                    
-                    {/* 색상 선택 버튼 */}
-                    <button>
-                        <FaPaintBrush />
+                <div className="image-upload-section">
+                    <label className="image-upload-label">
                         <input
-                            type="color"
-                            value={color}
-                            onChange={handleColorChange}
-                            style={{ width: '30px', height: '30px', marginLeft: '10px', border: 'none', padding: 0 }}
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            onChange={handleImageUpload}
+                            className="image-upload-input"
+                            ref={fileInputRef}
                         />
-                    </button>
+                        <span className="commissionUpload-button">이미지 추가</span>
+                    </label>
+
+                    <div className="commissionImage-preview-container">
+                        {images.map((img, idx) => (
+                            <div key={idx} className="commissionImage-preview-item">
+                                <img src={img.preview} alt={`업로드 이미지 ${idx + 1}`} />
+                                <button
+                                    className="delete-image-button"
+                                    onClick={() => {
+                                        setImages(images.filter((_, i) => i !== idx));
+                                        setContent(prev =>
+                                            prev.replace(
+                                                new RegExp(`<img[^>]+src=["']${img.url}["'][^>]*>`, 'g'),
+                                                ''
+                                            )
+                                        );
+                                    }}
+                                >
+                                    ×
+                                </button>
+                            </div>
+                        ))}
+                    </div>
                 </div>
 
-                {/* 본문 에디터 */}
-                <div
-                    ref={editorRef}
-                    className="editor"
-                    contentEditable
-                    suppressContentEditableWarning
-                    onInput={(e) => setContent(e.currentTarget.innerHTML)}
-                >
+                <div className="commissionBtn-group">
+                    <button className="commissionSubmitBtn" onClick={handleSubmit}>작성 완료</button>
+                    <button
+                        className="commissionCancelBtn"
+                        onClick={() =>
+                            navigate("/commissionForm", {
+                                state: {
+                                    image: location.state?.image || null,
+                                    title: location.state?.title || "",
+                                    category: location.state?.category || "",
+                                    maxCount: location.state?.maxCount || "",
+                                    minPrice: location.state?.minPrice || "",
+                                    maxPrice: location.state?.maxPrice || "",
+                                    tags: location.state?.tags || [],
+                                    applicationForms: location.state?.applicationForms || [{ title: "", reqContent: "" }],
+                                    content,
+                                    contentImages: images,
+                                    from: "write",
+                                },
+                            })
+                        }
+                    >
+                        취소
+                    </button>
                 </div>
             </div>
         </div>
