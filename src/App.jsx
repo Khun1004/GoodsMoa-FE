@@ -330,7 +330,7 @@ const AppContent = ({
           }
         />
 
-        {/* Sale Page */}
+         Sale Page
         <Route
           path="/sale"
           element={

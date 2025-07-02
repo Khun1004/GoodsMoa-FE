@@ -1,52 +1,9 @@
 .commission-container {
     width: 100%;
-    margin: 0 auto;
-    padding: 20px;
+    max-width: 1487px !important;
+    margin: 0 0;
 }
 
-.commission-banner {
-    width: 100%;
-    min-height: 180px;
-    background: linear-gradient(90deg, #4f8cff 0%, #38c8e5 100%);
-    border-radius: 22px;
-    box-shadow: 0 4px 24px rgba(80, 120, 240, 0.12);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 40px;
-    position: relative;
-    overflow: hidden;
-  }
-
-  
-
-
-
-.commission-title {
-    font-size: 2rem;
-    font-weight: 700;
-    color: #fff;
-    margin-bottom: 22px;
-    letter-spacing: 0.5px;
-  }
-
-.commission-search-input {
-    width: 100%;
-    max-width: 350px;
-    margin: 0 auto;
-    padding: 12px 16px;
-    border-radius: 8px;
-    border: none;
-    font-size: 1.1rem;
-    color: #222;
-    background: rgba(255,255,255,0.90);
-    box-shadow: 0 1px 6px rgba(80,120,240,0.07);
-    outline: none;
-    transition: box-shadow 0.2s;
-  }
-.commission-search-input:focus {
-    box-shadow: 0 2px 10px rgba(80,120,240,0.19);
-  }
 .commission-header {
     display: flex;
     align-items: center;
@@ -63,24 +20,12 @@
     width: 80px;
 }
 
-.commission-heading {
-    font-size: 30px;
-    font-weight: bold;
-    color: #333;
+.commissionbox-icon {
+    font-size: 48px;
+    color: #fdcb6e;
+    position: absolute;
+    bottom: 25px;
 }
-
-@keyframes heart {
-    0% {
-        transform: translateY(0);
-    }
-    50% {
-        transform: translateY(-5px);
-    }
-    100% {
-        transform: translateY(0);
-    }
-}
-
 .heart-icon {
     font-size: 30px;
     color: #ff0000;
@@ -89,11 +34,15 @@
     animation: heart 1s ease-in-out 0.8s infinite alternate;
 }
 
-.commissionbox-icon {
-    font-size: 48px;
-    color: #fdcb6e;
-    position: absolute;
-    bottom: 25px;
+@keyframes heart {
+    0% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+    100% { transform: translateY(0); }
+}
+.commission-heading {
+    font-size: 30px;
+    font-weight: bold;
+    color: #333;
 }
 
 .commission-grid,
@@ -107,6 +56,10 @@
     position: relative;
     text-align: center;
     transition: 0.3s ease-in-out;
+    background: #fff;
+    border-radius: 10px;
+    padding-bottom: 10px;
+    min-height: 265px;
 }
 
 .commission-image {
@@ -116,47 +69,6 @@
     border-radius: 5px;
     border: 1px solid black;
     transition: opacity 0.3s ease-in-out;
-}
-
-.profile-info {
-    position: absolute;
-    bottom: -20px;
-    top: 10px;
-    left: 50%;
-    transform: translateX(-50%);
-    opacity: 0;
-    visibility: hidden;
-    text-align: center;
-    transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
-    z-index: 2;
-    padding: 5px;
-    display: flex;
-    align-items: center;
-    gap: 0px;
-}
-
-.commission-card:hover .profile-info {
-    opacity: 1;
-    visibility: visible;
-}
-
-.profile-pic {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    margin-bottom: 5px;
-    border: 1px solid black;
-}
-
-.user-name {
-    font-size: 14px;
-    font-weight: bold;
-    color: black;
-    margin: 0;
-}
-
-.commission-card:hover .commission-image {
-    opacity: 0.7;
 }
 
 .commission-label {
@@ -171,10 +83,17 @@
 }
 
 .commission-like-button {
+    color: gray;
+}
+
+.commission-like-button.liked {
+    color: red;
+}
+
+.commission-like-button {
     position: absolute;
     top: 10px;
     right: 10px;
-    color: gray;
     background: none;
     border: none;
     cursor: pointer;
@@ -185,8 +104,60 @@
     background-color: white;
 }
 
-.commission-like-button.liked {
-    color: red;
+.commission-profile-block {
+    display: flex;
+    flex-direction: column; /* 자식 요소들을 세로로 쌓음 */
+    align-items: flex-start; /* 자식들을 왼쪽으로 정렬 */
+    margin-top: 8px;
+    text-align: left; /* 내부 텍스트 기본 정렬을 왼쪽으로 설정 */
+}
+
+.commission-profile-line{
+    /* 프로필 정보와 조회수를 한 줄에 담는 컨테이너 */
+    display: flex; /* 자식 요소(프로필, 조회수)를 가로로 배치 */
+    justify-content: space-between; /* 양쪽 끝으로 밀어내기! */
+    align-items: center; /* 세로 중앙 정렬 */
+    width: 100%; /* 부모 요소의 전체 너비를 차지 */
+    margin-bottom: 4px; /* 제목과의 간격 */
+}
+
+.commission-profile-row {
+    /*display: flex;*/
+    /*align-items: center;*/
+    /*gap: 6px;*/
+    /*margin-bottom: 2px;*/
+    /* 프로필 정보와 조회수를 한 줄에 담는 컨테이너 */
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-bottom: 2px;
+}
+.profile-pic {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 1px solid #ccc;
+    object-fit: cover;
+    background: #f5f5f5;
+}
+
+.commission-user-name-mini {
+    font-size: 14px;
+    color: #888;
+    font-weight: 500;
+    letter-spacing: 0.2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.commission-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: #222;
+    margin-top: 2px;
+    word-break: break-all;
+    line-height: 1.2;
 }
 
 .commission-product-name {
@@ -195,40 +166,172 @@
     font-weight: bold;
 }
 
+.tags-container {
+    margin-top: 8px;
+}
+.tags-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+.tag-item {
+    background: #dedede;
+    border-radius: 20px;
+    padding: 2px 10px;
+    font-size: 15px;
+    text-align: center;
+    min-width: 60px;
+    font-weight: 400;
+}
+
+/* 구분선, 공통 */
+.sale-divider {
+    margin: 37px 0;
+    border: none;
+    border-top: 1px solid #ccc;
+    width: 100%;
+}
+
+/* 로딩/검색결과 없음 등 */
+.loading-box, .no-search-result, .no-search-results {
+    text-align: center;
+    margin: 40px 0;
+    font-size: 18px;
+    color: #888;
+}
+
 /* 반응형 디자인 */
 @media (max-width: 1200px) {
-    .commission-grid,
-    .commissionWrite-grid {
-        grid-template-columns: repeat(5, 1fr);
-    }
+    .demand-grid { grid-template-columns: repeat(5, 1fr); }
 }
-
 @media (max-width: 800px) {
-    .commission-grid,
-    .commissionWrite-grid {
-        grid-template-columns: repeat(3, 1fr);
-    }
+    .demand-grid { grid-template-columns: repeat(3, 1fr); }
 }
-
 @media (max-width: 480px) {
-    .commission-grid,
-    .commissionWrite-grid {
-        grid-template-columns: 1fr;
-    }
+    .demand-grid { grid-template-columns: 1fr; }
 }
 
+/*.commission-banner {*/
+/*    width: 100%;*/
+/*    min-height: 180px;*/
+/*    background: linear-gradient(90deg, #4f8cff 0%, #38c8e5 100%);*/
+/*    border-radius: 22px;*/
+/*    box-shadow: 0 4px 24px rgba(80, 120, 240, 0.12);*/
+/*    display: flex;*/
+/*    align-items: center;*/
+/*    justify-content: center;*/
+/*    margin-bottom: 40px;*/
+/*    position: relative;*/
+/*    overflow: hidden;*/
+/*  }*/
 
-@media (max-width: 600px) {
-    .commission-banner {
-      min-height: 110px;
-      border-radius: 12px;
-      margin-bottom: 18px;
-    }
-    .commission-banner-content {
-      padding: 18px 8px;
-    }
-    .commission-title {
-      font-size: 1.2rem;
-      margin-bottom: 12px;
-    }
-  }
+/*.commission-search-input {*/
+/*    width: 100%;*/
+/*    max-width: 350px;*/
+/*    margin: 0 auto;*/
+/*    padding: 12px 16px;*/
+/*    border-radius: 8px;*/
+/*    border: none;*/
+/*    font-size: 1.1rem;*/
+/*    color: #222;*/
+/*    background: rgba(255,255,255,0.90);*/
+/*    box-shadow: 0 1px 6px rgba(80,120,240,0.07);*/
+/*    outline: none;*/
+/*    transition: box-shadow 0.2s;*/
+/*  }*/
+/*.commission-search-input:focus {*/
+/*    box-shadow: 0 2px 10px rgba(80,120,240,0.19);*/
+/*  }*/
+
+/*.heart-icon {*/
+/*    font-size: 30px;*/
+/*    color: #ff0000;*/
+/*    position: absolute;*/
+/*    top: 20px;*/
+/*    animation: heart 1s ease-in-out 0.8s infinite alternate;*/
+/*}*/
+
+/*.commission-grid,*/
+/*.commissionWrite-grid {*/
+/*    display: grid;*/
+/*    grid-template-columns: repeat(5, 1fr);*/
+/*    gap: 20px;*/
+/*}*/
+
+/*.profile-info {*/
+/*    position: absolute;*/
+/*    bottom: -20px;*/
+/*    top: 10px;*/
+/*    left: 50%;*/
+/*    transform: translateX(-50%);*/
+/*    opacity: 0;*/
+/*    visibility: hidden;*/
+/*    text-align: center;*/
+/*    transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;*/
+/*    z-index: 2;*/
+/*    padding: 5px;*/
+/*    display: flex;*/
+/*    align-items: center;*/
+/*    gap: 0px;*/
+/*}*/
+
+/*.commission-card:hover .profile-info {*/
+/*    opacity: 1;*/
+/*    visibility: visible;*/
+/*}*/
+
+/*.profile-pic {*/
+/*    width: 40px;*/
+/*    height: 40px;*/
+/*    border-radius: 50%;*/
+/*    margin-bottom: 5px;*/
+/*    border: 1px solid black;*/
+/*}*/
+
+/*.user-name {*/
+/*    font-size: 14px;*/
+/*    font-weight: bold;*/
+/*    color: black;*/
+/*    margin: 0;*/
+/*}*/
+
+/*.commission-card:hover .commission-image {*/
+/*    opacity: 0.7;*/
+/*}*/
+
+/*@media (max-width: 1200px) {*/
+/*    .commission-grid,*/
+/*    .commissionWrite-grid {*/
+/*        grid-template-columns: repeat(5, 1fr);*/
+/*    }*/
+/*}*/
+
+/*@media (max-width: 800px) {*/
+/*    .commission-grid,*/
+/*    .commissionWrite-grid {*/
+/*        grid-template-columns: repeat(3, 1fr);*/
+/*    }*/
+/*}*/
+
+/*@media (max-width: 480px) {*/
+/*    .commission-grid,*/
+/*    .commissionWrite-grid {*/
+/*        grid-template-columns: 1fr;*/
+/*    }*/
+/*}*/
+
+
+/*@media (max-width: 600px) {*/
+/*    .commission-banner {*/
+/*      min-height: 110px;*/
+/*      border-radius: 12px;*/
+/*      margin-bottom: 18px;*/
+/*    }*/
+/*    .commission-banner-content {*/
+/*      padding: 18px 8px;*/
+/*    }*/
+/*    .commission-title {*/
+/*      font-size: 1.2rem;*/
+/*      margin-bottom: 12px;*/
+/*    }*/
+/*  }*/

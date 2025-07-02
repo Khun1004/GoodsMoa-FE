@@ -13,14 +13,10 @@ import SortSelect from "../../public/SortSelect.jsx";
 import BestsellerList from "../../public/BestsellerList.jsx";
 import { getBestsellerByType } from "../../../api/publicService";
 import api from '../../../api/api';
-import {IoMdSearch} from "react-icons/io"; // axios 인스턴스
+import {IoMdSearch} from "react-icons/io";
+import Trade1 from "../../../assets/demands/demand1.jpg"; // axios 인스턴스
 
-const getFullThumbnailUrl = (thumbnailUrl) =>
-    thumbnailUrl
-        ? thumbnailUrl.startsWith('http')
-            ? thumbnailUrl
-            : `http://localhost:8080/${thumbnailUrl.replace(/^\/+/, '')}`
-        : Demand1;
+
 
 // 숫자 ID만 추출하는 함수 - 반드시 숫자 문자열로 리턴
 const getNumericId = (id) => {
@@ -44,7 +40,7 @@ const Demand = ({ showBanner = true }) => {
     const [currentPage, setCurrentPage] = useState(1);
 
     const [category, setCategory] = useState(0);
-    const [orderBy, setOrderBy] = useState('latest');
+    const [orderBy, setOrderBy] = useState('new');
     const [includeExpired, setIncludeExpired] = useState(true);
     const [includeScheduled, setIncludeScheduled] = useState(true);
 
@@ -154,6 +150,13 @@ const Demand = ({ showBanner = true }) => {
         );
     });
 
+    const getFullThumbnailUrl = (thumbnailUrl) =>
+        thumbnailUrl
+            ? thumbnailUrl.startsWith('http')
+                ? thumbnailUrl
+                : `http://localhost:8080/${thumbnailUrl.replace(/^\/+/, '')}`
+            : '';
+
     const handleSearchSubmit = () => {
         setPage(0);
     };
@@ -229,7 +232,7 @@ const Demand = ({ showBanner = true }) => {
                     )}
 
                     {!loading &&
-                        (isSearching ? filteredProducts : demandProducts).map((item, idx) => {
+                         (isSearching ? filteredProducts : demandProducts).map((item, idx) => {
                             const id = getNumericId(item.id || item.demandPostId);
                             return (
                                 <div key={id || idx} className="demand-card">

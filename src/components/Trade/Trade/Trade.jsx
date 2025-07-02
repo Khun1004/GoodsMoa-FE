@@ -333,25 +333,27 @@ const Trade = ({ showBanner = true }) => {
                 </div>
             )}
           </div>
-          <div className="pagination">
-            {Array.from({length: totalPages}, (_, i) => (
-                <button
-                    key={i}
-                    onClick={() => setPage(i)}
-                    style={{
-                      margin: '0 5px',
-                      padding: '6px 10px',
-                      backgroundColor: i === page ? '#333' : '#eee',
-                      color: i === page ? '#fff' : '#000',
-                      border: 'none',
-                      borderRadius: '4px',
-                      cursor: 'pointer',
-                    }}
-                >
-                  {i + 1}
-                </button>
-            ))}
-          </div>
+          {showBanner && (
+              <div className="pagination">
+                {Array.from({length: totalPages}, (_, i) => (
+                    <button
+                        key={i}
+                        onClick={() => setPage(i)}
+                        style={{
+                          margin: '0 5px',
+                          padding: '6px 10px',
+                          backgroundColor: i === page ? '#333' : '#eee',
+                          color: i === page ? '#fff' : '#000',
+                          border: 'none',
+                          borderRadius: '4px',
+                          cursor: 'pointer',
+                        }}
+                    >
+                      {i + 1}
+                    </button>
+                ))}
+              </div>
+          )}
         </div>
       </div>
   );
