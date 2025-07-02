@@ -26,7 +26,7 @@ const getNumericId = (id) => {
     return String(id);
 };
 
-const Demand = ({ showBanner = true }) => {
+const Demand = ({ showBanner = true, mainCategory, setMainCategory }) => {
     const location = useLocation();
     const navigate = useNavigate();
 
@@ -37,9 +37,9 @@ const Demand = ({ showBanner = true }) => {
     const initialQueryFromLocation = new URLSearchParams(location.search).get("q") || "";
     const [searchQuery, setSearchQuery] = useState('');
     const [searchType, setSearchType] = useState('ALL');
+    const [boardCategory, setBoardCategory] = useState(0);
     const [currentPage, setCurrentPage] = useState(1);
 
-    const [category, setCategory] = useState(0);
     const [orderBy, setOrderBy] = useState('new');
     const [includeExpired, setIncludeExpired] = useState(true);
     const [includeScheduled, setIncludeScheduled] = useState(true);
@@ -56,6 +56,8 @@ const Demand = ({ showBanner = true }) => {
         { label: '마감임박순', value: 'close' }, // 마감 임박 순
     ];
 
+    const category = mainCategory !== undefined ? mainCategory : boardCategory;
+    const setCategory = setMainCategory !== undefined ? setMainCategory : setBoardCategory;
 
     // fetch 함수 - debounce 빼고 useEffect에서 직접 debounce 적용 권장
     const fetchDemandProducts = useCallback(async () => {
@@ -214,16 +216,18 @@ const Demand = ({ showBanner = true }) => {
                     </>
                 )}
 
-                <div className="demand-header">
-                    <div className="demand-icon">
-                        <SlSocialDropbox className="demandbox-icon"/>
-                        <FaHeart className="heart-icon"/>
+                {showBanner && (
+                    <div className="demand-header">
+                        <div className="demand-icon">
+                            <SlSocialDropbox className="demandbox-icon"/>
+                            <FaHeart className="heart-icon"/>
+                        </div>
+                        <h2 className="demand-heading">수요조사</h2>
+                        <div style={{marginLeft: 'auto'}}>
+                            <SortSelect options={sortOptions} selected={orderBy} onChange={setOrderBy}/>
+                        </div>
                     </div>
-                    <h2 className="demand-heading">수요조사</h2>
-                    <div style={{marginLeft: 'auto'}}>
-                        <SortSelect options={sortOptions} selected={orderBy} onChange={setOrderBy}/>
-                    </div>
-                </div>
+                )}
 
                 <div className="demand-grid">
                     {loading && <div className="loading-box">🔄 로딩중입니다...</div>}
@@ -232,7 +236,7 @@ const Demand = ({ showBanner = true }) => {
                     )}
 
                     {!loading &&
-                         (isSearching ? filteredProducts : demandProducts).map((item, idx) => {
+                        (isSearching ? filteredProducts : demandProducts).map((item, idx) => {
                             const id = getNumericId(item.id || item.demandPostId);
                             return (
                                 <div key={id || idx} className="demand-card">
@@ -292,25 +296,27 @@ const Demand = ({ showBanner = true }) => {
                         })}
                 </div>
 
-                <div className="pagination">
-                    {Array.from({ length: totalPages }, (_, i) => (
-                        <button
-                            key={i}
-                            onClick={() => setPage(i)}
-                            style={{
-                                margin: '0 5px',
-                                padding: '6px 10px',
-                                backgroundColor: i === page ? '#333' : '#eee',
-                                color: i === page ? '#fff' : '#000',
-                                border: 'none',
-                                borderRadius: '4px',
-                                cursor: 'pointer',
-                            }}
-                        >
-                            {i + 1}
-                        </button>
-                    ))}
-                </div>
+                {showBanner && (
+                    <div className="pagination">
+                        {Array.from({length: totalPages}, (_, i) => (
+                            <button
+                                key={i}
+                                onClick={() => setPage(i)}
+                                style={{
+                                    margin: '0 5px',
+                                    padding: '6px 10px',
+                                    backgroundColor: i === page ? '#333' : '#eee',
+                                    color: i === page ? '#fff' : '#000',
+                                    border: 'none',
+                                    borderRadius: '4px',
+                                    cursor: 'pointer',
+                                }}
+                            >
+                                {i + 1}
+                            </button>
+                        ))}
+                    </div>
+                )}
             </div>
         </div>
     );

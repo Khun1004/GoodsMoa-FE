@@ -15,7 +15,7 @@ import _ from "lodash";
 import Trade1 from '../../../assets/demands/demand1.jpg';
 import Spacer from "../../public/Spacer.jsx";
 
-const Trade = ({ showBanner = true }) => {
+const Trade = ({ showBanner = true, mainCategory, setMainCategory }) => {
   const { userInfo } = useContext(LoginContext);
   const navigate = useNavigate();
 
@@ -29,7 +29,7 @@ const Trade = ({ showBanner = true }) => {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [searchType, setSearchType] = useState('ALL');
-  const [category, setCategory] = useState(0);
+  const [boardCategory, setBoardCategory] = useState(0);
   const [orderBy, setOrderBy] = useState('latest');
   const [includeExpired, setIncludeExpired] = useState(true);
   const [includeScheduled, setIncludeScheduled] = useState(true);
@@ -68,7 +68,11 @@ const Trade = ({ showBanner = true }) => {
     return String(id);
   };
 
+  const category = mainCategory !== undefined ? mainCategory : boardCategory;
+  const setCategory = setMainCategory !== undefined ? setMainCategory : setBoardCategory;
+
   const fetchTradeProducts = useCallback(async () => {
+    console.log("fetchTradeProducts called! category:", category);
     setLoading(true);
     setError(null);
     try {
@@ -85,7 +89,6 @@ const Trade = ({ showBanner = true }) => {
       const res = await api.get('/tradePost', { params });
       const data = res.data;
       const productsArr = Array.isArray(data.content) ? data.content : [];
-
       // demandProducts에 liked 정보 유지하면서 업데이트 하려면 서버에서 liked 정보 같이 받아야 함.
       // 없으면 기존 liked 유지
       setTradeProducts(productsArr);
@@ -98,6 +101,7 @@ const Trade = ({ showBanner = true }) => {
   }, [searchType, searchQuery, category, orderBy, includeExpired, includeScheduled, page]);
 
   useEffect(() => {
+    console.log("Trade의 mainCategory:", mainCategory);
     const debounceFetch = _.debounce(() => {
       fetchTradeProducts();
     }, 500);

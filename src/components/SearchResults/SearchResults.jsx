@@ -17,9 +17,9 @@ const SearchResults = () => {
     const abortControllerRef = useRef(null);
 
     const postsPerPage = 25;
-    const tabKeyMap = { "상품": "PRODUCT", "중고거래": "TRADE", "수요조사": "DEMAND" };
+    const tabKeyMap = { "상품": "PRODUCT", "중고거래": "TRADE", "수요조사": "DEMAND", "커미션": "COMMISSION" };
     const searchTypeMap = { "전체": "ALL", "제목": "TITLE", "내용": "DESCRIPTION", "해시태그": "HASHTAG" };
-    const tabs = ["상품", "중고거래", "수요조사"];
+    const tabs = ["상품", "중고거래", "수요조사", "커미션"];
 
     // 통합 검색 결과
     const fetchSearchResults = async () => {
@@ -81,6 +81,8 @@ const SearchResults = () => {
             navigate(`/tradeDetail/${numericId}`);
         } else if (boardType === "수요조사") {
             navigate(`/demandDetail/${numericId}`);
+        } else if (boardType === "커미션"){
+            navigate(`/commission/post-detail/${numericId}`)
         } else {
             console.error("알 수 없는 boardType:", boardType);
         }
@@ -105,6 +107,7 @@ const SearchResults = () => {
         if (tab === "상품") return "green";
         if (tab === "중고거래") return "red";
         if (tab === "수요조사") return "purple";
+        if (tab === "커미션") return "blue"
         return "";
     };
 

@@ -6,7 +6,7 @@ import Trade from '../Trade/Trade/Trade';
 import './MainTrade.css';
 import SeeMoreButton from '../Public/seeMoreButton.jsx';
 import Divider from '../Public/Divider';
-const MainTrade = () => {
+const MainTrade = ({ mainCategory, setMainCategory }) => {
     const navigate = useNavigate();
 
     return (
@@ -26,7 +26,9 @@ const MainTrade = () => {
 
                 </div>
 
-                <Trade showBanner={false} />
+                {/*<Trade showBanner={false} />*/}
+
+                <Trade showBanner={false} mainCategory={mainCategory} setMainCategory={setMainCategory} />
 
                 <Divider />
 

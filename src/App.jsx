@@ -66,12 +66,15 @@ const AppContent = ({
                         openModal,
                         closeModal,
                         isLoggedIn,
+                        mainCategory,
+                        setMainCategory
                     }) => {
     const location = useLocation();
     const isChatPage =
         location.pathname === "/chat-app" || location.pathname === "/chat-other";
     const { isLogin, isLoading } = useContext(LoginContext);
     if (isLoading) return <Loading />; // ✅ 렌더링 지연 처리
+    const [page, setPage] = useState(0);
 
     return (
         <TradeProvider>
@@ -96,16 +99,23 @@ const AppContent = ({
 
                   <div style={{display: "flex", justifyContent: "center", width: "100%"}}>
                       <div style={{maxWidth: "1430px", width: "100%"}}>
-                          <Category/>
+                          <Category
+                              gap={60}
+                              selectedId={mainCategory}
+                              onCategoryClick={(id) => {
+                                  setMainCategory(id);
+                                  setPage(0);
+                              }}
+                          />
                           <hr className="sale-divider"/>
                       </div>
 
                   </div>
 
                   {/* <Products /> */}
-                  <MainSale/>
-                  <MainTrade/>
-                  <MainDemand/>
+                  <MainSale mainCategory={mainCategory} setMainCategory={setMainCategory} />
+                  <MainTrade mainCategory={mainCategory} setMainCategory={setMainCategory} />
+                  <MainDemand mainCategory={mainCategory} setMainCategory={setMainCategory} />
               </div>
           }
         />
@@ -555,6 +565,7 @@ const App = () => {
         AOS.refresh();
     }, []);
 
+    const [mainCategory, setMainCategory] = useState(0);
     const handleOrderPopup = () => setOrderPopup(!orderPopup);
     const openModal = (content) => {
         setModalContent(content);
@@ -574,6 +585,8 @@ const App = () => {
             openModal={openModal}
             closeModal={closeModal}
             isLoggedIn={isLoggedIn}
+            mainCategory={mainCategory}
+            setMainCategory={setMainCategory}
         />
     );
 };

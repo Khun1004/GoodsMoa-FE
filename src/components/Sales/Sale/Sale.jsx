@@ -14,7 +14,7 @@ import productService from "../../../api/ProductService";
 import SortSelect from "../../public/SortSelect.jsx";
 import { useCallback } from 'react';
 
-const Sale = ({ showBanner = true, showCustomProducts = true }) => {
+const Sale = ({ showBanner = true, showCustomProducts = true, mainCategory, setMainCategory  }) => {
     const [userName, setUserName] = useState(() => localStorage.getItem('userName') || "사용자 이름");
     const { profileImage, userInfo } = useContext(LoginContext);
     const [liked, setLiked] = useState({});
@@ -22,6 +22,7 @@ const Sale = ({ showBanner = true, showCustomProducts = true }) => {
     const [searchType, setSearchType] = useState('ALL');
     const [posts, setPosts] = useState([]);
     const [sortOrder, setSortOrder] = useState('new');
+    const [boardCategory, setBoardCategory] = useState(0);
     const [selectedCategory, setSelectedCategory] = useState(0); // ⭐️ 추가됨
     const navigate = useNavigate();
     const [page, setPage] = useState(0);
@@ -42,6 +43,9 @@ const Sale = ({ showBanner = true, showCustomProducts = true }) => {
         { label: '등록일순', value: 'old' }
     ];
 
+    const category = mainCategory !== undefined ? mainCategory : boardCategory;
+    const setCategory = setMainCategory !== undefined ? setMainCategory : setBoardCategory;
+
     const fetchProductPosts = useCallback(async () => {
         try {
             const res = await searchBoardPosts({
@@ -49,7 +53,7 @@ const Sale = ({ showBanner = true, showCustomProducts = true }) => {
                 board_type: 'PRODUCT',
                 search_type: searchType.toUpperCase(),
                 query: searchQuery,
-                category: selectedCategory, // ⭐️ 반영됨
+                category, // ⭐️ 반영됨
                 order_by: sortOrder,
                 page: 0,
                 page_size: 20
@@ -68,7 +72,7 @@ const Sale = ({ showBanner = true, showCustomProducts = true }) => {
         } catch (err) {
             console.error('❌ 상품글 검색 실패:', err);
         }
-    }, [searchType, sortOrder, searchQuery, selectedCategory]);
+    }, [searchType, sortOrder, searchQuery, category]);
 
     useEffect(() => {
         fetchProductPosts();
@@ -170,8 +174,11 @@ const Sale = ({ showBanner = true, showCustomProducts = true }) => {
                         />
                         <Category
                             gap={90}
-                            selectedId={selectedCategory}               // ⭐️ 현재 선택된 ID 전달
-                            onCategoryClick={setSelectedCategory}       // ⭐️ 선택 시 변경
+                            selectedId={category}               // ⭐️ 현재 선택된 ID 전달
+                            onCategoryClick={(id) => {
+                                setCategory(id);
+                                setPage(0);
+                            }}       // ⭐️ 선택 시 변경
                         />
                         <hr className="sale-divider" />
                         {!isSearching && (

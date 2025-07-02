@@ -7,7 +7,7 @@ import './MainSale.css';
 import SeeMoreButton from "../Public/seeMoreButton.jsx";
 import Divider from '../Public/Divider';
 
-const MainSale = () => {
+const MainSale = ({ mainCategory, setMainCategory }) => {
     const navigate = useNavigate();
 
     return (
@@ -33,8 +33,9 @@ const MainSale = () => {
                     showBanner={false}
                     showOrderButton={false}
                     showCustomProducts={false}
+                    mainCategory={mainCategory}
+                    setMainCategory={setMainCategory}
                 />
-
             </div>
             <Divider />
 

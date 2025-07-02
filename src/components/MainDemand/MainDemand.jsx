@@ -3,11 +3,12 @@ import { FaHeart } from 'react-icons/fa';
 import { SlSocialDropbox } from "react-icons/sl";
 import { useNavigate } from 'react-router-dom';
 import Sale from '../Demands/HomeDemandList/HomeDemandList';
+import Demand from '../Demands/Demand/Demand'
 import './MainDemand.css';
 import SeeMoreButton from '../Public/seeMoreButton.jsx'; // 버튼 컴포넌트 추가!
 import Divider from '../Public/Divider';
 
-const MainSale = () => {
+const MainSale = ({ mainCategory, setMainCategory }) => {
     const navigate = useNavigate();
 
     return (
@@ -29,7 +30,7 @@ const MainSale = () => {
                     </div>
                 </div>
 
-                <Sale showBanner={false} showOrderButton={false} />
+                <Demand showBanner={false} showOrderButton={false} mainCategory={mainCategory} setMainCategory={setMainCategory}  />
 
             </div>
             <Divider/>
