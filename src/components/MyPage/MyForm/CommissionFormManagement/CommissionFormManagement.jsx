@@ -104,10 +104,7 @@ const CommissionFormManagement = () => {
                                     </ActionButton>
                                     <ActionButton
                                         variant="delete"
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleDelete(commission.id);
-                                        }}
+                                        onClick={() => handleDelete(commission.id)}
                                     >
                                         삭제
                                     </ActionButton>
