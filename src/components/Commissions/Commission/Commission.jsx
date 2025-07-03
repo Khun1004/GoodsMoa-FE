@@ -23,27 +23,11 @@ const getFullThumbnailUrl = (thumbnailUrl) =>
 
 // 숫자 ID만 추출하는 함수 - 반드시 숫자 문자열로 리턴
 const getNumericId = (id) => {
-    if (typeof id === 'string' && id.startsWith('DEMAND_')) {
-        return id.replace('DEMAND_', '');
+    if (typeof id === 'string' && id.startsWith('COMMISSION_')) {
+        return id.replace('COMMISSION_', '');
     }
     return String(id);
 };
-
-// const products1 = [
-//     { id: 1, src: Sale1, name: "상품 1" },
-//     { id: 2, src: Sale2, name: "상품 2" },
-//     { id: 3, src: Sale3, name: "상품 3" },
-//     { id: 4, src: Sale4, name: "상품 4" },
-//     { id: 5, src: Sale5, name: "상품 5" }
-// ];
-//
-// const products2 = [
-//     { id: 6, src: Sale6, name: "상품 6" },
-//     { id: 7, src: Sale7, name: "상품 7" },
-//     { id: 8, src: Sale8, name: "상품 8" },
-//     { id: 9, src: Sale9, name: "상품 9" },
-//     { id: 10, src: Sale10, name: "상품 10" }
-// ];
 
 const Commission = ({ showBanner = true}) => {
     const location = useLocation();
@@ -98,7 +82,7 @@ const Commission = ({ showBanner = true}) => {
                 page,
                 page_size: pageSize,
             };
-            const res = await api.get('/commission', { params });
+            const res = await api.get('/commission/search', { params });
             const data = res.data;
             const productsArr = Array.isArray(data.content) ? data.content : [];
 
@@ -226,11 +210,15 @@ const Commission = ({ showBanner = true}) => {
                                 onLike={(postId) => {
                                     handleLike(postId);
                                 }}
-                                onCardClick={(item) =>
-                                    navigate(`/commissionDetail/${getNumericId(item.id || item.demandPostId)}`, {
-                                        state: {product: item},
-                                    })
-                                }
+                                onCardClick={(item) => {
+                                    const numericId = getNumericId(item.id);
+                                    navigate(`/commissionDetail/${numericId}`, {
+                                        state: {
+                                            product: item,
+                                            id: numericId
+                                        },
+                                    });
+                                }}
                             />
                         )}
                     </>

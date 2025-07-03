@@ -4,44 +4,74 @@ import api from "../../../api/api";
 import "./CommissionForm.css";
 
 const CommissionForm = () => {
-    // 라우팅 관련 훅 선언
     const navigate = useNavigate();
     const location = useLocation();
 
-    // 상태값 선언 (커미션 작성 및 수정용)
-    const [isEditMode, setIsEditMode] = useState(false); // 수정 모드 여부
-    const [editId, setEditId] = useState(null); // 수정 시 사용될 id
-    const [image, setImage] = useState(null); // 썸네일 이미지
-    const [title, setTitle] = useState(""); // 커미션 제목
-    const [category, setCategory] = useState(""); // 카테고리
-    const [maxCount, setMaxCount] = useState(""); // 최대 진행 개수
-    const [minPrice, setMinPrice] = useState(""); // 최소 금액
-    const [maxPrice, setMaxPrice] = useState(""); // 최대 금액
-    const [tags, setTags] = useState([]); // 해시태그 배열
-    const [tagInput, setTagInput] = useState(""); // 태그 입력 필드
-    const [editorContent, setEditorContent] = useState(location.state?.content || ""); // 상세 설명 내용
-    const [applicationForms, setApplicationForms] = useState([{ title: "", reqContent: "" }]); // 신청 양식 배열
-    const [contentImages, setContentImages] = useState(location.state?.contentImages || []); // 상세 이미지 배열
+    const [isEditMode, setIsEditMode] = useState(false);
+    const [editId, setEditId] = useState(null);
+    const [image, setImage] = useState(null);
+    const [title, setTitle] = useState("");
+    const [category, setCategory] = useState("");
+    const [maxCount, setMaxCount] = useState("");
+    const [minPrice, setMinPrice] = useState("");
+    const [maxPrice, setMaxPrice] = useState("");
+    const [tags, setTags] = useState([]);
+    const [tagInput, setTagInput] = useState("");
+    const [editorContent, setEditorContent] = useState("");
+    const [applicationForms, setApplicationForms] = useState([{ title: "", reqContent: "" }]);
+    const [contentImages, setContentImages] = useState([]);
+    const [deleteDetailIds, setDeleteDetailIds] = useState([]);
 
-    // TODO 글 상세조회 만들면 수정 시 상세조회로 가져오게 만들기
-    // 수정 시 state에서 값 가져오기
     useEffect(() => {
         const state = location.state;
         if (state) {
-            state.image && setImage(state.image);
-            state.title && setTitle(state.title);
-            state.category && setCategory(state.category);
-            state.maxCount && setMaxCount(state.maxCount);
-            state.minPrice && setMinPrice(state.minPrice);
-            state.maxPrice && setMaxPrice(state.maxPrice);
-            state.tags && setTags(state.tags);
-            state.applicationForms && setApplicationForms(state.applicationForms);
-            state.content && setEditorContent(state.content);
-            state.contentImages && setContentImages(state.contentImages);
+            // 수정 시 받는 값
+            if (state.from === "management" && state.id) {
+                setIsEditMode(true);
+                setEditId(state.id);
+                api.get(`/commission/post-detail/${state.id}`)
+                    .then(res => {
+                        const data = res.data;
+                        setTitle(data.title || "");
+                        setCategory(data.categoryName || "");
+                        setMaxCount(data.requestLimited || "");
+                        setMinPrice(data.minimumPrice || "");
+                        setMaxPrice(data.maximumPrice || "");
+                        setTags(data.hashtag ? data.hashtag.split(",") : []);
+                        setEditorContent(state.content ?? data.content ?? ""); // ✅ state.content 우선 적용
+                        setApplicationForms(
+                            data.commissionDetail?.map(detail => ({
+                                id: detail.id,
+                                title: detail.title,
+                                reqContent: detail.reqContent
+                            })) || [{ title: "", reqContent: "" }]
+                        );
+                        setImage(state.image || data.thumbnailImage || null); // ✅ state.image 우선 적용
+                        setContentImages(state.contentImages || []);
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        alert("커미션 상세 정보를 불러오지 못했습니다.");
+                    });
+            } else if (state.from === "write") { // 상세설명 후 다시 왔을 때 받는 값
+                setImage(state.image || null);
+                setTitle(state.title || "");
+                setCategory(state.category || "");
+                setMaxCount(state.maxCount || "");
+                setMinPrice(state.minPrice || "");
+                setMaxPrice(state.maxPrice || "");
+                setTags(state.tags || []);
+                setApplicationForms(state.applicationForms || [{ title: "", reqContent: "" }]);
+                setEditorContent(state.content || "");
+                setContentImages(state.contentImages || []);
+                if (state.id) {
+                    setIsEditMode(true);
+                    setEditId(state.id);
+                }
+            }
         }
     }, [location.state]);
 
-    // 썸네일 이미지 변경 핸들러
     const handleImageChange = (e) => {
         const file = e.target.files[0];
         if (file) {
@@ -50,7 +80,6 @@ const CommissionForm = () => {
         }
     };
 
-    // 태그 추가 핸들러
     const handleAddTag = (e) => {
         e.preventDefault();
         if (tagInput.trim() !== "" && tags.length < 5) {
@@ -59,15 +88,34 @@ const CommissionForm = () => {
         }
     };
 
-    // 태그 삭제 핸들러
     const handleRemoveTag = (index) => {
         setTags(tags.filter((_, i) => i !== index));
     };
 
-    // 상세 설명 작성 버튼 핸들러 (글쓰기 페이지로 이동)
+    const handleAddApplicationForm = () => {
+        setApplicationForms([...applicationForms, { title: "", reqContent: "" }]);
+    };
+
+    const handleRemoveApplicationForm = (index) => {
+        const removedForm = applicationForms[index];
+        if (removedForm.id) {
+            setDeleteDetailIds(prev => [...prev, removedForm.id]);
+        }
+        const updatedForms = applicationForms.filter((_, i) => i !== index);
+        setApplicationForms(updatedForms.length > 0 ? updatedForms : [{ title: "", reqContent: "" }]);
+    };
+
+    const handleApplicationFormChange = (index, field, value) => {
+        setApplicationForms(applicationForms.map((form, idx) =>
+            idx === index ? { ...form, [field]: value } : form
+        ));
+    };
+
     const handleWriteClick = () => {
         navigate("/commissionWrite", {
             state: {
+                from: "write", // ✅ 반드시 "write"로 전달하여 상세 설명 유지
+                id: editId,
                 image,
                 title,
                 category,
@@ -82,34 +130,11 @@ const CommissionForm = () => {
         });
     };
 
-    // 상세 설명 수정 버튼 핸들러 (같은 로직 사용)
     const handleEditClick = handleWriteClick;
 
-    // 신청 양식 추가 핸들러
-    const handleAddApplicationForm = () => {
-        setApplicationForms([...applicationForms, { title: "", reqContent: "" }]);
-    };
-
-    // 신청 양식 삭제 핸들러
-    const handleRemoveApplicationForm = (index) => {
-        if (applicationForms.length > 1) {
-            setApplicationForms(applicationForms.filter((_, i) => i !== index));
-        }
-    };
-
-    // 신청 양식 내용 변경 핸들러
-    const handleApplicationFormChange = (index, field, value) => {
-        const updatedForms = [...applicationForms];
-        updatedForms[index][field] = value;
-        setApplicationForms(updatedForms);
-    };
-
-    // 폼 제출 핸들러 (커미션 등록 처리)
     const handleSubmit = async (e) => {
         e.preventDefault();
-
-        // 유효성 검사
-        if (!image?.file) {
+        if (!image?.file && !isEditMode) {
             alert("썸네일 이미지를 업로드해주세요.");
             return;
         }
@@ -121,20 +146,16 @@ const CommissionForm = () => {
             alert("최소 금액은 최대 금액보다 클 수 없습니다.");
             return;
         }
-        for (const form of applicationForms) {
-            if (!form.title || !form.reqContent) {
-                alert("모든 신청 양식을 작성해주세요.");
-                return;
-            }
+        if (applicationForms.some(form => !form.title || !form.reqContent)) {
+            alert("모든 신청 양식을 작성해주세요.");
+            return;
         }
 
         try {
-            // FormData 생성 및 데이터 구성
             const formData = new FormData();
-            const categoryMap = {"그림": 9, "글": 10, "기타": 11};
-
+            const categoryMap = { "그림": 9, "글": 10, "기타": 11 };
             const postRequest = {
-                id: null,
+                id: isEditMode ? editId : null,
                 title,
                 content: editorContent,
                 thumbnailImage: "",
@@ -144,38 +165,52 @@ const CommissionForm = () => {
                 hashtag: tags.join(","),
                 categoryId: categoryMap[category] || 5,
                 details: applicationForms.map(form => ({
-                    commissionId: null,
+                    id: form.id ?? null,
+                    commissionId: isEditMode ? editId : null,
                     title: form.title,
                     reqContent: form.reqContent
-                })),
+                }))
             };
 
             formData.append(
                 "postRequest",
                 new Blob([JSON.stringify(postRequest)], { type: "application/json" })
             );
-            formData.append("thumbnailImage", image.file);
 
-            // 상세 이미지 추가
-            contentImages.forEach(img => {
-                if (img.file) {
-                    formData.append("contentImages", img.file);
+            if (isEditMode) {
+                if (image?.file) {
+                    formData.append("newThumbnailImage", image.file);
                 }
-            });
+                contentImages.forEach(img => {
+                    if (img.file) {
+                        formData.append("newContentImages", img.file);
+                    }
+                });
+                formData.append("deleteDetailIds", JSON.stringify(deleteDetailIds));
+            } else {
+                formData.append("thumbnailImage", image.file);
+                contentImages.forEach(img => {
+                    if (img.file) {
+                        formData.append("contentImages", img.file);
+                    }
+                });
+            }
 
-            // API 요청 및 전송
-            const response = await api.post("/commission/create", formData, {
-                headers: { "Content-Type": "multipart/form-data" },
-            });
+            const response = isEditMode
+                ? await api.put("/commission/update", formData, {
+                    headers: { "Content-Type": "multipart/form-data" },
+                })
+                : await api.post("/commission/create", formData, {
+                    headers: { "Content-Type": "multipart/form-data" },
+                });
 
-            alert("커미션이 성공적으로 등록되었습니다!");
+            alert(`커미션이 성공적으로 ${isEditMode ? "수정" : "등록"}되었습니다!`);
             navigate("/commission", { state: { response: response.data } });
         } catch (error) {
-            console.error("커미션 등록 실패:", error);
-            alert("커미션 등록에 실패했습니다. 다시 시도해주세요.");
+            console.error(error);
+            alert(`커미션 ${isEditMode ? "수정" : "등록"}에 실패했습니다. 다시 시도해주세요.`);
         }
     };
-
     // 반환: 화면 렌더링 (폼 구성 및 상태 연동)
     return (
         <div className="container">
@@ -240,7 +275,7 @@ const CommissionForm = () => {
                         <input type="text" className="form-input" placeholder="제목 입력" value={form.title} onChange={(e) => handleApplicationFormChange(idx, 'title', e.target.value)} />
                         <label className="form-label">내용</label>
                         <textarea className="form-input description-textarea" placeholder="내용 입력" value={form.reqContent} onChange={(e) => handleApplicationFormChange(idx, 'reqContent', e.target.value)} />
-                        {applicationForms.length > 1 && (
+                        {applicationForms.length > 0 && (
                             <button type="button" className="remove-form-button" onClick={() => handleRemoveApplicationForm(idx)}>삭제</button>
                         )}
                     </div>

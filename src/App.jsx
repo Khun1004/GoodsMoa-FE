@@ -142,7 +142,7 @@ const AppContent = ({
 
         {/* CommissionDetail Page */}
         <Route
-          path="/commissionDetail"
+          path="/commissionDetail/:id"
           element={
             <div className="pt-[130px]">
               <CommissionDetail />
