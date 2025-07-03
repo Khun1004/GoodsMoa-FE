@@ -1,3 +1,4 @@
+// ✅ 수정된 CommissionWrite.jsx
 import React, { useEffect, useRef, useState } from "react";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
@@ -29,7 +30,7 @@ const CommissionWrite = () => {
         const newImages = files.map((file) => {
             const preview = URL.createObjectURL(file);
             const extension = file.name.split('.').pop().toLowerCase();
-            const url = preview; // 로컬 preview URL 그대로 사용
+            const url = preview;
             return { file, preview, url, extension };
         });
 
@@ -51,6 +52,8 @@ const CommissionWrite = () => {
     const handleSubmit = () => {
         navigate("/commissionForm", {
             state: {
+                from: "write",                      // ✅ "write"로 수정
+                id: location.state?.id || null,
                 image: location.state?.image || null,
                 title: location.state?.title || "",
                 category: location.state?.category || "",
@@ -59,9 +62,8 @@ const CommissionWrite = () => {
                 maxPrice: location.state?.maxPrice || "",
                 tags: location.state?.tags || [],
                 applicationForms: location.state?.applicationForms || [{ title: "", reqContent: "" }],
-                content,
+                content,                             // ✅ 작성한 상세 설명 전달
                 contentImages: images,
-                from: "write",
             },
         });
     };
@@ -140,23 +142,7 @@ const CommissionWrite = () => {
                     <button className="commissionSubmitBtn" onClick={handleSubmit}>작성 완료</button>
                     <button
                         className="commissionCancelBtn"
-                        onClick={() =>
-                            navigate("/commissionForm", {
-                                state: {
-                                    image: location.state?.image || null,
-                                    title: location.state?.title || "",
-                                    category: location.state?.category || "",
-                                    maxCount: location.state?.maxCount || "",
-                                    minPrice: location.state?.minPrice || "",
-                                    maxPrice: location.state?.maxPrice || "",
-                                    tags: location.state?.tags || [],
-                                    applicationForms: location.state?.applicationForms || [{ title: "", reqContent: "" }],
-                                    content,
-                                    contentImages: images,
-                                    from: "write",
-                                },
-                            })
-                        }
+                        onClick={() => navigate(-1)}
                     >
                         취소
                     </button>
