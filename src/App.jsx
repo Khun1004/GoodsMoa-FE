@@ -380,7 +380,7 @@ const AppContent = ({
         />
 
         {/* SaleDetail Page */}
-        <Route path="/person"
+        <Route path="/person/:id"
           element={
             <div className="pt-[130px]">
               <SaleDetail />

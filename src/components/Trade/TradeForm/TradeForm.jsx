@@ -259,10 +259,10 @@ const TradeForm = () => {
   };
 
   const handleAddTag = () => {
-    const newTag = `${tagInput.trim().replace(/^#+/, "")}`;
+    const newTag = tagInput.trim().replace(/^#+/, "");
     if (newTag && formTradeData.tags.length < 3) {
-      if (!formTradeData.tags.includes(`#${newTag}`)) {
-        setFormTradeData(prev => ({ ...prev, tags: [...prev.tags, `#${newTag}`] }));
+      if (!formTradeData.tags.includes(newTag)) {
+        setFormTradeData(prev => ({ ...prev, tags: [...prev.tags, newTag] }));
       }
       setTagInput("");
     } else if (formTradeData.tags.length >= 3) {
@@ -327,7 +327,19 @@ const TradeForm = () => {
       formData.append(isEditMode ? "newContentImages" : "contentImages", imgObj.file);
     });
     console.log('FormData 준비 완료');
-    console.groupEnd();
+    // FormData 전체 key-value 로그
+    for (let pair of formData.entries()) {
+      if (pair[1] instanceof Blob && pair[1].type.startsWith('image/')) {
+        console.log(`[FormData] ${pair[0]}: [이미지 파일]`, pair[1]);
+      } else if (pair[1] instanceof Blob) {
+        // JSON Blob
+        pair[1].text().then(text => {
+          console.log(`[FormData] ${pair[0]}:`, text);
+        });
+      } else {
+        console.log(`[FormData] ${pair[0]}:`, pair[1]);
+      }
+    }
     
     const url = isEditMode ? `/tradePost/update/${formTradeData.id}` : "/tradePost/create";
     try {
@@ -501,7 +513,7 @@ const TradeForm = () => {
             <div className="tag-list">
               {formTradeData.tags.map((tag, index) => (
                 <span key={index} className="tag">
-                  {tag}
+                  #{tag}
                   <button type="button" onClick={() => handleRemoveTag(index)}>x</button>
                 </span>
               ))}

@@ -5,23 +5,32 @@ import { FaHeart } from 'react-icons/fa';
 import { default as placeholderImage } from '../../assets/sales/sale1.jpg';
 import '../Sales/Sale/Sale.css';
 import Spacer from "./Spacer.jsx";
+import ProductCard from '../common/ProductCard/ProductCard';
+import { getNumericId as getDemandNumericId } from '../../utils/demandUtils';
+import { getNumericId as getTradeNumericId } from '../../utils/tradeUtils';
 
 // ✅ 문자열 ID에서 숫자 postId 추출하는 함수
-const extractPostId = (fullId) => {
-    if (typeof fullId === 'string' && fullId.includes('_')) {
-        return Number(fullId.split('_')[1]);
+const extractPostId = (fullId, type) => {
+    if (type === 'trade') {
+        return getTradeNumericId(fullId);
+    } else if (type === 'demand') {
+        return getDemandNumericId(fullId);
+    } else {
+        // sale이나 다른 타입의 경우
+        if (typeof fullId === 'string' && fullId.includes('_')) {
+            return Number(fullId.split('_')[1]);
+        }
+        return Number(fullId);
     }
-    return Number(fullId);
 };
 
 const BestsellerList = ({ apiFn, type, heading, liked = {}, onLike, onCardClick }) => {
     const [posts, setPosts] = useState([]);
 
-
-    // BestsellerList.jsx
     useEffect(() => {
         console.log("✅ BestsellerList received liked props:", liked);
     }, [liked]);
+    
     // 베스트셀러 리스트 가져오기
     useEffect(() => {
         const fetchBestsellers = async () => {
@@ -47,47 +56,20 @@ const BestsellerList = ({ apiFn, type, heading, liked = {}, onLike, onCardClick 
 
             <div className="sale-grid">
                 {posts.map((post) => {
-                    const postId = extractPostId(post.id);
+                    const postId = extractPostId(post.id, type);
+                    const isLiked = liked[postId] || false;
+                    
                     return (
-                        <div key={post.id} className="sale-card"  onClick={() => onCardClick({ ...post, id: extractPostId(post.id) })} >
-                            <img
-                                src={post.thumbnailUrl || placeholderImage}
-                                alt={post.title}
-                                className="sale-image"
-                                onError={(e) => { e.target.src = placeholderImage; }}
-                            />
-                            <span className="sale-label">인기</span>
-
-                            {onLike && (
-                                <button
-                                    className={`sale-like-button ${liked[postId] ? 'liked' : ''}`}
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        onLike(postId);
-                                    }}
-                                >
-                                    <FaHeart size={18} />
-                                </button>
-                            )}
-
-                            <div className="sale-profile-block">
-                                <div className="sale-profile-row">
-                                    <CgProfile className="sale-profile-pic-mini" />
-                                    <span className="sale-user-name-mini">{post.nickname || '익명'}</span>
-                                </div>
-                                <div className="sale-product-title">{post.title}</div>
-                            </div>
-
-                            {post.hashtag && (
-                                <div className="tags-container">
-                                    <div className="tags-list">
-                                        {post.hashtag.split(',').map((tag, idx) => (
-                                            <span key={idx} className="tag-item">#{tag.trim()}</span>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-                        </div>
+                        <ProductCard
+                            key={post.id}
+                            item={{...post, liked: isLiked}}
+                            onLike={onLike}
+                            products={posts}
+                            detailPath={type === 'trade' ? '/tradeDetail' : '/saleDetail'}
+                            label="인기"
+                            saleLabel={heading}
+                            onCardClick={onCardClick}
+                        />
                     );
                 })}
             </div>
