@@ -1,18 +1,19 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState, useCallback } from 'react';
 import { CgProfile } from "react-icons/cg";
 import { FaHeart } from 'react-icons/fa';
 import { SlSocialDropbox } from "react-icons/sl";
 import { useNavigate } from 'react-router-dom';
 import { default as placeholderImage } from '../../../assets/sales/sale1.jpg';
 import { LoginContext } from "../../../contexts/LoginContext";
-import SearchBanner from '../../Public/SearchBanner';
+import SearchBanner from '../../public/SearchBanner';
 import './Sale.css';
 import Category from '../../public/Category/Category';
 import BestsellerList from "../../public/BestsellerList.jsx";
 import { getBestsellerByType, searchBoardPosts } from "../../../api/publicService";
 import productService from "../../../api/ProductService";
 import SortSelect from "../../public/SortSelect.jsx";
-import { useCallback } from 'react';
+import ProductCard from '../../common/ProductCard/ProductCard';
+import Pagination from '../../common/Pagination/Pagination';
 
 const Sale = ({ showBanner = true, showCustomProducts = true, mainCategory, setMainCategory  }) => {
     const [userName, setUserName] = useState(() => localStorage.getItem('userName') || "사용자 이름");
@@ -117,39 +118,8 @@ const Sale = ({ showBanner = true, showCustomProducts = true, mainCategory, setM
         if (e.key === 'Enter') fetchProductPosts();
     };
 
-    const handleProductClick = async (post) => {
-        try {
-            const detailedPost = post;
-            const numericPostId = parseInt(getPostIdKey(post.id), 10);
-            navigate('/person', {
-                state: {
-                    product: {
-                        ...detailedPost,
-                        id: numericPostId,
-                        name: detailedPost.title,
-                        price: detailedPost.price,
-                        image: detailedPost.thumbnailUrl,
-                        src: detailedPost.thumbnailUrl,
-                        quantity: 10,
-                        maxQuantity: 20,
-                        shippingMethods: detailedPost.delivers || []
-                    },
-                    products: [{
-                        ...detailedPost,
-                        image: detailedPost.thumbnailUrl,
-                        src: detailedPost.thumbnailUrl
-                    }],
-                    selectedImage: detailedPost.thumbnailUrl,
-                    saleLabel: "판매",
-                    userName,
-                    profileImage: userInfo?.profileImage || profileImage,
-                    from: 'sale',
-                    productReviews: []
-                }
-            });
-        } catch (err) {
-            console.error('상품 상세 이동 에러:', err);
-        }
+    const handleProductClick = (post) => {
+        navigate(`/person/${post.id}`);
     };
 
     const handleSearchSubmit = () => {
@@ -174,11 +144,11 @@ const Sale = ({ showBanner = true, showCustomProducts = true, mainCategory, setM
                         />
                         <Category
                             gap={90}
-                            selectedId={category}               // ⭐️ 현재 선택된 ID 전달
+                            selectedId={category}
                             onCategoryClick={(id) => {
                                 setCategory(id);
                                 setPage(0);
-                            }}       // ⭐️ 선택 시 변경
+                            }}
                         />
                         <hr className="sale-divider" />
                         {!isSearching && (
@@ -186,7 +156,11 @@ const Sale = ({ showBanner = true, showCustomProducts = true, mainCategory, setM
                                 apiFn={getBestsellerByType}
                                 type="product"
                                 heading="인기 판매 제품"
-                                liked={liked}
+                                liked={posts.reduce((acc, item) => {
+                                    const id = getPostIdKey(item.id);
+                                    acc[id] = liked[id] || false;
+                                    return acc;
+                                }, {})}
                                 onLike={handleLike}
                                 onCardClick={handleProductClick}
                             />
@@ -215,62 +189,27 @@ const Sale = ({ showBanner = true, showCustomProducts = true, mainCategory, setM
                     <div className="sale-grid">
                         {posts.map((post) => {
                             const postIdKey = getPostIdKey(post.id);
+                            const isLiked = liked[postIdKey] || false;
                             return (
-                                <div key={post.id} className="sale-card">
-                                    <div onClick={() => handleProductClick(post)}>
-                                        <img
-                                            src={post.thumbnailUrl || placeholderImage}
-                                            alt={post.title}
-                                            className="sale-image"
-                                            onError={(e) => {
-                                                e.target.src = placeholderImage;
-                                            }}
-                                        />
-                                    </div>
-                                    <span className="sale-label">판매</span>
-                                    <button
-                                        className={`sale-like-button ${liked[postIdKey] ? 'liked' : ''}`}
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleLike(post.id);
-                                        }}
-                                    >
-                                        <FaHeart size={18} />
-                                    </button>
-
-                                    <div className="sale-profile-block">
-                                        <div className="sale-profile-row">
-                                            {post.profileUrl ? (
-                                                <img
-                                                    src={post.profileUrl}
-                                                    alt="작성자"
-                                                    className="sale-profile-pic-mini"
-                                                    onError={(e) => {
-                                                        e.target.src = placeholderImage;
-                                                    }}
-                                                />
-                                            ) : (
-                                                <CgProfile className="sale-profile-pic-mini" />
-                                            )}
-                                            <span className="sale-user-name-mini">{post.nickname}</span>
-                                        </div>
-                                        <span className="view-count">조회수: {post.views || 0}</span>
-                                    </div>
-                                    <div className="sale-product-title">{post.title}</div>
-                                    {post.hashtag && (
-                                        <div className="tags-container">
-                                            <div className="tags-list">
-                                                {post.hashtag.split(",").map((tag, idx) => (
-                                                    <span key={idx} className="tag-item">#{tag.trim()}</span>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
+                                <ProductCard
+                                    key={post.id}
+                                    item={{...post, liked: isLiked}}
+                                    onLike={() => handleLike(post.id)}
+                                    products={posts}
+                                    detailPath="/person"
+                                    label="판매"
+                                    saleLabel="판매"
+                                />
                             );
                         })}
                     </div>
                 </div>
+
+                <Pagination
+                    currentPage={page}
+                    totalPages={totalPages}
+                    onPageChange={setPage}
+                />
 
                 {searchQuery && posts.length === 0 && (
                     <div className="no-search-results">

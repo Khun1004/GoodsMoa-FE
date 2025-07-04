@@ -1,10 +1,9 @@
 import React, {useEffect, useState, useContext, useCallback} from 'react';
-import { CgProfile } from "react-icons/cg";
 import { FaHeart } from 'react-icons/fa';
 import { SlSocialDropbox } from "react-icons/sl";
 import { Link, useNavigate } from 'react-router-dom';
 import { LoginContext } from "../../../contexts/LoginContext";
-import SearchBanner from '../../Public/SearchBanner';
+import SearchBanner from '../../public/SearchBanner';
 import './Trade.css';
 import Category from '../../public/Category/Category';
 import SortSelect from "../../public/SortSelect.jsx";
@@ -12,14 +11,15 @@ import BestsellerList from "../../public/BestsellerList.jsx";
 import { getBestsellerByType } from "../../../api/publicService";
 import api from "../../../api/api";
 import _ from "lodash";
-import Trade1 from '../../../assets/demands/demand1.jpg';
-import Spacer from "../../public/Spacer.jsx";
+import ProductCard from '../../common/ProductCard/ProductCard';
+import Pagination from '../../common/Pagination/Pagination';
+import { getFullThumbnailUrl } from '../../../utils/demandUtils';
+import { getNumericId, fetchTradeProducts, handleLike } from '../../../utils/tradeUtils';
 
 const Trade = ({ showBanner = true, mainCategory, setMainCategory }) => {
   const { userInfo } = useContext(LoginContext);
   const navigate = useNavigate();
 
-  const [userName, setUserName] = useState(() => localStorage.getItem('userName') || "사용자 이름");
   const [fetchedTradePosts, setFetchedTradePosts] = useState([]);
   const [likedServerPosts, setLikedServerPosts] = useState({});
 
@@ -38,14 +38,7 @@ const Trade = ({ showBanner = true, mainCategory, setMainCategory }) => {
   const [totalPages, setTotalPages] = useState(0);
   const pageSize = 10;
 
-  const [isTradeSubmitted, setIsTradeSubmitted] = useState(() => {
-    return localStorage.getItem('isTradeSubmitted') === 'true';
-  });
 
-  const [savedTradeFormData, setSavedTradeFormData] = useState(() => {
-    const stored = localStorage.getItem('tradeFormData');
-    return stored ? JSON.parse(stored) : null;
-  });
 
   const sortOptions = [
     { label: '최신순', value: 'new' },      // 최신 등록순
@@ -54,119 +47,44 @@ const Trade = ({ showBanner = true, mainCategory, setMainCategory }) => {
     { label: '좋아요순', value: 'like' },         // 좋아요(찜) 많은 순
   ];
 
-  const getFullThumbnailUrl = (thumbnailUrl) =>
-      thumbnailUrl
-          ? thumbnailUrl.startsWith('http')
-              ? thumbnailUrl
-              : `http://localhost:8080/${thumbnailUrl.replace(/^\/+/, '')}`
-          : Trade1;
-
-  const getNumericId = (id) => {
-    if (typeof id === 'string' && id.startsWith('TRADE_')) {
-      return id.replace('TRADE_', '');
-    }
-    return String(id);
-  };
-
   const category = mainCategory !== undefined ? mainCategory : boardCategory;
   const setCategory = setMainCategory !== undefined ? setMainCategory : setBoardCategory;
-
-  const fetchTradeProducts = useCallback(async () => {
-    console.log("fetchTradeProducts called! category:", category);
-    setLoading(true);
-    setError(null);
-    try {
-      const params = {
-        search_type: searchType.toUpperCase(),
-        query: searchQuery,
-        category,
-        order_by: orderBy,
-        include_expired: includeExpired,
-        include_scheduled: includeScheduled,
-        page,
-        page_size: pageSize,
-      };
-      const res = await api.get('/tradePost', { params });
-      const data = res.data;
-      const productsArr = Array.isArray(data.content) ? data.content : [];
-      // demandProducts에 liked 정보 유지하면서 업데이트 하려면 서버에서 liked 정보 같이 받아야 함.
-      // 없으면 기존 liked 유지
-      setTradeProducts(productsArr);
-      setTotalPages(data.totalPages || 1);
-    } catch (err) {
-      setError(err.message || '데이터를 불러오지 못했습니다.');
-    } finally {
-      setLoading(false);
-    }
-  }, [searchType, searchQuery, category, orderBy, includeExpired, includeScheduled, page]);
 
   useEffect(() => {
     console.log("Trade의 mainCategory:", mainCategory);
     const debounceFetch = _.debounce(() => {
-      fetchTradeProducts();
+      fetchTradeProducts({
+        searchType,
+        searchQuery,
+        category,
+        orderBy,
+        includeExpired,
+        includeScheduled,
+        page,
+        pageSize,
+        setTradeProducts,
+        setTotalPages,
+        setLoading,
+        setError
+      });
     }, 500);
     debounceFetch();
     return () => debounceFetch.cancel();
-  }, [fetchTradeProducts]);
+  }, [searchType, searchQuery, category, orderBy, includeExpired, includeScheduled, page]);
 
-  // 서버 좋아요 토글
-  const handleLike = async (id) => {
-    const numericId = getNumericId(id);
-    try {
-      const item = tradeProducts.find(p => getNumericId(p.id) === numericId);
-      const isLiked = item?.liked;
-      if (isLiked) {
-        await api.delete(`/trade-like/${numericId}`);
-      } else {
-        await api.post(`/trade-like/like/${numericId}`);
-      }
-      setTradeProducts(prev =>
-          prev.map(item => {
-            const numericItemId = getNumericId(item.id);
-            if (numericItemId === numericId) {
-              return { ...item, liked: !item.liked };
-            }
-            return item;
-          })
-      );
-    } catch (err) {
-      alert('좋아요 처리 실패: ' + (err.response?.data?.message || err.message));
-    }
-  };
-
-  // 게시글 + 좋아요 상태 가져오기
+  // 좋아요 상태 동기화 (tradeProducts가 바뀔 때만)
   useEffect(() => {
-    const fetchTradeData = async () => {
-      try {
-        const postsRes = await api.get("/tradePost");
-        const posts = postsRes.data.content || [];
-        setFetchedTradePosts(posts);
+    if (userInfo && tradeProducts.length > 0) {
+      const postIds = tradeProducts.map(post => post.id);
+      api.post('/trade-like/my-likes-status', { postIds })
+        .then(likesRes => setLikedServerPosts(likesRes.data))
+        .catch(() => setLikedServerPosts({}));
+    } else {
+      setLikedServerPosts({});
+    }
+  }, [userInfo, tradeProducts]);
 
-        if (userInfo && posts.length > 0) {
-          const postIds = posts.map(post => post.id);
-          const likesRes = await api.post('/trade-like/my-likes-status', { postIds });
-          setLikedServerPosts(likesRes.data);
-        } else {
-          setLikedServerPosts({});
-        }
-      } catch (err) {
-        console.error("중고거래 게시글 로딩 실패:", err);
-        setFetchedTradePosts([]);
-      }
-    };
 
-    fetchTradeData();
-  }, [userInfo]);
-
-  //이거 지워야함 ㅇㅇ
-  // const filteredPosts = fetchedTradePosts.filter((item) => {
-  //   const titleMatch = item.title?.toLowerCase().includes(searchTerm.toLowerCase());
-  //   const hashtagArr = item.hashtag?.split(" ").filter(tag => tag.trim() !== "") || [];
-  //   const tagMatch = searchTerm.startsWith("#") && hashtagArr.some(tag =>
-  //       tag.toLowerCase().includes(searchTerm.toLowerCase())
-  //   );
-  //   return !searchTerm || titleMatch || tagMatch;
-  // });
 
   // 검색용
   const filteredProducts = tradeProducts.filter(item => {
@@ -215,15 +133,19 @@ const Trade = ({ showBanner = true, mainCategory, setMainCategory }) => {
                       type="trade"
                       heading="인기 중고거래"
                       liked={tradeProducts.reduce((acc, item) => {
-                        const id = getNumericId(item.id || item.demandPostId);
-                        acc[id] = item.liked;
-                        return acc;
+                          const id = getNumericId(item.id || item.tradePostId);
+                          acc[id] = item.liked;
+                          return acc;
                       }, {})}
                       onLike={(postId) => {
-                        handleLike(postId);
+                          handleLike({
+                              id: postId,
+                              tradeProducts,
+                              setTradeProducts
+                          });
                       }}
                       onCardClick={(item) =>
-                          navigate(`/tradeDetail/${getNumericId(item.id || item.demandPostId)}`, {
+                          navigate(`/tradeDetail/${getNumericId(item.id || item.tradePostId)}`, {
                             state: {product: item},
                           })
                       }
@@ -251,112 +173,28 @@ const Trade = ({ showBanner = true, mainCategory, setMainCategory }) => {
             {!loading && (isSearching ? filteredProducts : tradeProducts).length === 0 && (
                 <div className="no-search-result">"{searchQuery}"에 대한 검색 결과가 없습니다.</div>
             )}
-            {(isSearching ? filteredProducts : tradeProducts).map((item) => {
-              const id = getNumericId(item.id);
-
-              return (
-                  <div key={id} className="sale-card">
-                    <Link
-                        to={`/tradeDetail/${id}`}
-                        state={{
-                          product: item,
-                          saleLabel: '중고거래',
-                          products: tradeProducts,
-                        }}
-                    >
-                      <div className="card-image-container">
-                        {item.thumbnailUrl ? (
-                            <img
-                                src={getFullThumbnailUrl(item.thumbnailUrl)}
-                                alt={item.title}
-                                className="sale-image"
-                                onError={e => {
-                                  e.target.src = "/placeholder.jpg";
-                                }}
-                            />
-                        ) : (
-                            <div className="no-image">이미지 없음</div>
-                        )}
-                      </div>
-                    </Link>
-                    <span className="demand-label">중고거래</span>
-                    <button
-                        className={`sale-like-button${item.liked ? ' liked' : ''}`}
-                        onClick={() => handleLike(id)}
-                    >
-                      <FaHeart size={18}/>
-                    </button>
-
-                    <div className="card-content-area">
-                      <div className="profile-line">
-                        <div className="profile-mini">
-                          {item.userImage ? (
-                              <img src={item.userImage} alt="프로필" className="profile-pic-mini"/>
-                          ) : (
-                              <CgProfile className="profile-pic-mini"/>
-                          )}
-                          <span className="user-name-mini">{item.nickname || '작성자'}</span>
-                        </div>
-                        <span className="view-count">조회수: {item.views || 0}</span>
-                      </div>
-                      <span className="sale-product-title">{item.title}</span>
-                      {item.hashtag && item.hashtag.trim() && (
-                          <div className="tags-list">
-                            {item.hashtag
-                                .split(',')
-                                .map(tag => tag.trim())
-                                .filter(tag => tag.length > 0)
-                                .map((tag, idx) => (
-                                    <span key={idx} className="tag-item">#{tag}</span>
-                                ))}
-                          </div>
-                      )}
-                    </div>
-                  </div>
-              );
-            })}
-
-
-            {isTradeSubmitted && savedTradeFormData && (
-                <div className="sale-card">
-                  <Link to="/tradeDetail" state={{item: savedTradeFormData}}>
-                    <img
-                        src={savedTradeFormData.representativeImage}
-                        alt={savedTradeFormData.title}
-                        className="sale-image"
-                    />
-                    <span className="sale-label">중고거래</span>
-                  </Link>
-                  <div className="card-content-area">
-                    <span className="sale-product-title">{savedTradeFormData.title}</span>
-                    <p className="user-name-mini">{userName}</p>
-                  </div>
-                  <button className="sale-like-button">
-                    <FaHeart size={18}/>
-                  </button>
-                </div>
-            )}
+            {(isSearching ? filteredProducts : tradeProducts).map((item) => (
+                <ProductCard
+                  key={item.id}
+                  item={item}
+                  onLike={(id) => handleLike({
+                      id,
+                      tradeProducts,
+                      setTradeProducts
+                  })}
+                  products={tradeProducts}
+                  detailPath="/tradeDetail"
+                  label="중고거래"
+                  saleLabel="중고거래"
+                />
+            ))}
           </div>
           {showBanner && (
-              <div className="pagination">
-                {Array.from({length: totalPages}, (_, i) => (
-                    <button
-                        key={i}
-                        onClick={() => setPage(i)}
-                        style={{
-                          margin: '0 5px',
-                          padding: '6px 10px',
-                          backgroundColor: i === page ? '#333' : '#eee',
-                          color: i === page ? '#fff' : '#000',
-                          border: 'none',
-                          borderRadius: '4px',
-                          cursor: 'pointer',
-                        }}
-                    >
-                      {i + 1}
-                    </button>
-                ))}
-              </div>
+              <Pagination
+                currentPage={page}
+                totalPages={totalPages}
+                onPageChange={setPage}
+              />
           )}
         </div>
       </div>

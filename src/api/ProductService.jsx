@@ -517,7 +517,13 @@ class ProductService {
     // 상품글 상세 조회일때 찜
     async getSingleLikedPost(id) {
         try {
-            return await this.request(`/product-like/my-likes/${id}`, 'GET');
+            // ID에서 숫자 부분만 추출
+            let numericId = id;
+            if (typeof id === 'string' && id.includes('_')) {
+                numericId = id.split('_')[1];
+            }
+            console.log("🔍 ProductService.getSingleLikedPost 호출됨 - 원본 ID:", id, "변환된 ID:", numericId);
+            return await this.request(`/product-like/my-likes/${numericId}`, 'GET');
         } catch (error) {
             if (error.message.includes("404")) {
                 return false;
