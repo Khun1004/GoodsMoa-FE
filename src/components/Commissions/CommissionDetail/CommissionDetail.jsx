@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import './CommissionDetail.css';
-import api from '../../../api/api'; // api 인스턴스 경로 확인 후 맞게 조정
+import api from '../../../api/api';
 
 const CommissionDetail = () => {
     const location = useLocation();
@@ -40,18 +40,9 @@ const CommissionDetail = () => {
     }, [id]);
 
     const handleApplyClick = () => {
-        if (commission) {
+        if (commission?.id) {
             navigate('/commissionApplyWrite', {
-                state: {
-                    commission: {
-                        ...commission,
-                        description,
-                        sections: commission.commissionDetail?.map((form, idx) => ({
-                            title: `${idx + 1}. ${form.title}`,
-                            description: form.reqContent
-                        })) || []
-                    }
-                }
+                state: { id: commission.id }
             });
         }
     };
