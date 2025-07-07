@@ -8,6 +8,7 @@ import Spacer from "./Spacer.jsx";
 import ProductCard from '../common/ProductCard/ProductCard';
 import { getNumericId as getDemandNumericId } from '../../utils/demandUtils';
 import { getNumericId as getTradeNumericId } from '../../utils/tradeUtils';
+import { getNumericId as getCommissionNumericId } from '../../utils/commissionUtils';
 
 // ✅ 문자열 ID에서 숫자 postId 추출하는 함수
 const extractPostId = (fullId, type) => {
@@ -15,6 +16,8 @@ const extractPostId = (fullId, type) => {
         return getTradeNumericId(fullId);
     } else if (type === 'demand') {
         return getDemandNumericId(fullId);
+    } else if (type === 'commission') {
+        return getCommissionNumericId(fullId);
     } else {
         // sale이나 다른 타입의 경우
         if (typeof fullId === 'string' && fullId.includes('_')) {
@@ -65,7 +68,10 @@ const BestsellerList = ({ apiFn, type, heading, liked = {}, onLike, onCardClick 
                             item={{...post, liked: isLiked}}
                             onLike={onLike}
                             products={posts}
-                            detailPath={type === 'trade' ? '/tradeDetail' : '/saleDetail'}
+                            detailPath={type === 'trade' ? '/tradeDetail' : 
+                                       type === 'demand' ? '/demandDetail' : 
+                                       type === 'product' ? '/person' : 
+                                       type === 'commission' ? '/commissionDetail' : '/saleDetail'}
                             label="인기"
                             saleLabel={heading}
                             onCardClick={onCardClick}

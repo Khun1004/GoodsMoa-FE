@@ -1,8 +1,8 @@
 import { FaHeart } from "react-icons/fa";
 
 const LikeButton = ({ postId, liked, handleLike }) => {
-    // 값이 undefined일 경우 false 처리
-    const isLiked = !!liked[String(postId)];
+    // liked는 이미 boolean 값으로 전달됨
+    const isLiked = !!liked;
 
     return (
         <button

@@ -46,7 +46,8 @@
 }
 
 .commission-grid,
-.commissionWrite-grid {
+.commissionWrite-grid,
+.product-grid {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
     gap: 20px;
@@ -202,13 +203,13 @@
 
 /* 반응형 디자인 */
 @media (max-width: 1200px) {
-    .demand-grid { grid-template-columns: repeat(5, 1fr); }
+    .demand-grid, .product-grid { grid-template-columns: repeat(5, 1fr); }
 }
 @media (max-width: 800px) {
-    .demand-grid { grid-template-columns: repeat(3, 1fr); }
+    .demand-grid, .product-grid { grid-template-columns: repeat(3, 1fr); }
 }
 @media (max-width: 480px) {
-    .demand-grid { grid-template-columns: 1fr; }
+    .demand-grid, .product-grid { grid-template-columns: 1fr; }
 }
 
 /*.commission-banner {*/

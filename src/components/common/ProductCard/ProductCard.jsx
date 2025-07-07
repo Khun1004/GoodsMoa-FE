@@ -2,7 +2,9 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { CgProfile } from 'react-icons/cg';
 import { FaHeart } from 'react-icons/fa';
-import { getNumericId, getFullThumbnailUrl } from '../../../utils/demandUtils';
+import { getNumericId as getDemandNumericId, getFullThumbnailUrl } from '../../../utils/demandUtils';
+import { getNumericId as getTradeNumericId } from '../../../utils/tradeUtils';
+import { getNumericId as getCommissionNumericId } from '../../../utils/commissionUtils';
 import './ProductCard.css';
 
 const ProductCard = ({ 
@@ -13,7 +15,21 @@ const ProductCard = ({
     label = '상품',
     saleLabel = '거래'
 }) => {
-    const id = getNumericId(item.id || item.demandPostId || item.salePostId || item.tradePostId);
+    // ID 타입에 따라 적절한 함수 사용
+    let id;
+    if (item.id && typeof item.id === 'string') {
+        if (item.id.startsWith('COMMISSION_')) {
+            id = getCommissionNumericId(item.id);
+        } else if (item.id.startsWith('TRADE_')) {
+            id = getTradeNumericId(item.id);
+        } else if (item.id.startsWith('DEMAND_')) {
+            id = getDemandNumericId(item.id);
+        } else {
+            id = getDemandNumericId(item.id || item.demandPostId || item.salePostId || item.tradePostId);
+        }
+    } else {
+        id = getDemandNumericId(item.id || item.demandPostId || item.salePostId || item.tradePostId);
+    }
 
     return (
         <div className="product-card">

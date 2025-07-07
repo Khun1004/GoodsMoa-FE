@@ -119,7 +119,8 @@ const Sale = ({ showBanner = true, showCustomProducts = true, mainCategory, setM
     };
 
     const handleProductClick = (post) => {
-        navigate(`/person/${post.id}`);
+        const numericId = getPostIdKey(post.id);
+        navigate(`/person/${numericId}`);
     };
 
     const handleSearchSubmit = () => {

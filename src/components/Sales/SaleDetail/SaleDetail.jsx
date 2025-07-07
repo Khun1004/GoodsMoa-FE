@@ -40,6 +40,12 @@ const SaleDetail = () => {
         return String(id);
     };
 
+    // 좋아요 상태 확인 함수
+    const isLiked = (postId) => {
+        const key = getPostIdKey(postId);
+        return liked[key] || false;
+    };
+
     // 상품 상세 정보 조회
     useEffect(() => {
         if (!id) return;
@@ -118,15 +124,13 @@ const SaleDetail = () => {
         
         const fetchLikedInfo = async () => {
             try {
-                let numericId = id;
-                if (typeof id === 'string' && id.includes('_')) {
-                    numericId = id.split('_')[1];
-                }
+                const numericId = getPostIdKey(id);
                 
                 const res = await productService.getSingleLikedPost(numericId);
-                setLiked(prev => ({ ...prev, [String(id)]: !!res }));
+                setLiked(prev => ({ ...prev, [numericId]: !!res }));
             } catch (err) {
-                setLiked({ [String(id)]: false });
+                const numericId = getPostIdKey(id);
+                setLiked(prev => ({ ...prev, [numericId]: false }));
             }
         };
 
@@ -309,18 +313,19 @@ const SaleDetail = () => {
     };
 
     const handleLike = async (postId) => {
-        const isLiked = liked[String(postId)];
+        const numericId = getPostIdKey(postId);
+        const currentLiked = isLiked(postId);
 
         try {
-            if (isLiked) {
-                await productService.unlikeProduct(postId);
+            if (currentLiked) {
+                await productService.unlikeProduct(numericId);
             } else {
-                await productService.likeProduct(postId);
+                await productService.likeProduct(numericId);
             }
 
             setLiked(prev => ({
                 ...prev,
-                [String(postId)]: !isLiked,
+                [numericId]: !currentLiked,
             }));
         } catch (err) {
             console.error('좋아요 처리 중 오류:', err.message);
@@ -439,7 +444,7 @@ const SaleDetail = () => {
                             </span>
                             <div style={{display: 'flex', alignItems: 'center'}}>
                                 <button className="person-chatting" onClick={handleChatClick}>채팅하기</button>
-                                <LikeButton postId={product.id} liked={liked} handleLike={handleLike}/>
+                                <LikeButton postId={product.id} liked={isLiked(product.id)} handleLike={handleLike}/>
                             </div>
                         </div>
 

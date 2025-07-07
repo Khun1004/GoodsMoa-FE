@@ -5,6 +5,7 @@ import "./TradeDetail.css";
 import api from "../../../api/api";
 import { CgProfile } from "react-icons/cg";
 import { FaHeart } from 'react-icons/fa';
+import { getNumericId } from "../../../utils/tradeUtils";
 
 const TradeDetail = () => {
   const { id } = useParams();
@@ -25,7 +26,8 @@ const TradeDetail = () => {
   useEffect(() => {
     const fetchLikedStatus = async () => {
       try {
-        await api.get(`/trade-like/my-likes/${id}`);
+        const numericId = getNumericId(id);
+        await api.get(`/trade-like/my-likes/${numericId}`);
         setLiked(true);
       } catch (error) {
         if (error.response && error.response.status === 404) {
@@ -43,9 +45,10 @@ const TradeDetail = () => {
       alert("로그인이 필요합니다.");
       return;
     }
+    const numericId = getNumericId(id);
     const url = liked
-      ? `/trade-like/${id}`
-      : `/trade-like/like/${id}`;
+      ? `/trade-like/${numericId}`
+      : `/trade-like/like/${numericId}`;
     try {
       if (liked) {
         await api.delete(url);
@@ -61,7 +64,8 @@ const TradeDetail = () => {
   useEffect(() => {
     const fetchPost = async () => {
       try {
-        const res = await api.get(`/tradePost/${id}`);
+        const numericId = getNumericId(id);
+        const res = await api.get(`/tradePost/${numericId}`);
         const data = res.data;
         console.log("🔥 백엔드에서 받은 실제 데이터:", data);
         setTradePost(data);

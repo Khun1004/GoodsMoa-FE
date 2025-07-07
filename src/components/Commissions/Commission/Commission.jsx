@@ -1,33 +1,18 @@
 import React, { useCallback, useEffect, useState, useMemo } from 'react';
 import _ from 'lodash';
-import { CgProfile } from "react-icons/cg";
 import { FaHeart } from 'react-icons/fa';
 import { SlSocialDropbox } from "react-icons/sl";
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import Demand1 from "../../../assets/demands/demand1.jpg";
+import { useLocation, useNavigate } from 'react-router-dom';
 import './Commission.css';
 import Category from '../../CommissionIcon/CommissionIcon';
-import SearchBanner from '../../Public/SearchBanner';
+import SearchBanner from '../../public/SearchBanner';
 import Spacer from "../../public/Spacer.jsx";
 import SortSelect from "../../public/SortSelect.jsx";
 import BestsellerList from "../../public/BestsellerList.jsx";
-import { getBestsellerByType} from "../../../api/PublicService.jsx";
+import ProductCard from '../../common/ProductCard/ProductCard';
+import { getBestsellerByType} from "../../../api/publicService.jsx";
+import { getNumericId } from '../../../utils/commissionUtils';
 import api from '../../../api/api';
-
-const getFullThumbnailUrl = (thumbnailUrl) =>
-    thumbnailUrl
-        ? thumbnailUrl.startsWith('http')
-            ? thumbnailUrl
-            : `http://localhost:8080/${thumbnailUrl.replace(/^\/+/, '')}`
-        : Demand1;
-
-// 숫자 ID만 추출하는 함수 - 반드시 숫자 문자열로 리턴
-const getNumericId = (id) => {
-    if (typeof id === 'string' && id.startsWith('COMMISSION_')) {
-        return id.replace('COMMISSION_', '');
-    }
-    return String(id);
-};
 
 const Commission = ({ showBanner = true}) => {
     const location = useLocation();
@@ -203,8 +188,8 @@ const Commission = ({ showBanner = true}) => {
                                 type="commission"
                                 heading="인기 커미션"
                                 liked={commissionProducts.reduce((acc, item) => {
-                                    const id = getNumericId(item.id || item.demandPostId);
-                                    acc[id] = item.liked;
+                                    const id = getNumericId(item.id);
+                                    acc[String(id)] = item.liked;
                                     return acc;
                                 }, {})}
                                 onLike={(postId) => {
@@ -235,72 +220,24 @@ const Commission = ({ showBanner = true}) => {
                     </div>
                 </div>
 
-                <div className="demand-grid">
+                <div className="product-grid">
                     {loading && <div className="loading-box">🔄 로딩중입니다...</div>}
                     {!loading && (isSearching ? filteredProducts : commissionProducts).length === 0 && (
                         <div className="no-search-result">"{searchQuery}"에 대한 검색 결과가 없습니다.</div>
                     )}
 
                     {!loading &&
-                        (isSearching ? filteredProducts : commissionProducts).map((item, idx) => {
-                            const id = getNumericId(item.id);
-                            // const id = getNumericId(item.id || item.demandPostId);
-                            return (
-                                <div key={id || idx} className="demand-card">
-                                    <Link
-                                        to={`/commissionDetail/${id}`}
-                                        state={{
-                                            product: item,
-                                            saleLabel: '수요거래',
-                                            products: commissionProducts,
-                                        }}
-                                    >
-                                        <img
-                                            src={getFullThumbnailUrl(item.thumbnailUrl)}
-                                            alt={item.title}
-                                            className="demand-image"
-                                        />
-                                    </Link>
-                                    <span className="demand-label">수요조사</span>
-                                    <button
-                                        className={`demand-like-button${item.liked ? ' liked' : ''}`}
-                                        onClick={() => handleLike(id)}
-                                    >
-                                        <FaHeart size={18}/>
-                                    </button>
-
-                                    <div className="demand-profile-block">
-                                        <div className="demand-profile-line">
-                                            <div className="demand-profile-row">
-                                                {item.userImage ? (
-                                                    <img src={item.userImage} alt="profile" className="profile-pic"/>
-                                                ) : (
-                                                    <CgProfile className="profile-pic"/>
-                                                )}
-                                                <span className="demand-user-name-mini">{item.nickname || '작성자'}</span>
-                                            </div>
-                                            <span className="view-count">조회수: {item.views || 0}</span>
-                                        </div>
-
-                                        <div className="demand-product-title">{item.title}</div>
-
-                                        {item.hashtag && item.hashtag.trim() && (
-                                            <div className="tags-list">
-                                                {item.hashtag
-                                                    .split(',')
-                                                    .map((tag) => tag.trim())
-                                                    .filter((tag) => tag.length > 0)
-                                                    .map((tag, idx) => (
-                                                        <span key={idx} className="tag-item">
-                              #{tag}
-                            </span>
-                                                    ))}
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                            );
-                        })}
+                        (isSearching ? filteredProducts : commissionProducts).map((item, idx) => (
+                            <ProductCard
+                                key={item.id || idx}
+                                item={item}
+                                onLike={handleLike}
+                                products={commissionProducts}
+                                detailPath="/commissionDetail"
+                                label="수요조사"
+                                saleLabel="수요거래"
+                            />
+                        ))}
                 </div>
 
                 <div className="pagination">
