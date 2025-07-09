@@ -1,0 +1,350 @@
+/* WriteEditor 공통 스타일 */
+.write-editor-wrapper {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    padding: 20px;
+}
+
+.write-editor-container {
+    width: 100%;
+    max-width: 800px;
+    max-height: 90vh;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    padding: 30px;
+    overflow-y: auto;
+    position: relative;
+}
+
+.write-editor-close-btn {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    background: none;
+    border: none;
+    font-size: 24px;
+    font-weight: bold;
+    color: #666;
+    cursor: pointer;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s;
+    z-index: 10;
+}
+
+.write-editor-close-btn:hover {
+    background: #f0f0f0;
+    color: #333;
+}
+
+.write-editor-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+/* 로딩 상태 */
+.write-editor-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #e3e3e3;
+    border-top: 2px solid #007bff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* 에러 상태 */
+.write-editor-error {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 15px;
+    background: #f8d7da;
+    border: 1px solid #f5c6cb;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    color: #721c24;
+}
+
+.error-icon {
+    font-weight: bold;
+    font-size: 18px;
+}
+
+.error-close-btn {
+    margin-left: auto;
+    background: none;
+    border: none;
+    color: #721c24;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background-color 0.2s;
+}
+
+.error-close-btn:hover {
+    background: rgba(114, 28, 36, 0.1);
+}
+
+/* 에디터 컨테이너 */
+.editor-container {
+    margin-bottom: 30px;
+}
+
+.write-editor-quill {
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.write-editor-quill .ql-editor {
+    min-height: 300px;
+    font-size: 16px;
+    line-height: 1.6;
+}
+
+.write-editor-quill .ql-toolbar {
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    border-bottom: 1px solid #ccc;
+}
+
+.write-editor-quill .ql-container {
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+}
+
+/* 이미지 업로드 섹션 */
+.image-upload-section {
+    margin-bottom: 30px;
+    border: 2px dashed #ddd;
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+    transition: border-color 0.3s, background-color 0.3s;
+}
+
+.image-upload-section:hover {
+    border-color: #007bff;
+    background-color: #f8f9fa;
+}
+
+.image-upload-section.dragover {
+    border-color: #007bff;
+    background-color: #e3f2fd;
+}
+
+.image-upload-label {
+    display: inline-block;
+    cursor: pointer;
+}
+
+.image-upload-input {
+    display: none;
+}
+
+.upload-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.upload-button:hover {
+    background: #0056b3;
+}
+
+.upload-button svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* 이미지 프리뷰 */
+.image-preview-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.image-preview-item {
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.image-preview-item img {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+    display: block;
+}
+
+.delete-image-button {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 24px;
+    height: 24px;
+    background: rgba(255, 0, 0, 0.8);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: bold;
+    transition: background-color 0.2s;
+}
+
+.delete-image-button:hover {
+    background: rgba(255, 0, 0, 1);
+}
+
+/* 버튼 그룹 */
+.write-editor-btn-group {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+}
+
+.write-editor-submit-btn,
+.write-editor-cancel-btn {
+    padding: 12px 30px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-width: 120px;
+}
+
+.write-editor-submit-btn {
+    background: #28a745;
+    color: white;
+}
+
+.write-editor-submit-btn:hover {
+    background: #218838;
+    transform: translateY(-1px);
+}
+
+.write-editor-cancel-btn {
+    background: #6c757d;
+    color: white;
+}
+
+.write-editor-cancel-btn:hover {
+    background: #545b62;
+    transform: translateY(-1px);
+}
+
+/* 단축키 안내 */
+.write-editor-shortcuts {
+    text-align: center;
+    margin-top: 15px;
+    color: #6c757d;
+    font-size: 12px;
+}
+
+.write-editor-shortcuts kbd {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 3px;
+    padding: 2px 6px;
+    font-size: 11px;
+    font-family: monospace;
+    margin: 0 2px;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+    .write-editor-wrapper {
+        padding: 10px;
+    }
+    
+    .write-editor-container {
+        padding: 20px;
+    }
+    
+    .write-editor-title {
+        font-size: 24px;
+    }
+    
+    .image-preview-container {
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        gap: 10px;
+    }
+    
+    .write-editor-btn-group {
+        flex-direction: column;
+    }
+    
+    .write-editor-submit-btn,
+    .write-editor-cancel-btn {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .write-editor-container {
+        padding: 15px;
+    }
+    
+    .write-editor-title {
+        font-size: 20px;
+    }
+    
+    .image-preview-container {
+        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    }
+} 

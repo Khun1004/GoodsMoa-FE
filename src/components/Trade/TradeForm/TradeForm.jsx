@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import "./TradeForm.css";
 import { LoginContext } from "../../../contexts/LoginContext"; // 경로 수정
 import api from "../../../api/api";
+import WriteEditor from "../../common/WriteEditor/WriteEditor";
 
 
 const categoryOptions = [
@@ -77,6 +78,7 @@ const TradeForm = () => {
   const [searchLocationInput, setSearchLocationInput] = useState(() => formTradeData.directTradeLocation || "");
   const [map, setMap] = useState(null);
   const [marker, setMarker] = useState(null);
+  const [showDescriptionModal, setShowDescriptionModal] = useState(false);
   
   useEffect(() => {
     if (!map) return;
@@ -314,42 +316,87 @@ const TradeForm = () => {
     formData.append("request", new Blob([JSON.stringify(tradePostData)], { type: "application/json" }));
 
     if (formTradeData.representativeImageFile) {
+      console.log("[Trade] 썸네일 파일:", formTradeData.representativeImageFile);
       formData.append(isEditMode ? "newThumbnailImage" : "thumbnailImage", formTradeData.representativeImageFile);
     }
     
-    formTradeData.newDetailImages.forEach(imageObj => {
+    (formTradeData.newDetailImages || []).forEach((imageObj, idx) => {
+      console.log(`[Trade] 상품이미지[${idx}]:`, imageObj.file);
       formData.append(isEditMode ? "newProductImages" : "productImages", imageObj.file);
     });
     
-    // ## 핵심 수정 2: contentImageObjects에서 파일 꺼내기 ##
-    // 서버로 보낼 때는 ID는 제외하고 순수 파일(File) 객체만 보냅니다.
-    (formTradeData.contentImageObjects || []).forEach(imgObj => {
+    console.log('[TradeForm] contentImageObjects 전체:', formTradeData.contentImageObjects);
+    formTradeData.contentImageObjects.forEach((imgObj, idx) => {
+      console.log(`[TradeForm] FormData append: contentImageObjects[${idx}]`, imgObj);
+      console.log(`[TradeForm] FormData append: contentImageObjects[${idx}].file:`, imgObj.file);
+      console.log(`[TradeForm] FormData append: contentImageObjects[${idx}].file instanceof File:`, imgObj.file instanceof File);
       formData.append(isEditMode ? "newContentImages" : "contentImages", imgObj.file);
     });
-    console.log('FormData 준비 완료');
-    // FormData 전체 key-value 로그
+    
     for (let pair of formData.entries()) {
-      if (pair[1] instanceof Blob && pair[1].type.startsWith('image/')) {
-        console.log(`[FormData] ${pair[0]}: [이미지 파일]`, pair[1]);
-      } else if (pair[1] instanceof Blob) {
-        // JSON Blob
-        pair[1].text().then(text => {
-          console.log(`[FormData] ${pair[0]}:`, text);
-        });
+      if (pair[1] instanceof File) {
+        console.log(`[TradeForm] [FormData] ${pair[0]}:`, pair[1].name, pair[1]);
       } else {
-        console.log(`[FormData] ${pair[0]}:`, pair[1]);
+        console.log(`[TradeForm] [FormData] ${pair[0]}:`, pair[1]);
       }
     }
     
     const url = isEditMode ? `/tradePost/update/${formTradeData.id}` : "/tradePost/create";
     try {
-      await api.post(url, formData, { withCredentials: true });
+      const response = await api.post(url, formData, { withCredentials: true });
+      console.log('response ::: ', response);
+      // 서버 응답에서 content가 있으면 플레이스홀더를 실제 S3 URL로 교체
+      if (response.data && response.data.content) {
+        let updatedContent = response.data.content;
+        
+        // 플레이스홀더를 실제 S3 URL로 교체
+        (formTradeData.contentImageObjects || []).forEach((imgObj, index) => {
+          const placeholder = `__IMAGE_PLACEHOLDER_${index}__`;
+          // 서버에서 반환된 이미지 URL 배열이 있다면 사용
+          if (response.data.contentImages && response.data.contentImages[index]) {
+            updatedContent = updatedContent.replace(placeholder, response.data.contentImages[index]);
+          }
+        });
+        
+        // 업데이트된 content를 response에 저장
+        response.data.content = updatedContent;
+      }
+      
       alert(isEditMode ? "수정 완료!" : "등록 완료!");
       navigate("/trade");
     } catch (error) {
       console.error("전송 오류:", error);
       alert("요청 처리 중 오류가 발생했습니다.");
     }
+  };
+
+  // WriteEditor에서 저장된 데이터를 처리하는 함수
+  const handleDescriptionSave = (data) => {
+    console.log('[TradeForm] handleDescriptionSave 호출:', data);
+    console.log('[TradeForm] data.images 타입:', Array.isArray(data.images) ? 'Array' : typeof data.images);
+    console.log('[TradeForm] data.images 내용:', data.images);
+    
+    const newContentImageObjects = data.images.map((img, index) => {
+      console.log(`[TradeForm] 매핑 중 img[${index}]:`, img);
+      console.log(`[TradeForm] 매핑 중 img[${index}] instanceof File:`, img instanceof File);
+      return {
+        id: `img-${Date.now()}-${index}`,
+        file: img  // img.file이 아니라 img 자체가 File 객체
+      };
+    });
+    
+    console.log('[TradeForm] 새로 생성된 contentImageObjects:', newContentImageObjects);
+    
+    setFormTradeData(prev => ({
+      ...prev,
+      content: data.content,
+      contentImageObjects: newContentImageObjects
+    }));
+    setShowDescriptionModal(false);
+  };
+
+  const handleDescriptionCancel = () => {
+    setShowDescriptionModal(false);
   };
 
   return (
@@ -447,7 +494,7 @@ const TradeForm = () => {
                 <button
                   type="button"
                   className="edited-button"
-                  onClick={() => navigate("/tradeWrite", { state: { formTradeData, isEditMode } })}
+                  onClick={() => setShowDescriptionModal(true)}
                 >
                   수정하기
                 </button>
@@ -455,7 +502,7 @@ const TradeForm = () => {
                 <button
                   type="button"
                   className="saleFormWriteBtn"
-                  onClick={() => navigate("/tradeWrite", { state: { formTradeData } })}
+                  onClick={() => setShowDescriptionModal(true)}
                 >
                   작성하기
                 </button>
@@ -602,6 +649,25 @@ const TradeForm = () => {
           </div>
         </form>
       </div>
+
+      {/* WriteEditor 모달 */}
+      {showDescriptionModal && (
+        <WriteEditor
+          type="trade"
+          title="거래 상세 설명 작성"
+          placeholder="거래 상세 설명을 입력하세요..."
+          initialContent={formTradeData.content}
+          initialImages={formTradeData.contentImageObjects?.map(obj => ({
+            file: obj.file,
+            preview: URL.createObjectURL(obj.file),
+            url: URL.createObjectURL(obj.file)
+          })) || []}
+          postId={formTradeData.id}
+          isEditMode={isEditMode}
+          onSave={handleDescriptionSave}
+          onCancel={handleDescriptionCancel}
+        />
+      )}
     </div>
   );
 };

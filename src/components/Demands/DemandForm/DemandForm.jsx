@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import DemandWrite from "../DemandWrite/DemandWrite.jsx";
+import WriteEditor from "../../common/WriteEditor/WriteEditor";
 import { LoginContext } from "../../../contexts/LoginContext";
 import api from "../../../api/api"; // ★ api 인스턴스 import!
 import "./DemandForm.css";
@@ -16,20 +16,7 @@ const categoryOptions = [
     { id: 8, name: "웹툰" },
 ];
 
-const API_HOST = "http://localhost:8080/";
 
-const patchDescriptionToRelative = (html) =>
-    html
-        ? html.replace(
-            /(<img\s+[^>]*src=['"]?)https?:\/\/localhost:8080\/([^'">]+)(['"]?[^>]*>)/g,
-            (match, p1, p2, p3) => `${p1}${p2}${p3}`
-        )
-        : "";
-
-const stripHostFromUrl = (url) => {
-    if (!url) return "";
-    return url.replace(/^https?:\/\/localhost:8080\//, "");
-};
 
 const DemandForm = () => {
     const navigate = useNavigate();
@@ -103,11 +90,7 @@ const DemandForm = () => {
             );
 
             if (f.imageUrl) {
-                setMainThumbnailPreview(
-                    (location.state.isEdit === true && !f.imageUrl.startsWith("http"))
-                        ? `${API_HOST}${f.imageUrl.replace(/^\/+/g, "")}`
-                        : f.imageUrl
-                );
+                setMainThumbnailPreview(f.imageUrl);
             } else {
                 setMainThumbnailPreview(null);
             }
@@ -119,11 +102,7 @@ const DemandForm = () => {
                         price: p.price || "",
                         targetCount: p.targetCount || "",
                         imageFile: null,
-                        imagePreview: p.imageUrl
-                            ? ((location.state.isEdit === true && !p.imageUrl.startsWith("http"))
-                                ? `${API_HOST}${p.imageUrl.replace(/^\/+/g, "")}`
-                                : p.imageUrl)
-                            : null,
+                        imagePreview: p.imageUrl || null,
                     }))
                 );
             } else {
@@ -231,12 +210,12 @@ const DemandForm = () => {
             name: p.name,
             price: Number(p.price),
             targetCount: Number(p.targetCount),
-            imageUrl: stripHostFromUrl(p.imagePreview),
+            imageUrl: p.imagePreview,
             imageUpdated: true,
         }));
 
-        const mainImageUrlForRequest = stripHostFromUrl(mainThumbnailPreview);
-        const descriptionForRequest = patchDescriptionToRelative(description);
+        const mainImageUrlForRequest = mainThumbnailPreview;
+        const descriptionForRequest = description;
         const hashtagString = Array.isArray(hashtags) ? hashtags.join(",") : hashtags;
 
         const startTime = startDate ? `${startDate}T09:00:00` : null;
@@ -275,16 +254,28 @@ const DemandForm = () => {
             );
 
             if (mainThumbnail) {
+                console.log("[Demand] 썸네일 파일:", mainThumbnail);
                 formDataToSend.append(isUpdate ? "newThumbnailImage" : "thumbnailImage", mainThumbnail);
             }
-            products.forEach((p) => {
+            products.forEach((p, idx) => {
                 if (p.imageFile) {
+                    console.log(`[Demand] 상품이미지[${idx}]:`, p.imageFile);
                     formDataToSend.append(isUpdate ? "newProductImages" : "productImages", p.imageFile);
                 }
             });
-            descriptionImages.forEach((file) => {
+            descriptionImages.forEach((file, idx) => {
+                console.log(`[DemandForm] FormData append: descriptionImages[${idx}]`, file);
                 formDataToSend.append(isUpdate ? "newDescriptionImages" : "descriptionImages", file);
             });
+
+            // FormData 전체 key-value 로그
+            for (let pair of formDataToSend.entries()) {
+                if (pair[1] instanceof File) {
+                    console.log(`[DemandForm] [FormData] ${pair[0]}:`, pair[1].name, pair[1]);
+                } else {
+                    console.log(`[DemandForm] [FormData] ${pair[0]}:`, pair[1]);
+                }
+            }
 
             // ★ fetch → api 인스턴스로 변경
             const res = await api[method](url, formDataToSend, {
@@ -315,6 +306,13 @@ const DemandForm = () => {
 
     const handleNavigateToWrite = () => {
         setShowDescriptionModal(true);
+    };
+
+    const handleDescriptionSave = (data) => {
+        console.log('[DemandForm] handleDescriptionSave 호출:', data);
+        setDescription(data.content);
+        setDescriptionImages(data.images);
+        setShowDescriptionModal(false);
     };
 
     return (
@@ -552,12 +550,16 @@ const DemandForm = () => {
                 </button>
             </form>
             {showDescriptionModal && (
-                <DemandWrite
-                    description={description}
-                    setDescription={setDescription}
-                    descriptionImages={descriptionImages}
-                    setDescriptionImages={setDescriptionImages}
-                    onClose={() => setShowDescriptionModal(false)}
+                <WriteEditor
+                    type="demand"
+                    title="수요조사 상세 설명 작성"
+                    placeholder="수요조사에 대한 상세한 설명을 입력해주세요..."
+                    initialContent={description}
+                    initialImages={descriptionImages}
+                    postId={formData.id}
+                    isEditMode={isEditMode}
+                    onSave={handleDescriptionSave}
+                    onCancel={() => setShowDescriptionModal(false)}
                 />
             )}
         </div>

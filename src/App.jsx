@@ -13,7 +13,7 @@ import CommissionApplyWrite from "./components/Commissions/CommissionApplyWrite/
 import CommissionDetail from "./components/Commissions/CommissionDetail/CommissionDetail";
 import CommissionForm from "./components/Commissions/CommissionForm/CommissionForm";
 import CommissionPerfect from "./components/Commissions/CommissionPerfect/CommissionPerfect";
-import CommissionWrite from "./components/Commissions/CommissionWrite/CommissionWrite";
+
 import Community from "./components/Communities/Community/Community";
 import CommunityForm from "./components/Communities/CommunityForm/CommunityForm";
 import Demand from "./components/Demands/Demand/Demand";
@@ -23,7 +23,6 @@ import DemandDetail from "./components/Demands/DemandDetail/DemandDetail";
 import DemandForm from "./components/Demands/DemandForm/DemandForm.jsx";
 import DemandReportPage from "./components/Demands/DemandReportPage/DemandReportPage";
 import DemandReportPerfect from "./components/Demands/DemandReportPerfect/DemandReportPerfect";
-import DemandWrite from "./components/Demands/DemandWrite/DemandWrite";
 import HomeDemandList from "./components/Demands/HomeDemandList/HomeDemandList"
 import Footer from "./components/Footer/Footer";
 import Hero from "./components/Hero/Hero";
@@ -48,7 +47,6 @@ import SaleForm from "./components/Sales/SaleForm/SaleForm";
 import SalePurchaseCheck from "./components/Sales/SalePurchaseCheck/SalePurchaseCheck";
 import SalePurchaseModal from "./components/Sales/SalePurchaseModal/SalePurchaseModal";
 import SalePurchasePerfect from "./components/Sales/SalePurchasePerfect/SalePurchasePerfect";
-import SaleWrite from "./components/Sales/SaleWrite/SaleWrite";
 import Search from "./components/Search/Search";
 import SearchResults from './components/SearchResults/SearchResults'; // 경로는 맞게 수정하세요
 import Trade from "./components/Trade/Trade/Trade";
@@ -56,7 +54,6 @@ import TradeBuy from "./components/Trade/TradeBuy/TradeBuy";
 import TradeBuyPerfect from "./components/Trade/TradeBuyPerfect/TradeBuyPerfect";
 import TradeDetail from "./components/Trade/TradeDetail/TradeDetail";
 import TradeForm from "./components/Trade/TradeForm/TradeForm";
-import TradeWrite from "./components/Trade/TradeWrite/TradeWrite";
 import { TradeProvider } from "./contexts/TradeContext";
 import TossRedirectHandler from "./components/Trade/TossRedirectHandler";
 
@@ -140,15 +137,7 @@ const AppContent = ({
           }
         />
 
-        {/* CommissionWrite Page */}
-        <Route
-          path="/commissionWrite"
-          element={
-            <div className="pt-[130px]">
-              <CommissionWrite />
-            </div>
-          }
-        />
+
 
         {/* CommissionDetail Page */}
         <Route
@@ -210,15 +199,7 @@ const AppContent = ({
           }
         />
 
-        {/* TradeWrite Page */}
-        <Route
-          path="/tradeWrite"
-          element={
-            <div className="pt-[130px]">
-              <TradeWrite />
-            </div>
-          }
-        />
+
 
         {/* TradeBuy Page */}
         <Route
@@ -270,15 +251,7 @@ const AppContent = ({
           }
         />
 
-        {/* DemandWrite Page */}
-        <Route
-          path="/demandWrite"
-          element={
-            <div className="pt-[130px]">
-              <DemandWrite/>
-            </div>
-          }
-        />
+
 
         {/* DemandDetail Page */}
         <Route
@@ -350,15 +323,7 @@ const AppContent = ({
           }
         />
 
-        {/* SaleWrite Page */}
-        <Route
-          path="/write"
-          element={
-            <div className="pt-[130px]">
-              <SaleWrite />
-            </div>
-          }
-        />
+
 
         {/* SalePurchaseModal Page */}
         <Route path="/purchase"

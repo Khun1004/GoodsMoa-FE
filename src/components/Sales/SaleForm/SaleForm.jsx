@@ -2,6 +2,7 @@ import { useContext, useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import ProductService from "../../../api/ProductService";
 import { LoginContext } from "../../../contexts/LoginContext";
+import WriteEditor from "../../common/WriteEditor/WriteEditor";
 import "./SaleForm.css";
 
 const API_BASE_URL = 'http://localhost:8080';
@@ -13,12 +14,13 @@ const SaleForm = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const [image, setImage] = useState(null);
+    const placeholderImage = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23f0f0f0'/%3E%3Ctext x='50' y='50' text-anchor='middle' dy='.3em' fill='%23999'%3E이미지 없음%3C/text%3E%3C/svg%3E";
     const [editProduct, setEditProduct] = useState(null);
     const [products, setProducts] = useState([]);
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState(location.state?.description || "");
     const [isEditMode, setIsEditMode] = useState(false);
-    const [isDescriptionEdit, setIsDescriptionEdit] = useState(false);
+    const [showDescriptionModal, setShowDescriptionModal] = useState(false);
     const [postId, setPostId] = useState(location.state?.postId || null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -184,7 +186,13 @@ const SaleForm = () => {
     };
 
     const handleFormSubmit = async () => {
+        console.log('🔥 handleFormSubmit 시작');
+        console.log('🔥 title:', title);
+        console.log('🔥 category:', category);
+        console.log('🔥 image:', image);
+        
         if (!title || !category || !image) {
+            console.log('🔥 필수 필드 누락으로 return');
             alert("필수 필드를 모두 채워주세요! (제목, 카테고리, 이미지는 필수입니다)");
             return;
         }
@@ -224,6 +232,7 @@ const SaleForm = () => {
             .filter(method => method.name && method.name.trim() !== "");
 
         console.log("🔥 validShippingMethods:", validShippingMethods);
+        console.log("🔥 handleFormSubmit 함수 내부 실행 중");
         if (validShippingMethods.length === 0) {
             alert("배송 방법을 하나 이상 설정해주세요!");
             return;
@@ -276,19 +285,18 @@ const SaleForm = () => {
                 profileImage: userInfo?.profileImage || profileImage || null  
             },
             products: processedProducts,
-            contentImages: contentImages.map(img => typeof img === 'object' && img.file ? img : img.url || img),
+            descriptionImages: contentImages.filter(img => img instanceof File), // File 객체만 필터링
             deleteProductImageIds: deleteProductImageIds.length > 0 ? deleteProductImageIds : undefined,
             deleteDeliveryIds:deleteDeliveryIds.length > 0 ? deleteDeliveryIds : undefined,
         };
+        
+
     
         try {
             setLoading(true);
             let response;
     
-            console.log('Submitting with postId:', postId, 'isEditMode:', isEditMode);
-            console.log('Products:', postData.products);
-            console.log('DeleteProductImageIds:', deleteProductImageIds);
-            console.log('DeleteDeliveryIds : ', deleteDeliveryIds);
+
     
             const isTempPost = String(postId || '').startsWith('temp_');
             const isValidPostId = postId && !isNaN(postId) && !isTempPost;
@@ -306,36 +314,34 @@ const SaleForm = () => {
             }));
             setPostId(response.id);
     
-            const updatedProducts = response.products?.map((product, index) => {
-                const extension = getImageExtension(processedProducts[index]?.image) || 'png';
-                return {
-                    ...product,
-                    image: product.image || `${API_BASE_URL}/productPost/product/${response.id}_${index + 1}.${extension}`
-                };
-            }) || processedProducts;
+            // 백엔드에서 S3 URL을 반환하므로 프론트엔드에서 URL을 생성하지 않음
+            // 백엔드 응답을 그대로 사용
+            const updatedProducts = response.products || processedProducts;
+            const updatedDescriptionImages = response.descriptionImages || [];
+            setContentImages(updatedDescriptionImages);
     
-            const updatedContentImages = (response.contentImages || []).map((img, index) => {
-                const originalImg = contentImages[index] || {};
-                const extension = getImageExtension(originalImg) || 'jpg';
-                return {
-                    ...img,
-                    url: `${API_BASE_URL}/productPost/content/${response.id}_${index + 1}.${extension}`
-                };
-            });
-            setContentImages(updatedContentImages);
-    
-            let updatedContent = description;
-            contentImages.forEach((img, index) => {
-                const oldUrl = typeof img === 'string' ? img : img.url;
-                const extension = getImageExtension(img) || 'jpg';
-                const newUrl = `${API_BASE_URL}/productPost/content/${response.id}_${index + 1}.${extension}`;
-                updatedContent = updatedContent.replace(oldUrl, newUrl);
-            });
+            // 백엔드에서 content도 S3 URL로 업데이트된 상태로 반환됨
+            let updatedContent = response.content || description;
+            
+            // 플레이스홀더를 실제 S3 URL로 교체
+            if (updatedContent && contentImages.length > 0) {
+                contentImages.forEach((img, index) => {
+                    const placeholder = `__IMAGE_PLACEHOLDER_${index}__`;
+                    if (response.descriptionImages && response.descriptionImages[index]) {
+                        updatedContent = updatedContent.replace(placeholder, response.descriptionImages[index]);
+                    }
+                });
+            }
+            
             setDescription(updatedContent);
     
-            const thumbnailUrl = response.thumbnailImage ||
-                `${API_BASE_URL}/productPost/thumbnail/${response.id}_1.${thumbnailExtension}`;
-            console.log("🚀 실제 삭제할 상품 이미지 IDs:", deleteProductImageIds);
+            // 백엔드에서 반환한 thumbnailImage 사용
+            const thumbnailUrl = response.thumbnailImage;
+            
+                        // 등록 완료 알림창
+            alert("상품이 성공적으로 등록되었습니다!");
+            
+            // 페이지 이동
             navigate("/sale", {
                 state: {
                     formData: {
@@ -353,7 +359,7 @@ const SaleForm = () => {
                         startTime: start_time,
                         endTime: end_time,
                         delivers: updatedDelivers,
-                        contentImages: updatedContentImages,
+                        contentImages: updatedDescriptionImages,
                     },
                     apiResponse: response,
                     from: 'saleForm'
@@ -509,16 +515,9 @@ const SaleForm = () => {
             // Generate a temporary ID for the new product
             const tempId = `temp_${Date.now()}`;
             
-            // Create image URL - use postId if available, otherwise use tempId
-            let imageUrl = null;
-            if (isEditMode && postId && !String(postId).startsWith('temp_')) {
-                // Use the format: /productPost/product/{postId}_{productId}.{extension}
-                imageUrl = `${API_BASE_URL}/productPost/product/${image}`;
-            } else {
-                // For new posts, use a blob URL temporarily
-                imageUrl = URL.createObjectURL(processedImage.file);
-            }
-    
+            // For new posts, use a blob URL temporarily
+            const imageUrl = URL.createObjectURL(processedImage.file);
+
             const newProduct = {
                 id: tempId, // Use the temporary ID
                 name: productName.trim().substring(0, 40),
@@ -691,57 +690,11 @@ const SaleForm = () => {
     };
 
     const handleWriteClick = () => {
-        setIsDescriptionEdit(true);
-        navigate("/write", {
-            state: {
-                postId: postId || `temp_${Date.now()}`,
-                title,
-                category,
-                description,
-                image,
-                hashtag,
-                shippingMethods,
-                products,
-                isPublic,
-                privateCode,
-                start_time,
-                end_time,
-                isPermanent,
-                price,
-                quantity,
-                maxQuantity,
-                contentImages: contentImages,
-                from: 'saleForm',
-                isEditMode,
-            },
-        });
+        setShowDescriptionModal(true);
     };
 
     const handleEditClick = () => {
-        setIsDescriptionEdit(true);
-        navigate("/write", {
-            state: {
-                postId: postId || `temp_${Date.now()}`,
-                title,
-                category,
-                description,
-                image,
-                hashtag,
-                shippingMethods,
-                products,
-                isPublic,
-                privateCode,
-                start_time,
-                end_time,
-                isPermanent,
-                price,
-                quantity,
-                maxQuantity,
-                contentImages: contentImages,
-                from: 'saleForm',
-                isEditMode,
-            },
-        });
+        setShowDescriptionModal(true);
     };
 
     const handleCancel = () => {
@@ -767,39 +720,25 @@ const SaleForm = () => {
     }, [isPermanent]);
 
 
-    useEffect(() => {
-        if (location.state?.from === 'write') {
-            setIsDescriptionEdit(false);
-            if (location.state.isEditMode !== undefined) {
-                setIsEditMode(location.state.isEditMode);
-            }
+    // WriteEditor에서 저장된 데이터를 처리하는 함수
+    const handleDescriptionSave = (data) => {
+        console.log('[SaleForm] handleDescriptionSave 호출:', data);
+        console.log('[SaleForm] data.images 타입 확인:', Array.isArray(data.images) ? 'Array' : typeof data.images);
+        console.log('[SaleForm] data.images 내용:', data.images);
+        if (Array.isArray(data.images)) {
+            data.images.forEach((img, idx) => {
+                console.log(`[SaleForm] data.images[${idx}]:`, img);
+                console.log(`[SaleForm] data.images[${idx}] instanceof File:`, img instanceof File);
+            });
         }
-        if (location.state && location.state.from !== 'management') {
-            const {
-                title, category, description, image, hashtag,
-                shippingMethods, products, isPublic, privateCode,
-                start_time, end_time, isPermanent, price, quantity, maxQuantity,
-                isEditMode
-            } = location.state;
+        setDescription(data.content);
+        setContentImages(data.images);
+        setShowDescriptionModal(false);
+    };
 
-            title && setTitle(title);
-            category && setCategory(category);
-            description && setDescription(description);
-            image && setImage(image);
-            hashtag && setHashtag(hashtag);
-            shippingMethods && setShippingMethods(shippingMethods);
-            products && setProducts(products);
-            isPublic !== undefined && setIsPublic(isPublic);
-            privateCode && setPrivateCode(privateCode);
-            start_time && setStartTime(start_time);
-            end_time && setEndTime(end_time);
-            isPermanent !== undefined && setIsPermanent(isPermanent);
-            price && setPrice(price);
-            quantity && setQuantity(quantity);
-            maxQuantity && setMaxQuantity(maxQuantity);
-            isEditMode !== undefined && setIsEditMode(isEditMode);
-        }
-    }, [location.state]);
+    const handleDescriptionCancel = () => {
+        setShowDescriptionModal(false);
+    };
 
     if (loading) {
         return <div className="loading">로딩 중...</div>;
@@ -810,6 +749,7 @@ const SaleForm = () => {
     }
 
     return (
+        <>
         <div className="container">
             <h1 className="saleForm-title">판매 폼 만들기</h1>
 
@@ -1167,6 +1107,22 @@ const SaleForm = () => {
                 <button className="saleFormCancel" onClick={handleCancel}>취소하기</button>
             </div>
         </div>
+
+        {/* WriteEditor 모달 */}
+        {showDescriptionModal && (
+            <WriteEditor
+                type="sale"
+                title="상품 상세 설명 작성"
+                placeholder="상품에 대한 상세한 설명을 입력해주세요..."
+                initialContent={description}
+                initialImages={contentImages}
+                postId={postId}
+                isEditMode={isEditMode}
+                onSave={handleDescriptionSave}
+                onCancel={handleDescriptionCancel}
+            />
+        )}
+        </>
     );
 };
 

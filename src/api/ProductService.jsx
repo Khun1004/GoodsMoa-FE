@@ -119,6 +119,15 @@ class ProductService {
 
     async processImageForUpload(image) {
         if (!image) return { file: null, extension: null };
+        
+        // File 객체 자체인 경우
+        if (image instanceof File) {
+            const fileName = image.name;
+            const extension = fileName.split('.').pop().toLowerCase() || 'jpg';
+            return { file: image, extension };
+        }
+        
+        // image.file이 File 객체인 경우 (기존 호환성)
         if (image.file instanceof File) {
             const fileName = image.file.name;
             const extension = fileName.split('.').pop().toLowerCase() || 'jpg';
@@ -185,19 +194,23 @@ class ProductService {
                 }
             });
 
-            const contentImageFiles = await Promise.all(
-                (postData.contentImages || []).map(async (img, index) => {
+            const descriptionImageFiles = await Promise.all(
+                (postData.descriptionImages || []).map(async (img, index) => {
                     const result = await this.processImageForUpload(img);
-                    return result.file && result.file instanceof File
+                    const isValid = result.file && result.file instanceof File;
+                    
+                    return isValid
                         ? { file: result.file, extension: result.extension || 'jpg', index }
                         : null;
                 })
             );
 
-            contentImageFiles.filter(item => item !== null).forEach(({ file, index }) => {
-                formData.append('contentImages', file);
-                formData.append('contentImageIndexes', index);
+            descriptionImageFiles.filter(item => item !== null).forEach(({ file, index }) => {
+                formData.append('contentImages', file);  // descriptionImages → contentImages로 변경
+                formData.append('descriptionImageIndexes', index);
             });
+            
+
 
             const formattedData = this.formatPostData({
                 ...postData,
@@ -209,7 +222,7 @@ class ProductService {
                     ...product,
                     image: productImagesInfo[idx].file ? null : product.image,
                 })),
-                contentImages: null,
+                descriptionImages: null,
             });
 
             const postBlob = new Blob([JSON.stringify(formattedData)], {
@@ -219,45 +232,7 @@ class ProductService {
 
             const response = await this.request('/product/post-create', 'POST', formData, true);
 
-            if (response && response.id) {
-                const updatedContentImages = (postData.contentImages || []).map((img, index) => {
-                    const contentImage = contentImageFiles[index];
-                    const ext = contentImage && contentImage.extension ? contentImage.extension : 'jpg';
-                    return {
-                        ...img,
-                        url: `${API_BASE_URL}/productPost/content/${response.id}_${index + 1}.${ext}`,
-                    };
-                });
 
-                let updatedContent = postData.content || '';
-                (postData.contentImages || []).forEach((img, index) => {
-                    const oldUrl = img.url || img;
-                    const contentImage = contentImageFiles[index];
-                    const ext = contentImage && contentImage.extension ? contentImage.extension : 'jpg';
-                    const newUrl = `${API_BASE_URL}/productPost/content/${response.id}_${index + 1}.${ext}`;
-                    updatedContent = updatedContent.replace(oldUrl, newUrl);
-                });
-
-                response.contentImages = updatedContentImages;
-                response.content = updatedContent;
-
-                if (!response.thumbnailImage) {
-                    response.thumbnailImage = `${API_BASE_URL}/productPost/thumbnail/${response.id}_1.${thumbnailExtension}`;
-                }
-
-                if (response.products) {
-                    response.products = response.products.map((product, idx) => {
-                        const productImage = productImagesInfo[idx];
-                        const ext = productImage?.extension || 'png';
-                        return {
-                            ...product,
-                            image: product.image ||
-                                `${API_BASE_URL}/productPost/product/${response.id}_${productImage.index}.${ext}`,
-                            images: product.image ? [product.image] : []
-                        };
-                    });
-                }
-            }
 
             return response;
         } catch (error) {
@@ -311,8 +286,8 @@ class ProductService {
                 }
             });
 
-            const contentImagesInfo = await Promise.all(
-                (postData.contentImages || []).map(async (img, index) => {
+            const descriptionImagesInfo = await Promise.all(
+                (postData.descriptionImages || []).map(async (img, index) => {
                     const result = await this.processImageForUpload(img);
                     return {
                         file: result.file instanceof File ? result.file : null,
@@ -323,13 +298,17 @@ class ProductService {
                 })
             );
 
-            contentImagesInfo.forEach(({ file, index, existingUrl }) => {
+            descriptionImagesInfo.forEach(({ file, index, existingUrl }) => {
                 if (file) {
-                    formData.append('newContentImages', file);
-                    formData.append('contentImageIndexes', index);
+                    console.log(`[ProductService] FormData append: newDescriptionImages[${index}]`, file);
+                    console.log(`[ProductService] FormData append: newDescriptionImages[${index}] instanceof File:`, file instanceof File);
+                    console.log(`[ProductService] FormData append: newDescriptionImages[${index}] name:`, file.name);
+                    formData.append('newDescriptionImages', file);
+                    formData.append('descriptionImageIndexes', index);
                 } else if (existingUrl) {
-                    formData.append('existingContentImageUrls', existingUrl);
-                    formData.append('existingContentImageIndexes', index);
+                    console.log(`[ProductService] FormData append: existingDescriptionImageUrls[${index}]`, existingUrl);
+                    formData.append('existingDescriptionImageUrls', existingUrl);
+                    formData.append('existingDescriptionImageIndexes', index);
                 }
             });
 
@@ -342,7 +321,7 @@ class ProductService {
                     ...product,
                     image: productImagesInfo[index].file ? null : product.image
                 })),
-                contentImages: null
+                descriptionImages: null
             });
 
             const postBlob = new Blob([JSON.stringify(formattedData)], {
@@ -352,70 +331,12 @@ class ProductService {
 
             const response = await this.request(`/product/post-update/${postId}`, 'POST', formData, true);
 
+            // 백엔드에서 S3 URL을 반환하므로 프론트엔드에서 URL을 생성하지 않음
+            // 백엔드 응답을 그대로 사용
             if (response && response.id) {
-                if (!response.thumbnailImage) {
-                    response.thumbnailImage = thumbnailImageFile instanceof File
-                        ? `${API_BASE_URL}/productPost/thumbnail/${response.id}_1.${thumbnailExtension}`
-                        : postData.thumbnailImage;
-                }
-
-                if (response.products) {
-                    response.products = response.products.map((product, index) => {
-                        const productImage = productImagesInfo[index];
-                        if (!productImage) {
-                            console.warn(`No image info for product at index ${index}`);
-                            return product;
-                        }
-
-                        const ext = productImage.extension || 'png';
-                        let imageUrl = product.image;
-
-                        if (productImage.file) {
-                            imageUrl = `${API_BASE_URL}/productPost/product/${response.id}_${product.id}.${ext}`;
-                            console.log(`Assigned new product image URL: ${imageUrl}`);
-                        } else if (productImage.existingUrl) {
-                            imageUrl = productImage.existingUrl;
-                        }
-
-                        return {
-                            ...product,
-                            image: imageUrl,
-                            images: imageUrl ? [imageUrl] : []
-                        };
-                    });
-                }
-
-                const updatedContentImages = (postData.contentImages || []).map((img, index) => {
-                    const contentImage = contentImagesInfo[index];
-                    if (!contentImage) return img;
-
-                    const ext = contentImage.extension || 'jpg';
-                    if (contentImage.file) {
-                        return {
-                            ...img,
-                            url: `${API_BASE_URL}/productPost/content/${response.id}_${index + 1}.${ext}`
-                        };
-                    }
-                    return {
-                        ...img,
-                        url: contentImage.existingUrl || img.url
-                    };
-                });
-
-                response.contentImages = updatedContentImages;
-
-                if (response.content && postData.contentImages) {
-                    let updatedContent = response.content;
-                    (postData.contentImages || []).forEach((img, index) => {
-                        const contentImage = contentImagesInfo[index];
-                        if (contentImage && contentImage.file && img.url) {
-                            const ext = contentImage.extension || 'jpg';
-                            const newUrl = `${API_BASE_URL}/productPost/content/${response.id}_${index + 1}.${ext}`;
-                            updatedContent = updatedContent.replace(img.url, newUrl);
-                        }
-                    });
-                    response.content = updatedContent;
-                }
+                // 백엔드에서 반환한 URL을 그대로 사용
+                // thumbnailImage, products.image, contentImages는 백엔드에서 S3 URL로 설정됨
+                console.log('백엔드 수정 응답:', response);
             }
 
             return response;
@@ -772,10 +693,7 @@ class ProductService {
                 price: 3000,
             }];
         }
-        console.log("✅ 최종 formatted products:", formatted.products);
-        console.log("✅ 최종 formatted delivery:", formatted.delivers);
-        console.log("✅ 최종 formatted deleteProductImageIds :", formatted.deleteProductImageIds);
-        console.log("✅ 최종 formatted deleteDeliveryIds :", formatted.deleteDeliveryIds);
+
         return formatted;
     }
 
