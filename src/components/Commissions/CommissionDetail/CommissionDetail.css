@@ -179,31 +179,63 @@ textarea {
     display: flex;
     gap: 10px;
     margin-top: 20px;
+    align-items: center;
 }
 
-.btn-like,
-.btn-chat,
-.btn-report {
-    min-width: 100px;
-    height: 42px;
-    font-size: 14px;
-    padding: 0 16px;
-    border: none;
-    border-radius: 8px;
+.detail-like-button {
+    width: 40px;
+    height: 40px;
+    background-color: white;
+    border: 2px solid #ccc;
+    border-radius: 50%;
     cursor: pointer;
+    color: gray;
+    font-size: 18px;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    transition: 0.3s;
+}
+
+.detail-like-button.liked {
+    color: red;
+    border-color: red;
+}
+
+.btn-chat {
+    background-color: #3498db;
+    border: none;
     color: white;
-    background: black;
-    transition: background 0.2s;
+    padding: 8px 12px;
+    font-size: 14px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.btn-chat:hover {
+    background-color: #2d87c3;
+}
+
+.btn-report {
+    background: none;
+    color: black;
+    font-weight: bold;
+    text-decoration: underline;
     display: flex;
     align-items: center;
-    justify-content: center;
-    text-align: center;
+    gap: 4px;
+    cursor: pointer;
+    font-size: 14px;
 }
 
-.btn-like:hover,
-.btn-chat:hover,
 .btn-report:hover {
-    background: rgb(116, 70, 1);
+    color: red;
+}
+
+.report-icon {
+    color: #e60012;
+    font-size: 20px;
 }
 
 /* 신청 버튼 */

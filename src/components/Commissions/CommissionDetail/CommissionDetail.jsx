@@ -1,7 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext  } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import './CommissionDetail.css';
 import api from '../../../api/api';
+import { FaHeart } from "react-icons/fa";
+import { CgProfile } from "react-icons/cg";
+import { LoginContext } from "../../../contexts/LoginContext";
 
 const CommissionDetail = () => {
     const location = useLocation();
@@ -13,6 +16,8 @@ const CommissionDetail = () => {
     const [activeTab, setActiveTab] = useState('상세 설명');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const { userInfo } = useContext(LoginContext);
+    const [isLiked, setIsLiked] = useState(false);
 
     // 상세 데이터 불러오기
     useEffect(() => {
@@ -38,6 +43,103 @@ const CommissionDetail = () => {
             setLoading(false);
         }
     }, [id]);
+
+    // 페이지 처음 로드 시 찜 여부 확인
+    useEffect(() => {
+        const fetchLikeStatus = async () => {
+            if (!userInfo || !id) return;
+
+            try {
+                const res = await api.get(`/commission-like/my-like/${id}`);
+                // 응답이 있으면 무조건 true
+                setIsLiked(true);
+            } catch (error) {
+                if (error.response && error.response.status === 404) {
+                    // 찜하지 않은 경우
+                    setIsLiked(false);
+                } else {
+                    console.error("찜 상태 확인 실패:", error);
+                    setIsLiked(false);
+                }
+            }
+        };
+
+        fetchLikeStatus();
+    }, [id, userInfo]);
+
+
+    useEffect(() => {
+        console.log("isLiked 상태:", isLiked);
+    }, [isLiked]);
+
+
+    // 좋아요(찜) 토글
+    const handleLikeToggle = async () => {
+        if (!userInfo) {
+            alert("로그인이 필요합니다.");
+            return;
+        }
+        const url = `/commission-like/${commission.id}`;
+        try {
+            if (isLiked) {
+                await api.delete(url);
+            } else {
+                await api.post(url);
+            }
+            setIsLiked(prev => !prev);
+        } catch (error) {
+            alert("찜 상태를 변경하는 데 실패했습니다.");
+        }
+    };
+
+
+// 신고하기
+    const handleReportClick = () => {
+        navigate('/commissionReport', {
+            state: {
+                item: {
+                    id: commission.id,
+                    title: commission.title,
+                    price: commission.minimumPrice ?? null,
+                    condition: "커미션"
+                },
+                representativeImage: commission.thumbnailImage
+            }
+        });
+    };
+
+// 채팅하기
+    const handleChatClick = async () => {
+        const sellerId = commission.userId;
+        console.log('commission ::: ',commission);
+        if (!userInfo) {
+            alert("로그인이 필요합니다.");
+            return;
+        }
+        if (!sellerId) {
+            alert("판매자 정보가 없습니다.");
+            return;
+        }
+        if (userInfo.id === sellerId) {
+            alert("자기 자신과는 채팅할 수 없습니다.");
+            return;
+        }
+        try {
+            const res = await api.post("/chatroom/create", {
+                buyerId: userInfo.id,
+                sellerId: sellerId
+            });
+            const roomData = res.data;
+            window.open(`/chat-app?roomId=${roomData.id}`, "_blank", "width=1000,height=800,resizable=yes");
+        } catch (error) {
+            if (error.response && error.response.status === 409) {
+                const roomData = error.response.data;
+                window.open(`/chat-app?roomId=${roomData.id}`, "_blank", "width=1000,height=800,resizable=yes");
+            } else {
+                alert("채팅방 생성에 실패했습니다.");
+            }
+        }
+    };
 
     const handleApplyClick = () => {
         if (commission?.id) {
@@ -92,10 +194,16 @@ const CommissionDetail = () => {
                         </div>
 
                         <div className="commissionDetail-button-group">
-                            <button className="btn-like">찜</button>
-                            <button className="btn-chat">채팅하기</button>
-                            <button className="btn-report">🚨 신고하기</button>
+                            <button className="btn-chat" onClick={handleChatClick}>💬 채팅하기</button>
+                            <button className="btn-report" onClick={handleReportClick}>🚨 신고하기</button>
+                            <button
+                                className={`detail-like-button ${isLiked ? 'liked' : ''}`}
+                                onClick={handleLikeToggle}
+                            >
+                                <FaHeart size={20} color={isLiked ? "red" : "gray"} />
+                            </button>
                         </div>
+
 
                         <button className="btn-apply" onClick={handleApplyClick}>
                             신청하기

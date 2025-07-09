@@ -20,10 +20,6 @@ const Commission = ({ showBanner = true}) => {
 
     const userName = "사용자";
     const [registeredCommissions, setRegisteredCommissions] = useState([]);
-    const [liked, setLiked] = useState(() => {
-        const savedLiked = localStorage.getItem('liked');
-        return savedLiked ? JSON.parse(savedLiked) : Array(products1.length + products2.length).fill(false);
-    });
     const [selectedProducts, setSelectedProducts] = useState(() => {
         const savedSelected = localStorage.getItem('selectedProducts');
         return savedSelected ? JSON.parse(savedSelected) : [];
@@ -92,8 +88,21 @@ const Commission = ({ showBanner = true}) => {
 
     const handleLike = async (id) => {
         const numericId = getNumericId(id);
+
+        // 현재 아이템의 liked 상태 확인
+        const item = commissionProducts.find(item => getNumericId(item.id) === numericId);
+        if (!item) return;
+
         try {
-            await api.post(`/commission/like/${numericId}`);
+            if (item.liked) {
+                // 이미 좋아요 상태면 취소
+                await api.delete(`/commission-like/${numericId}`);
+            } else {
+                // 좋아요 상태가 아니면 등록
+                await api.post(`/commission-like/${numericId}`);
+            }
+
+            // 프론트 상태 토글 처리
             setCommissionProducts(prev =>
                 prev.map(item => {
                     const numericItemId = getNumericId(item.id);
@@ -107,6 +116,7 @@ const Commission = ({ showBanner = true}) => {
             alert('좋아요 처리 실패: ' + (err.response?.data?.message || err.message));
         }
     };
+
 
     const filteredProducts = commissionProducts.filter(item => {
         const query = searchQuery.toLowerCase();
