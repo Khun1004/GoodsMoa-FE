@@ -15,7 +15,7 @@ const CommissionApplyWrite = () => {
     const [error, setError] = useState(null);
 
     // editor를 위한 변수 선언
-    const [content, setContent] = useState("");
+    const [contents, setContents] = useState([]);
     const modules = {
         toolbar: [
             [{ 'header': [1, 2, false] }],
@@ -70,6 +70,7 @@ const CommissionApplyWrite = () => {
                 setSections(sections);
                 setHistories(sections.map(() => []));
                 setRedoStacks(sections.map(() => []));
+                setContents(sections.map(() => "")); // 각 섹션마다 빈 content 초기화
                 console.log('res ::: ',res);
                 console.log('commission ::: ',commission);
             } catch (err) {
@@ -181,7 +182,7 @@ const CommissionApplyWrite = () => {
             sections: sections.map((section, index) => ({
                 title: section.title,
                 description: section.description,
-                content: editorRefs.current[index]?.innerHTML || ''
+                content: contents[index] || ''
             })),
             refundInfo: formData,
             applicantId: "rose_rose@1111",
@@ -252,9 +253,13 @@ const CommissionApplyWrite = () => {
                             <div className="editor-container">
                                 <ReactQuill
                                     ref={el => (editorRefs.current[index] = el)}
-                                    value={content}
+                                    value={contents[index] || ""}
                                     onChange={(value) => {
-                                        setContent(value);
+                                        setContents(prev => {
+                                            const updated = [...prev];
+                                            updated[index] = value;
+                                            return updated;
+                                        });
                                         handleInput(index);
                                     }}
                                     modules={modules}
