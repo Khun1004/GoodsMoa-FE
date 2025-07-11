@@ -20,7 +20,7 @@ const TradeBuyPerfect = () => {
 
   useEffect(() => {
     if (!isDirectTrade && orderId) {
-      fetch(`http://localhost:8080/order/${orderId}`, {
+      fetch(`${import.meta.env.VITE_API_BASE_URL}/order/${orderId}`, {
         credentials: "include",
       })
         .then((res) => {
@@ -51,7 +51,7 @@ const TradeBuyPerfect = () => {
     }
 
     try {
-      const res = await fetch(`http://localhost:8080/tradePost/delete/${postId}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/tradePost/delete/${postId}`, {
         method: "DELETE",
         credentials: "include",
       });
@@ -70,7 +70,7 @@ const TradeBuyPerfect = () => {
     if (!path || typeof path !== "string") return "/default-image.jpg";
     return path.startsWith("http")
       ? path
-      : `http://localhost:8080/${path.replace(/^\/?/, "")}`;
+      : `${import.meta.env.VITE_API_BASE_URL}/${path.replace(/^\/?/, "")}`;
   };
 
   const image = isDirectTrade

@@ -7,11 +7,12 @@ import {LoginContext} from "../../../contexts/LoginContext.jsx";
 import {FaHeart} from "react-icons/fa";
 import {CgProfile} from "react-icons/cg";
 
+
 const getFullImageUrl = (url) =>
     url
         ? url.startsWith('http')
             ? url
-            : `http://localhost:8080/${url.replace(/^\/+/, '')}`
+            : `${import.meta.env.VITE_API_BASE_URL}/${url.replace(/^\/+/, '')}`
         : '';
 
 const DemandDetail = () => {

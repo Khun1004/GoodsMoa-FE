@@ -1,38 +1,6 @@
-.sale-container {
-    max-width: 1300px;
-    margin: 0 auto;
-    padding: 20px;
-}
+/* Trade 컴포넌트 전용 스타일 */
 
-.sale-banner {
-    background: linear-gradient(90deg, #4f8cff 0%, #38c8e5 100%);
-    height: 180px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 40px;
-    border-radius: 20px;
-    box-shadow: 0 4px 18px rgba(80, 120, 240, 0.10);
-    position: relative;
-    overflow: hidden;
-}
-
-.sale-title {
-    font-size: 30px;
-    font-weight: bold;
-    color: white;
-    margin-bottom: 10px;
-}
-
-.sale-search-input {
-    width: 100%;
-    max-width: 500px;
-    padding: 10px;
-    border-radius: 5px;
-    border: 1px solid #ccc;
-    background-color: rgb(238, 238, 238);
-}
-
+/* Trade 전용 헤더 스타일 */
 .sale-header {
     display: flex;
     align-items: center;
@@ -55,26 +23,6 @@
     color: #333;
 }
 
-@keyframes heart {
-    0% {
-        transform: translateY(0);
-    }
-    50% {
-        transform: translateY(-5px);
-    }
-    100% {
-        transform: translateY(0);
-    }
-}
-
-.heart-icon {
-    font-size: 30px;
-    color: #ff0000;
-    position: absolute;
-    top: 20px;
-    animation: heart 1s ease-in-out 0.8s infinite alternate;
-}
-
 .salebox-icon {
     font-size: 48px;
     color: #fdcb6e;
@@ -82,13 +30,14 @@
     bottom: 25px;
 }
 
-.sale-grid,
-.saleWrite-grid {
+/* Trade 전용 그리드 */
+.sale-grid {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
     gap: 20px;
 }
 
+/* Trade 전용 카드 스타일 */
 .sale-card {
     position: relative;
     text-align: center;
@@ -134,7 +83,6 @@
     color: red;
 }
 
-
 .go-to-order-btn {
     background-color: #ff6347;
     color: white;
@@ -144,45 +92,15 @@
     border-radius: 5px;
 }
 
-/* 반응형 디자인 */
-@media (max-width: 600px) {
-    .sale-banner {
-        height: 110px;
-        border-radius: 12px;
-        margin-bottom: 18px;
-    }
-    /* .sale-banner-content {
-        font-size: 1rem;
-        padding: 14px 6px;
-    } */
-}
-@media (max-width: 1200px) {
-    .sale-grid,
-    .saleWrite-grid {
-        grid-template-columns: repeat(5, 1fr);
-    }
-}
-
-@media (max-width: 800px) {
-    .sale-grid,
-    .saleWrite-grid {
-        grid-template-columns: repeat(3, 1fr);
-    }
-}
-
-@media (max-width: 480px) {
-    .sale-grid,
-    .saleWrite-grid {
-        grid-template-columns: 1fr;
-    }
-}
+/* Trade 전용 태그 스타일 */
 .tags-list {
     margin-top: 8px;
     display: flex;
     flex-wrap: wrap;
     gap: 4px;
-  }
-  .tag-item {
+}
+
+.tag-item {
     display: inline-block;
     background: #e3e9f7;
     color: #3b82f6;
@@ -190,68 +108,93 @@
     padding: 2px 8px;
     font-size: 13px;
     font-weight: 500;
-  }
-  
-  .profile-row-vertical {
+}
+
+/* Trade 전용 프로필 스타일 */
+.profile-row-vertical {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
     margin-top: 8px;
     margin-bottom: 6px;
-  }
-  
-  .profile-mini {
+}
+
+.profile-mini {
     display: flex;
     align-items: center;
     gap: 5px;
     margin-bottom: 2px;
-  }
-  
-  
+}
+
 .profile-pic-mini {
-    /* ✨ 프로필 아이콘 크기를 키웠어! */
-    width: 22px;
-    height: 22px;
+    width: 24px;
+    height: 24px;
     border-radius: 50%;
     border: 1px solid #ccc;
     object-fit: cover;
-  }
-  
-  .user-name-mini {
-    /* ✨ 유저 이름 폰트 크기를 키웠어! */
+    background: #f5f5f5;
+}
+
+.user-name-mini {
     font-size: 14px;
-    color: #555; /* 가독성을 위해 조금 더 진하게 */
-  }
-  .card-content-area {
-    /* 카드 내용 전체를 정렬하기 위한 기본 설정 */
-    display: flex;
-    flex-direction: column; /* 자식 요소들을 세로로 쌓음 */
-    align-items: flex-start; /* 자식들을 왼쪽으로 정렬 */
-    margin-top: 8px;
-    text-align: left; /* 내부 텍스트 기본 정렬을 왼쪽으로 설정 */
-  }
-  
-  .sale-product-title {
-    /* ✨ 상품 제목 폰트 크기를 시원하게 키웠어! */
+    color: #888;
+    font-weight: 500;
+    letter-spacing: 0.2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.card-content-area {
+    padding: 10px;
+    text-align: left;
+}
+
+.sale-product-title {
     font-size: 17px;
     font-weight: 700;
     color: #222;
-    line-height: 1.3;
-    /* 제목이 길어질 경우 처리 */
-    word-break: break-all; 
-    text-align: left;
-  }
-  .view-counts {
-    /* ✨ 조회수 폰트 크기를 키웠어! */
-    font-size: 0.875rem; /* 14px */
-    color: #6b7280; /* 회색 계열 */
-  }
-  .profile-line {
-    /* 프로필 정보와 조회수를 한 줄에 담는 컨테이너 */
-    display: flex; /* 자식 요소(프로필, 조회수)를 가로로 배치 */
-    justify-content: space-between; /* 양쪽 끝으로 밀어내기! */
-    align-items: center; /* 세로 중앙 정렬 */
-    width: 100%; /* 부모 요소의 전체 너비를 차지 */
-    margin-bottom: 4px; /* 제목과의 간격 */
-  }
+    margin-top: 2px;
+    word-break: break-all;
+    line-height: 1.2;
+}
+
+.view-counts {
+    font-size: 13px;
+    color: #888;
+    margin-top: 4px;
+}
+
+.profile-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 4px;
+}
+
+/* Trade 전용 반응형 디자인 */
+@media (max-width: 1200px) {
+    .sale-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+@media (max-width: 900px) {
+    .sale-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 600px) {
+    .sale-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 400px) {
+    .sale-grid {
+        grid-template-columns: 1fr;
+    }
+}
   

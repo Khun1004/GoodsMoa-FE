@@ -5,7 +5,7 @@ import { LoginContext } from "../../../contexts/LoginContext";
 import WriteEditor from "../../common/WriteEditor/WriteEditor";
 import "./SaleForm.css";
 
-const API_BASE_URL = 'http://localhost:8080';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 // List of supported image extensions
 const SUPPORTED_IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp', 'gif'];

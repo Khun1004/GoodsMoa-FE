@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import Sale from '../Sales/Sale/Sale';
 import './MainSale.css';
 import SeeMoreButton from "../Public/seeMoreButton.jsx";
-import Divider from '../Public/Divider';
+import Divider from '../public/Divider';
 
 const MainSale = ({ mainCategory, setMainCategory }) => {
     const navigate = useNavigate();

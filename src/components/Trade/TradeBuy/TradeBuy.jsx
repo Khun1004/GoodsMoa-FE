@@ -18,7 +18,7 @@ const TradeBuy = () => {
 
   const getImageUrl = (path) => {
     if (!path || typeof path !== "string") return "/default-image.jpg";
-    return path.startsWith("http") ? path : `http://localhost:8080/${path.replace(/^\/?/, "")}`;
+    return path.startsWith("http") ? path : `${import.meta.env.VITE_API_BASE_URL}/${path.replace(/^\/?/, "")}`;
   };
 
   const representativeImage = getImageUrl(item?.representativeImage || item?.image);
@@ -60,7 +60,7 @@ const TradeBuy = () => {
     }
 
     try {
-      const response = await fetch("http://localhost:8080/order/trade/create", {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/order/trade/create`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

@@ -1,28 +1,33 @@
-.demand-container {
-    width: 100%;
-    max-width: 1487px !important;
-    margin: 0 0;
-}
+/* Demand 컴포넌트 전용 스타일 */
 
-/* 상품 그리드/카드 */
+/* Demand 전용 그리드 */
 .demand-grid {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
     gap: 20px;
 }
 
-/* 구분선, 공통 */
-.sale-divider {
-    margin: 37px 0;
-    border: none;
-    border-top: 1px solid #ccc;
-    width: 100%;
+/* Demand 전용 반응형 디자인 */
+@media (max-width: 1200px) {
+    .demand-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
 }
 
-/* 로딩/검색결과 없음 등 */
-.loading-box, .no-search-result, .no-search-results {
-    text-align: center;
-    margin: 40px 0;
-    font-size: 18px;
-    color: #888;
+@media (max-width: 900px) {
+    .demand-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 600px) {
+    .demand-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 400px) {
+    .demand-grid {
+        grid-template-columns: 1fr;
+    }
 }

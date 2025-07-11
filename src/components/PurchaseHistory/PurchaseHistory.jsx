@@ -23,7 +23,7 @@ const PurchaseHistory = () => {
     const [isReviewForm, setIsReviewForm] = useState(false);
     const [isPurchaseConfirmation, setIsPurchaseConfirmation] = useState(false);
     const [showDetail, setShowDetail] = useState(false);
-    const BASE_URL = 'http://localhost:8080/';
+    const BASE_URL = `${import.meta.env.VITE_API_BASE_URL}/`;
 
     // 주문한 내역 가져오기
     useEffect(() => {

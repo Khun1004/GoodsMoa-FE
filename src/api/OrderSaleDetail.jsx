@@ -1,6 +1,6 @@
 import api from '../api/api'; // Assuming this is the path to your axios instance
 
-const API_BASE_URL = 'http://localhost:8080';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 class OrderSaleDetail {
     getUserId() {

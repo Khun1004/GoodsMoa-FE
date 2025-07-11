@@ -10,7 +10,7 @@ const ReportHistory = () => {
 
   const fetchReports = async () => {
     try {
-      const res = await fetch("http://localhost:8080/trade-report/reports", {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/trade-report/reports`, {
         method: "GET",
         credentials: "include",
       });
@@ -24,19 +24,19 @@ const ReportHistory = () => {
             typeof report.imageUrl === "string"
               ? report.imageUrl.startsWith("http")
                 ? report.imageUrl
-                : `http://localhost:8080${report.imageUrl}`
+                : `${import.meta.env.VITE_API_BASE_URL}${report.imageUrl}`
               : null;
 
           const tradeId = report.tradeId;
 
           if (typeof tradeId === "number" && tradeId > 0) {
             try {
-              const imgRes = await fetch(`http://localhost:8080/tradePost/${tradeId}`);
+              const imgRes = await fetch(`${import.meta.env.VITE_API_BASE_URL}/tradePost/${tradeId}`);
               if (imgRes.ok) {
                 const tradeData = await imgRes.json();
                 imageUrl = tradeData.thumbnailImage?.startsWith("http")
                   ? tradeData.thumbnailImage
-                  : `http://localhost:8080${tradeData.thumbnailImage}`;
+                  : `${import.meta.env.VITE_API_BASE_URL}${tradeData.thumbnailImage}`;
               }
             } catch (e) {
               console.error("❌ 썸네일 fetch 오류:", e);
@@ -60,7 +60,7 @@ const ReportHistory = () => {
   const handleDeleteReport = async (id) => {
     if (window.confirm("정말로 이 신고를 삭제하시겠습니까?")) {
       try {
-        const res = await fetch(`http://localhost:8080/trade-report/delete/${id}`, {
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/trade-report/delete/${id}`, {
           method: "DELETE",
           credentials: "include",
         });
@@ -81,7 +81,7 @@ const ReportHistory = () => {
 
   const handleUpdateSubmit = async () => {
     try {
-      const res = await fetch(`http://localhost:8080/trade-report/update/${editData.id}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/trade-report/update/${editData.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

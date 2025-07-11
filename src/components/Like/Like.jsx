@@ -7,7 +7,7 @@ import productService from '../../api/ProductService';
 import demandService from '../../api/DemandService';
 
 // --- 헬퍼 함수 ---
-const API_BASE_URL = 'http://localhost:8080';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 // 이미지 경로를 완전한 URL로 만들고, 없을 경우 대체 이미지를 반환
 const getImageUrl = (path) => {
@@ -164,7 +164,7 @@ const Like = () => {
         try {
             // 1. 상세 정보 조회
             const detailedPost = await productService.getPostDetail(post.postId); // postId 주의
-            const imageUrl = `http://localhost:8080/${detailedPost.thumbnailImage}`;
+            const imageUrl = `${import.meta.env.VITE_API_BASE_URL}/${detailedPost.thumbnailImage}`;
             const shippingMethods = detailedPost.delivers || [];
 
             // 2. 유저 정보 로컬스토리지에서 가져오기

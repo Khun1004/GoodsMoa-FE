@@ -23,7 +23,7 @@ const TossRedirectHandler = () => {
 
       try {
         // ✅ 2. 요청 URL 확인 로그
-        const requestUrl = `http://localhost:8080/payment/success?orderCode=${orderCode}&paymentKey=${paymentKey}&amount=${amount}`;
+        const requestUrl = `${import.meta.env.VITE_API_BASE_URL}/payment/success?orderCode=${orderCode}&paymentKey=${paymentKey}&amount=${amount}`;
         console.log("📡 요청 URL:", requestUrl);
 
         const res = await fetch(requestUrl, {

@@ -1,6 +1,6 @@
 import api from '../api/api';
 
-const API_BASE_URL = 'http://localhost:8080';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 class OrderPayment {
     // 생성자: 사용자 정보와 배송 방법 배열을 초기화

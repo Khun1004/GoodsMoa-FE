@@ -1,104 +1,6 @@
-.sale-container {
-    width: 100%;
-    max-width: 1487px !important;
-    margin: 0 0;
-}
-.sales-banner {
-    position: relative;
-    width: 100%;
-    height: 250px;
-    overflow: hidden;
-    margin-bottom: 50px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    /* 기하학적 패턴 배경 */
-    background: linear-gradient(120deg, #a8edea 0%, #fed6e3 100%);
-}
+/* Sale 컴포넌트 전용 스타일 */
 
-/* 기하학적 패턴 애니메이션 */
-.sales-banner::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-image:
-        radial-gradient(circle at 25% 25%, rgba(255,255,255,0.1) 2px, transparent 2px),
-        radial-gradient(circle at 75% 75%, rgba(255,255,255,0.1) 2px, transparent 2px),
-        linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.05) 30%, rgba(255,255,255,0.05) 70%, transparent 70%);
-    background-size: 60px 60px, 40px 40px, 80px 80px;
-    background-position: 0 0, 30px 30px, 0 0;
-    animation: geometricFloat 20s linear infinite;
-}
-
-@keyframes geometricFloat {
-    0% {
-        transform: rotate(0deg) translateX(0);
-        opacity: 0.3;
-    }
-    50% {
-        opacity: 0.1;
-    }
-    100% {
-        transform: rotate(360deg) translateX(20px);
-        opacity: 0.3;
-    }
-}
-
-/* 기존 비디오 관련 스타일 제거 */
-.sale-video {
-    display: none;
-}
-
-.sale-video::-webkit-media-controls-picture-in-picture-button {
-    display: none !important;
-}
-
-.sale-banner-content {
-    text-align: center;
-    backdrop-filter: blur(10px);
-    padding: 30px 40px;
-    border-radius: 20px;
-    background-color: rgba(255, 255, 255, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-    z-index: 2;
-    position: relative;
-}
-
-.sales-title {
-    font-size: 30px;
-    font-weight: bold;
-    color: black;
-    margin-bottom: 20px;
-    text-shadow: 0 2px 4px rgba(255, 255, 255, 0.8);
-}
-
-.sale-search-input {
-    width: 100%;
-    max-width: 500px;
-    padding: 12px 20px;
-    border-radius: 25px;
-    border: none;
-    background-color: rgba(255, 255, 255, 0.9);
-    font-size: 16px;
-    outline: none;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    transition: all 0.3s ease;
-}
-
-.sale-search-input:focus {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
-    background-color: rgba(255, 255, 255, 1);
-}
-
-.sale-search-input::placeholder {
-    color: #666;
-}
-
+/* Sale 전용 헤더 스타일 */
 .sale-header {
     display: flex;
     align-items: center;
@@ -121,26 +23,6 @@
     color: #333;
 }
 
-@keyframes heart {
-    0% {
-        transform: translateY(0);
-    }
-    50% {
-        transform: translateY(-5px);
-    }
-    100% {
-        transform: translateY(0);
-    }
-}
-
-.heart-icon {
-    font-size: 30px;
-    color: #ff0000;
-    position: absolute;
-    top: 20px;
-    animation: heart 1s ease-in-out 0.8s infinite alternate;
-}
-
 .salebox-icon {
     font-size: 48px;
     color: #fdcb6e;
@@ -148,19 +30,14 @@
     bottom: 25px;
 }
 
-.bestseller-divider {
-    margin: 40px 0 20px 0;
-    border-bottom: 1px solid #ccc;
-    width: 100%;
-}
-
-.sale-grid,
-.saleWrite-grid {
+/* Sale 전용 그리드 */
+.sale-grid {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
     gap: 20px;
 }
 
+/* Sale 전용 구분선 */
 .sale-divider {
     margin: 37px 0;
     border: none;
@@ -168,94 +45,27 @@
     width: 100%;
 }
 
-/* 리뷰 섹션 스타일 */
-.reviews-section {
-    margin-top: 25px;
-    padding-top: 20px;
-    border-top: 1px solid #eee;
-}
-
-.reviews-section h3 {
-    font-size: 18px;
-    margin-bottom: 15px;
-    color: #333;
-}
-
-.review-item {
-    margin-bottom: 20px;
-    padding-bottom: 15px;
-    border-bottom: 1px solid #f5f5f5;
-}
-
-.review-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 8px;
-}
-
-.review-rating {
-    display: flex;
-}
-
-.review-rating .filled {
-    color: gold;
-}
-
-.review-date {
-    color: #888;
-    font-size: 13px;
-}
-
-.review-text {
-    margin: 10px 0;
-    line-height: 1.5;
-    color: #333;
-}
-
-.review-images {
-    display: flex;
-    gap: 10px;
-    margin-top: 10px;
-}
-
-.review-images img {
-    width: 60px;
-    height: 60px;
-    object-fit: cover;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: transform 0.3s;
-}
-
-.review-images img:hover {
-    transform: scale(1.05);
-}
-
-.no-reviews {
-    color: #888;
-    text-align: center;
-    padding: 20px 0;
-}
-
-/* 반응형 디자인 */
+/* Sale 전용 반응형 디자인 */
 @media (max-width: 1200px) {
-    .sale-grid,
-    .saleWrite-grid {
-        grid-template-columns: repeat(5, 1fr);
+    .sale-grid {
+        grid-template-columns: repeat(4, 1fr);
     }
 }
 
-@media (max-width: 800px) {
-    .sale-grid,
-    .saleWrite-grid {
+@media (max-width: 900px) {
+    .sale-grid {
         grid-template-columns: repeat(3, 1fr);
     }
 }
 
-@media (max-width: 480px) {
-    .sale-grid,
-    .saleWrite-grid {
+@media (max-width: 600px) {
+    .sale-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 400px) {
+    .sale-grid {
         grid-template-columns: 1fr;
     }
 }

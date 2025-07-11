@@ -5,7 +5,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import ProductService from "../../../api/ProductService";
 import "./WriteEditor.css";
 
-const API_BASE_URL = 'http://localhost:8080';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const WriteEditor = ({ 
     type = "sale", // "sale", "trade", "demand", "commission"

@@ -1,15 +1,15 @@
 import { useCallback, useEffect, useState } from 'react';
 import _ from 'lodash';
 import api from '../api/api';
-import { getNumericId } from '../utils/demandUtils';
+import { fetchCommissionProducts } from '../utils/commissionUtils';
 
-export const useDemandProducts = (searchType, searchQuery, category, orderBy, includeExpired, includeScheduled, page, pageSize = 10) => {
-    const [demandProducts, setDemandProducts] = useState([]);
+export const useCommissionProducts = (searchType, searchQuery, category, orderBy, includeExpired, includeScheduled, page, pageSize = 10) => {
+    const [commissionProducts, setCommissionProducts] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [totalPages, setTotalPages] = useState(0);
 
-    const fetchDemandProducts = useCallback(async () => {
+    const fetchProducts = useCallback(async () => {
         setLoading(true);
         setError(null);
         
@@ -25,15 +25,15 @@ export const useDemandProducts = (searchType, searchQuery, category, orderBy, in
                 page_size: pageSize,
             };
             
-            const res = await api.get('/demand', { params });
+            const res = await api.get('/commission/search', { params });
             const data = res.data;
             const productsArr = Array.isArray(data.content) ? data.content : [];
 
-            setDemandProducts(productsArr);
+            setCommissionProducts(productsArr);
             setTotalPages(data.totalPages || Math.ceil(data.totalElements / pageSize) || 1);
         } catch (err) {
-            console.error('❌ 수요조사 데이터 로딩 실패:', err);
-            setError(err.response?.data?.message || err.message || '수요조사를 불러오는데 실패했습니다.');
+            console.error('❌ 커미션 데이터 로딩 실패:', err);
+            setError(err.response?.data?.message || err.message || '커미션을 불러오는데 실패했습니다.');
         } finally {
             setLoading(false);
         }
@@ -41,20 +41,20 @@ export const useDemandProducts = (searchType, searchQuery, category, orderBy, in
 
     // 디바운싱된 데이터 페칭
     useEffect(() => {
-        console.log("Demand 데이터 페칭:", { searchType, searchQuery, category, orderBy, page });
+        console.log("Commission 데이터 페칭:", { searchType, searchQuery, category, orderBy, page });
         const debounceFetch = _.debounce(() => {
-            fetchDemandProducts();
+            fetchProducts();
         }, 500);
         debounceFetch();
         return () => debounceFetch.cancel();
-    }, [fetchDemandProducts]);
+    }, [fetchProducts]);
 
     return {
-        demandProducts,
-        setDemandProducts,
+        commissionProducts,
+        setCommissionProducts,
         loading,
         error,
         totalPages,
-        fetchDemandProducts
+        fetchProducts
     };
 }; 

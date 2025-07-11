@@ -8,7 +8,7 @@ import { LoginContext } from "../../../contexts/LoginContext";
 import LikeButton from '../Sale/LikeButton';
 import "./SaleDetail.css";
 
-const API_BASE_URL = 'http://localhost:8080';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const SaleDetail = () => {
     const navigate = useNavigate();
@@ -59,9 +59,9 @@ const SaleDetail = () => {
                     numericId = id.split('_')[1];
                 }
                 
-                console.log("🚀 상품 상세 조회 시작:", `http://localhost:8080/product/post-detail/${numericId}`);
+                console.log("🚀 상품 상세 조회 시작:", `${import.meta.env.VITE_API_BASE_URL}/product/post-detail/${numericId}`);
                 
-                const response = await fetch(`http://localhost:8080/product/post-detail/${numericId}`, {
+                const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/product/post-detail/${numericId}`, {
                     method: 'GET',
                     headers: { 'Content-Type': 'application/json' }
                 });
@@ -163,7 +163,7 @@ const SaleDetail = () => {
             return;
         }
 
-        const res = await fetch("http://localhost:8080/chatroom/create", {
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/chatroom/create`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ buyerId: userInfo.id, sellerId }),
@@ -194,7 +194,7 @@ const SaleDetail = () => {
 
     const fixedContent = (product?.content || "").replace(/<img[^>]*src=['"]([^'"]+)['"][^>]*>/g, (match, src) => {
         if (src.startsWith("http")) return match;
-        return match.replace(src, `http://localhost:8080/${src}`);
+        return match.replace(src, `${import.meta.env.VITE_API_BASE_URL}/${src}`);
     });
 
     const averageRating = productReviews.length > 0

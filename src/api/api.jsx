@@ -1,8 +1,7 @@
 import axios from "axios";
 
-// Axios instance without default Content-Type
 const api = axios.create({
-    baseURL: "http://localhost:8080",
+    baseURL: import.meta.env.VITE_API_BASE_URL,
     withCredentials: true, 
 });
 
@@ -34,7 +33,7 @@ api.interceptors.response.use(
                 if (!refreshToken) return Promise.reject(error);
 
                 const res = await axios.post(
-                    "http://localhost:8080/auth/reissue", // baseURL과 동일하게 맞춰줌
+                    `${process.env.REACT_APP_API_BASE_URL}/auth/reissue`,
                     {},
                     {
                         headers: {

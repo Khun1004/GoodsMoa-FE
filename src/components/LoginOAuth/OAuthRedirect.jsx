@@ -9,7 +9,7 @@ const OAuthRedirect = () => {
   useEffect(() => {
     const fetchUserInfo = async () => {
       try {
-        const response = await fetch("http://localhost:8080/users/info", {
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/users/info`, {
           method: "GET",
           credentials: "include", // ✅ 쿠키 포함!
         });

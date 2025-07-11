@@ -21,7 +21,7 @@ const categoryOptions = [
 
 const getFullImageUrl = (url) => {
   if (!url) return 'https://via.placeholder.com/400x300?text=No+Image';
-  return url.startsWith("http") ? url : `http://localhost:8080/${url.replace(/^\/+/g, "")}`;
+  return url.startsWith("http") ? url : `${import.meta.env.VITE_API_BASE_URL}/${url.replace(/^\/+/g, "")}`;
 };
 
 const DemandFormManagement = () => {

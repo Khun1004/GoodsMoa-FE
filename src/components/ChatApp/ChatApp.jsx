@@ -10,6 +10,8 @@ import "./ChatApp.css";
 import MessageItem from '../MessageItem/MessageItem';
 import api from '../../api/api';
 
+const WS_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 export default function ChatApp() {
   const [currentRoomId, setCurrentRoomId] = useState(null);
   const [chatRooms, setChatRooms] = useState([]);
@@ -64,7 +66,7 @@ export default function ChatApp() {
     if (isLoading || !myUserId) return;
 
     const userUpdateClient = new Client({
-      webSocketFactory: () => new SockJS("http://localhost:8080/ws"),
+      webSocketFactory: () => new SockJS(`${WS_BASE_URL}/ws`),
       debug: (str) => console.log(new Date(), `[User WS] ${str}`),
       reconnectDelay: 10000,
     });
@@ -156,7 +158,7 @@ export default function ChatApp() {
         fetchMessages();
 
         const client = new Client({
-          webSocketFactory: () => new SockJS("http://localhost:8080/ws"),
+          webSocketFactory: () => new SockJS(`${WS_BASE_URL}/ws`),
           
           debug: (str) => console.log(new Date(), str),
           reconnectDelay: 5000,

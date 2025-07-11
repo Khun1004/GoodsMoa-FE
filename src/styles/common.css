@@ -1,0 +1,127 @@
+/* 공통 컨테이너 스타일 */
+.component-container {
+    width: 100%;
+    max-width: 1487px !important;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* 공통 헤더 스타일 */
+.component-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.component-icon {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    height: 100px;
+    width: 80px;
+}
+
+.component-heading {
+    font-size: 30px;
+    font-weight: bold;
+    color: #333;
+}
+
+/* 공통 아이콘 스타일 */
+.heart-icon {
+    font-size: 30px;
+    color: #ff0000;
+    position: absolute;
+    top: 20px;
+    animation: heart 1s ease-in-out 0.8s infinite alternate;
+}
+
+.box-icon {
+    font-size: 48px;
+    color: #fdcb6e;
+    position: absolute;
+    bottom: 25px;
+}
+
+@keyframes heart {
+    0% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+    100% { transform: translateY(0); }
+}
+
+/* 공통 그리드 스타일 */
+.component-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 20px;
+}
+
+/* 공통 구분선 */
+.component-divider {
+    margin: 37px 0;
+    border: none;
+    border-top: 1px solid #ccc;
+    width: 100%;
+}
+
+/* 공통 로딩 및 에러 상태 스타일 */
+.loading-box {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 40px;
+    font-size: 18px;
+    color: #666;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+}
+
+.error-box {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 20px;
+    font-size: 16px;
+    color: #dc3545;
+    background: #f8d7da;
+    border: 1px solid #f5c6cb;
+    border-radius: 8px;
+    margin: 20px 0;
+}
+
+.no-search-result {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 40px;
+    font-size: 18px;
+    color: #666;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+}
+
+/* 공통 반응형 디자인 */
+@media (max-width: 1200px) {
+    .component-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+@media (max-width: 900px) {
+    .component-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 600px) {
+    .component-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 400px) {
+    .component-grid {
+        grid-template-columns: 1fr;
+    }
+} 

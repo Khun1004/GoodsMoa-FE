@@ -1,6 +1,7 @@
 import AOS from "aos";
 import "aos/dist/aos.css";
 import React, { useContext, useEffect, useState } from "react";
+import "./styles/common.css";
 import { Route, Routes, useLocation } from "react-router-dom";
 import { LoginContext } from "./contexts/LoginContext";
 
@@ -23,7 +24,6 @@ import DemandDetail from "./components/Demands/DemandDetail/DemandDetail";
 import DemandForm from "./components/Demands/DemandForm/DemandForm.jsx";
 import DemandReportPage from "./components/Demands/DemandReportPage/DemandReportPage";
 import DemandReportPerfect from "./components/Demands/DemandReportPerfect/DemandReportPerfect";
-import HomeDemandList from "./components/Demands/HomeDemandList/HomeDemandList"
 import Footer from "./components/Footer/Footer";
 import Hero from "./components/Hero/Hero";
 import Like from "./components/Like/Like";
@@ -222,15 +222,6 @@ const AppContent = ({
         />
 
         {/* Demand Page */}
-
-          <Route
-              path="/HomeDemandList"
-              element={
-                  <div className="pt-[130px]">
-                      <HomeDemandList />
-                  </div>
-              }
-          />
 
         <Route
           path="/demand"

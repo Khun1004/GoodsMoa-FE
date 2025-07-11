@@ -5,7 +5,7 @@ import { FaBoxOpen } from "react-icons/fa6";
 import Trade from '../Trade/Trade/Trade';
 import './MainTrade.css';
 import SeeMoreButton from '../Public/seeMoreButton.jsx';
-import Divider from '../Public/Divider';
+import Divider from '../public/Divider';
 const MainTrade = ({ mainCategory, setMainCategory }) => {
     const navigate = useNavigate();
 
