@@ -1,11 +1,11 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import './CommissionPerfect.css';
 
 const CommissionPerfect = () => {
     const location = useLocation();
     const navigate = useNavigate();
-    const { commission, submissionData } = location.state || {};
+    const { commission } = location.state || {};
 
     const handleGoToList = () => {
         navigate('/commissions');
@@ -14,6 +14,10 @@ const CommissionPerfect = () => {
     const handleGoToChat = () => {
         navigate('/chat');
     };
+
+    useEffect(() => {
+        console.log('commission ::: ',commission);
+    }, []);
 
     return (
         <div className='container'>
@@ -34,17 +38,17 @@ const CommissionPerfect = () => {
                     
                     <div className="perfect-commission-info">
                         <div className="perfect-image-container">
-                            {commission?.image && (
-                            <img src={commission.image} alt={commission.title} className="perfect-image" />
+                            {commission?.thumbnailImage && (
+                            <img src={commission.thumbnailImage} alt={commission.title} className="perfect-image" />
                             )}
                         </div>
                         <div className="perfect-commission-details">
                             <h2 className="perfect-commission-title">{commission?.title}</h2>
-                            <p className="perfect-commission-category">{commission?.category}</p>
+                            <p className="perfect-commission-category">{commission?.categoryName}</p>
                             <div className="perfect-price-range">
                             <span className='perfect-price'>의뢰 금액: </span>
                             <strong>
-                                {commission?.minPrice?.toLocaleString()}원 ~ {commission?.maxPrice?.toLocaleString()}원
+                                {commission?.minimumPrice?.toLocaleString()}원 ~ {commission?.maximumPrice?.toLocaleString()}원
                             </strong>
                             </div>
                         </div>
@@ -60,34 +64,37 @@ const CommissionPerfect = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {commission?.sections?.map((section, index) => (
+                                {commission?.commissionDetail
+                                    ?.map((section, index) => (
                                     <tr key={index}>
                                         <td>
                                             <h4>{section.title}</h4>
-                                            <p>{section.description}</p>
+                                            <p>{section.reqContent}</p>
                                         </td>
                                         <td>
-                                            <div dangerouslySetInnerHTML={{ 
-                                                __html: submissionData?.[`${index === 0 ? 'designContent' : index === 1 ? 'colorContent' : 'requestContent'}`] || '내용 없음'
-                                            }} />
+                                            <div
+                                                dangerouslySetInnerHTML={{
+                                                    __html: commission?.resContent?.[index] || '내용 없음'
+                                                }}
+                                            />
                                         </td>
                                     </tr>
                                 ))}
-                                <tr>
-                                    <td>
-                                        <h4>환불 계좌 정보</h4>
-                                        <p>의뢰 취소 시 환불을 위한 계좌 정보</p>
-                                    </td>
-                                    <td>
-                                        {submissionData?.refundInfo && (
-                                            <div>
-                                                <p>은행: {submissionData.refundInfo.refund_bank}</p>
-                                                <p>계좌번호: {submissionData.refundInfo.refund_account}</p>
-                                                <p>예금주: {submissionData.refundInfo.refund_name}</p>
-                                            </div>
-                                        )}
-                                    </td>
-                                </tr>
+                                {/*<tr>*/}
+                                {/*    <td>*/}
+                                {/*        <h4>환불 계좌 정보</h4>*/}
+                                {/*        <p>의뢰 취소 시 환불을 위한 계좌 정보</p>*/}
+                                {/*    </td>*/}
+                                {/*    <td>*/}
+                                {/*        {submissionData?.refundInfo && (*/}
+                                {/*            <div>*/}
+                                {/*                <p>은행: {submissionData.refundInfo.refund_bank}</p>*/}
+                                {/*                <p>계좌번호: {submissionData.refundInfo.refund_account}</p>*/}
+                                {/*                <p>예금주: {submissionData.refundInfo.refund_name}</p>*/}
+                                {/*            </div>*/}
+                                {/*        )}*/}
+                                {/*    </td>*/}
+                                {/*</tr>*/}
                             </tbody>
                         </table>
                     </div>

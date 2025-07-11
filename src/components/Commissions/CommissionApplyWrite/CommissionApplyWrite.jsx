@@ -170,44 +170,81 @@ const CommissionApplyWrite = () => {
         return !Object.values(newErrors).some(Boolean);
     };
 
-    const handleSubmit = (e) => {
+    // base64 -> 이미지 파일 변환
+    const dataURLToFile = (dataurl, filename) => {
+        const arr = dataurl.split(',');
+        const mimeMatch = arr[0].match(/:(.*?);/);
+        const mime = mimeMatch ? mimeMatch[1] : 'image/png';
+        const bstr = atob(arr[1]);
+        let n = bstr.length;
+        const u8arr = new Uint8Array(n);
+        while(n--){
+            u8arr[n] = bstr.charCodeAt(n);
+        }
+        return new File([u8arr], filename, { type: mime });
+    };
+
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
-        if (!validateForm()) {
-            alert('환불 계좌 정보를 모두 입력해주세요.');
+        if (!userInfo) {
+            alert("로그인 후 신청 가능합니다.");
             return;
         }
 
-        const submissionData = {
-            sections: sections.map((section, index) => ({
-                title: section.title,
-                description: section.description,
-                content: contents[index] || ''
-            })),
-            refundInfo: formData,
-            applicantId: "rose_rose@1111",
-            timestamp: new Date().toISOString()
-        };
+        try {
+            const formData = new FormData();
 
-        const existingNotifications = JSON.parse(localStorage.getItem("commissionNotifications")) || [];
+            // ✅ subscriptionRequest 생성
+            const subscriptionRequest = commission.commissionDetail.map((section, index) => ({
+                commissionId: commission.id,
+                detailId: section.id,
+                resContent: contents[index] || ""
+            }));
 
-        const newNotification = {
-            commissionId: commission.id,
-            commissionTitle: commission.title,
-            applicantId: "rose_rose@1111",
-            timestamp: new Date().toISOString(),
-            submissionData
-        };
+            const blob = new Blob([JSON.stringify(subscriptionRequest)], { type: "application/json" });
+            formData.append("subscriptionRequest", blob);
 
-        localStorage.setItem("commissionNotifications", JSON.stringify([...existingNotifications, newNotification]));
-
-        navigate('/commissionPerfect', {
-            state: {
-                commission,
-                submissionData
+            // ✅ base64 이미지 변환 및 contentImages로 추가
+            for (let i = 0; i < contents.length; i++) {
+                const div = document.createElement('div');
+                div.innerHTML = contents[i] || "";
+                const imgs = div.querySelectorAll('img');
+                let imageCount = 0;
+                for (let img of imgs) {
+                    const src = img.getAttribute('src');
+                    if (src && src.startsWith('data:image/')) {
+                        const file = dataURLToFile(src, `content_${i}_${imageCount}.png`);
+                        formData.append("contentImages", file);
+                        imageCount++;
+                    }
+                }
             }
-        });
+
+            // ✅ fileInputRefs 통한 contentImages (추가 이미지가 있다면)
+            if (fileInputRefs.current && fileInputRefs.current.length > 0) {
+                fileInputRefs.current.forEach((input) => {
+                    if (input && input.files) {
+                        Array.from(input.files).forEach(file => {
+                            formData.append("contentImages", file);
+                        });
+                    }
+                });
+            }
+
+            // API 호출
+            const response = await api.post("/commission/subscription", formData, {
+                headers: { "Content-Type": "multipart/form-data" }
+            });
+
+            alert("커미션 신청이 완료되었습니다!");
+            navigate('/commissionPerfect', { state: { commission: response.data } });
+        } catch (error) {
+            console.error(error);
+            alert(error.response?.data?.message || "신청 중 오류가 발생했습니다.");
+        }
     };
+
 
     if (loading) return <div>로딩 중입니다...</div>;
     if (error) return <div>{error}</div>;
