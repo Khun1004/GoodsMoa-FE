@@ -21,6 +21,7 @@ import SaleFormManagement from "../MyForm/SaleFormManagement/SaleFormManagement"
 import TradeFormManagement from "../MyForm/TradeFormManagement/TradeFormManagement";
 import CommunityFormSection from "../MyPageSection/CommunityFormSection/CommunityFormSection";
 import MyInformation from "../MyPageSection/MyInformation/MyInformation";
+import CommissionApplyList from "../MyForm/CommissionApplyList/CommissionApplyList";
 import "./MyPage.css";
 
 function MyPage() {
@@ -246,6 +247,12 @@ function MyPage() {
                         >
                             리뷰
                         </li>
+                        <li
+                            onClick={() => handlePageClick("commissionApplyList")}
+                            className={activePage === "commissionApplyList" ? "active" : ""}
+                        >
+                            커미션 현황
+                        </li>
                         <li 
                             onClick={() => handlePageClick("safeSeller")}
                             className={activePage === "safeSeller" ? "active" : ""}
@@ -401,6 +408,8 @@ function MyPage() {
                         <BlockedList />
                     ) : activePage === "reviews" ? (
                         <Review />
+                    ) : activePage === "commissionApplyList" ? (
+                        <CommissionApplyList />
                     ) : activePage === "safeSeller" ? (
                         <SellerRegistration />
                     ) : activePage === "refundHistory" ? (
