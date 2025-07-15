@@ -56,6 +56,8 @@ import TradeDetail from "./components/Trade/TradeDetail/TradeDetail";
 import TradeForm from "./components/Trade/TradeForm/TradeForm";
 import { TradeProvider } from "./contexts/TradeContext";
 import TossRedirectHandler from "./components/Trade/TossRedirectHandler";
+import CommissionApplyList from './components/MyPage/MyForm/CommissionApplyList/CommissionApplyList';
+import CommissionApplyDetail from './components/MyPage/MyForm/CommissionApplyDetail/CommissionApplyDetail';
 
 const AppContent = ({
                         handleOrderPopup,
@@ -138,6 +140,23 @@ const AppContent = ({
         />
 
 
+          <Route
+              path="/commission-apply-list"
+              element={
+                  <div className="pt-[130px]">
+                      <CommissionApplyList />
+                  </div>
+              }
+          />
+
+          <Route
+              path="/commission-apply-detail"
+              element={
+                  <div className="pt-[130px]">
+                      <CommissionApplyDetail />
+                  </div>
+              }
+          />
 
         {/* CommissionDetail Page */}
         <Route

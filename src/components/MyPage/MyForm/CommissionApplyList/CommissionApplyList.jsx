@@ -1,12 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import ManagementCard from '../../../public/management/ManagementCard';
 import { Eye, Lock, Tag, Calendar, User, CheckCircle, XCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import './CommissionApplyList.css';
 import api from "../../../../api/api";
 
 const CommissionApplyList = () => {
     const [selectedType, setSelectedType] = useState('received');
     const [cards, setCards] = useState([]);
+    const navigate = useNavigate();
+    const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+
+    useEffect(() => {
+        const handleResize = () => setWindowWidth(window.innerWidth);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     const formatDate = (dateStr) => {
         const date = new Date(dateStr);
@@ -107,7 +116,12 @@ const CommissionApplyList = () => {
                                     : { icon: <User size={14} />, text: `판매자: ${card.sellerName}` }
                             ]}
                             footerText={getFooterText(card.requestStatus)}
-                            onCardClick={() => console.log('카드 클릭:', card)}
+                            onCardClick={() => {
+                                navigate(`/mypage?page=commissionApplyDetail&id=${card.id}&type=${selectedType}`);
+                                if (windowWidth <= 768) {
+                                    // 필요하다면 메뉴 닫기 로직을 여기에 추가하거나 상위에서 prop으로 받아도 됨
+                                }
+                            }}
                             actionButtons={null}
                         />
                     );

@@ -22,6 +22,8 @@ import TradeFormManagement from "../MyForm/TradeFormManagement/TradeFormManageme
 import CommunityFormSection from "../MyPageSection/CommunityFormSection/CommunityFormSection";
 import MyInformation from "../MyPageSection/MyInformation/MyInformation";
 import CommissionApplyList from "../MyForm/CommissionApplyList/CommissionApplyList";
+import CommissionApplyDetail from "../MyForm/CommissionApplyDetail/CommissionApplyDetail";
+
 import "./MyPage.css";
 
 function MyPage() {
@@ -410,6 +412,8 @@ function MyPage() {
                         <Review />
                     ) : activePage === "commissionApplyList" ? (
                         <CommissionApplyList />
+                    ) : activePage === "commissionApplyDetail" ? (
+                        <CommissionApplyDetail applicationId={new URLSearchParams(location.search).get("id")} />
                     ) : activePage === "safeSeller" ? (
                         <SellerRegistration />
                     ) : activePage === "refundHistory" ? (
