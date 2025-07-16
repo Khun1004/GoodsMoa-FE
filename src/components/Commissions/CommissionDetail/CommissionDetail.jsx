@@ -67,12 +67,6 @@ const CommissionDetail = () => {
         fetchLikeStatus();
     }, [id, userInfo]);
 
-
-    useEffect(() => {
-        console.log("isLiked 상태:", isLiked);
-    }, [isLiked]);
-
-
     // 좋아요(찜) 토글
     const handleLikeToggle = async () => {
         if (!userInfo) {
@@ -92,8 +86,7 @@ const CommissionDetail = () => {
         }
     };
 
-
-// 신고하기
+    // 신고하기
     const handleReportClick = () => {
         navigate('/commissionReport', {
             state: {
@@ -108,7 +101,7 @@ const CommissionDetail = () => {
         });
     };
 
-// 채팅하기
+    // 채팅하기
     const handleChatClick = async () => {
         const sellerId = commission.userId;
         console.log('commission ::: ',commission);
