@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import './CommissionApplyDetail.css';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import api from '../../../../api/api';
 
 const CommissionApplyDetail = () => {
@@ -15,6 +15,7 @@ const CommissionApplyDetail = () => {
         const fetchDetail = async () => {
             try {
                 const res = await api.get(`/commission/apply-detail/${applicationId}`);
+                console.log('res.data ::: ',res.data);
                 setApplication(res.data);
             } catch (err) {
                 console.error('신청서 상세 불러오기 실패', err);
@@ -95,6 +96,33 @@ const CommissionApplyDetail = () => {
         }
     };
 
+    // 수정 버튼
+    const handleEdit = () => {
+        navigate('/commissionApplyWrite', {
+            state: {
+                id : application.postId,
+                isEditMode: true,
+                subscriptionId: applicationId,
+            }
+        });
+    };
+
+    // 취소 버튼
+    const handleCancel = async () => {
+        const confirmed = window.confirm("신청을 취소하시겠습니까?");
+        if (!confirmed) return;
+
+        try {
+            await api.delete(`/commission/subscription/${applicationId}`);
+            alert("신청이 취소되었습니다.");
+            navigate(-1); // 또는 navigate("/my-page") 등
+        } catch (error) {
+            console.error("신청 취소 실패:", error);
+            alert("신청 취소 중 오류가 발생했습니다.");
+        }
+    };
+
+
     return (
         <div className="comApplyDetail-container">
             <button onClick={() => navigate(-1)} className="comApplyDetailBackBtn">
@@ -139,7 +167,7 @@ const CommissionApplyDetail = () => {
                             <td>
                                 <div
                                     dangerouslySetInnerHTML={{
-                                        __html: application.resContent?.[index] || '내용 없음'
+                                        __html: application.resContentList?.[index]?.content || '내용 없음'
                                     }}
                                 />
                             </td>
@@ -155,6 +183,7 @@ const CommissionApplyDetail = () => {
                     채팅하기
                 </button>
 
+                {/* 수락/거절 (판매자 측) */}
                 {viewType === 'received' && application.requestStatus === '확인중' && (
                     <>
                         <button onClick={() => handleConfirm(false)} className="perfect-button reject-button">
@@ -166,10 +195,23 @@ const CommissionApplyDetail = () => {
                     </>
                 )}
 
+                {/* 완료 처리 (판매자 측) */}
                 {viewType === 'received' && application.requestStatus === '진행중' && (
                     <button onClick={() => handleFinish(true)} className="perfect-button accept-button">
                         완료
                     </button>
+                )}
+
+                {/* 수정/취소 (신청자 측) */}
+                {viewType === 'applied' && application.requestStatus === '확인중' && (
+                    <>
+                        <button onClick={handleEdit} className="perfect-button edit-button">
+                            수정하기
+                        </button>
+                        <button onClick={handleCancel} className="perfect-button reject-button">
+                            취소하기
+                        </button>
+                    </>
                 )}
             </div>
 

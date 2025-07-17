@@ -70,15 +70,17 @@ const CommissionPerfect = () => {
                                         <td>
                                             <h4>{section.title}</h4>
                                             <p>{section.reqContent}</p>
-                                        </td>
+                                        </td
+                                        >
                                         <td>
                                             <div
                                                 dangerouslySetInnerHTML={{
-                                                    __html: commission?.resContent?.[index] || '내용 없음'
+                                                    __html: commission?.resContentList?.[index]?.content || '내용 없음'
                                                 }}
                                             />
                                         </td>
                                     </tr>
+
                                 ))}
                                 {/*<tr>*/}
                                 {/*    <td>*/}

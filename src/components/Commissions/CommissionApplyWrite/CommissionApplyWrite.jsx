@@ -14,6 +14,10 @@ const CommissionApplyWrite = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
+    // 수정
+    const isEditMode = location.state?.isEditMode || false;
+    const subscriptionId = location.state?.subscriptionId || null;
+
     // editor를 위한 변수 선언
     const [contents, setContents] = useState([]);
     const modules = {
@@ -60,6 +64,7 @@ const CommissionApplyWrite = () => {
         }
     }, []);
 
+    // 신청을 위한 정보 가져오기
     useEffect(() => {
         const fetchCommissionDetail = async () => {
             try {
@@ -70,9 +75,8 @@ const CommissionApplyWrite = () => {
                 setSections(sections);
                 setHistories(sections.map(() => []));
                 setRedoStacks(sections.map(() => []));
-                setContents(sections.map(() => "")); // 각 섹션마다 빈 content 초기화
-                console.log('res ::: ',res);
-                console.log('commission ::: ',commission);
+                setContents(sections.map(() => ""));
+
             } catch (err) {
                 console.error(err);
                 setError(err.response?.data?.message || "커미션 상세 정보를 불러오지 못했습니다.");
@@ -88,9 +92,54 @@ const CommissionApplyWrite = () => {
         }
     }, [id]);
 
+    // 수정 시 원래 적었던 값 가져오기
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                setLoading(true);
+
+                if (isEditMode && subscriptionId) {
+                    const res = await api.get(`/commission/apply-detail/${subscriptionId}`);
+                    const data = res.data;
+
+                    const detailList = data.commissionDetail || [];
+                    const contentList = data.resContentList || [];
+
+                    const enrichedDetail = detailList.map((section, index) => ({
+                        ...section,
+                        responseId: contentList[index]?.id || null,
+                        resContent: contentList[index]?.content || ""
+                    }));
+
+                    setCommission({
+                        title: data.title,
+                        categoryName: data.categoryName,
+                        thumbnailImage: data.thumbnailImage,
+                        minimumPrice: data.minimumPrice,
+                        maximumPrice: data.maximumPrice,
+                        commissionDetail: enrichedDetail
+                    });
+
+                    setSections(enrichedDetail);
+                    setContents(contentList.map(c => c.content)); // 에디터용 value 설정
+                    console.log("✅ enrichedDetail (responseId + content):", enrichedDetail);
+                }
+            } catch (err) {
+                setError("불러오기 실패");
+                console.error(err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        if (isEditMode && subscriptionId) {
+            fetchData();
+        }
+    }, [isEditMode, subscriptionId]);
+
     const handleInput = (index) => {
         const editor = editorRefs.current[index];
-        const newContent = editor.innerHTML;
+        const newContent = editor?.getEditor?.()?.root?.innerHTML || '';
 
         setHistories(prev => {
             const updated = [...prev];
@@ -184,6 +233,7 @@ const CommissionApplyWrite = () => {
         return new File([u8arr], filename, { type: mime });
     };
 
+    // 신청/수정 버튼
     const handleSubmit = async (e) => {
         e.preventDefault();
 
@@ -195,8 +245,8 @@ const CommissionApplyWrite = () => {
         try {
             const formData = new FormData();
 
-            // ✅ subscriptionRequest 생성
             const subscriptionRequest = commission.commissionDetail.map((section, index) => ({
+                id: section.responseId, // 수정 시 응답 ID 필요
                 commissionId: commission.id,
                 detailId: section.id,
                 resContent: contents[index] || ""
@@ -205,7 +255,6 @@ const CommissionApplyWrite = () => {
             const blob = new Blob([JSON.stringify(subscriptionRequest)], { type: "application/json" });
             formData.append("subscriptionRequest", blob);
 
-            // ✅ base64 이미지 변환 및 contentImages로 추가
             for (let i = 0; i < contents.length; i++) {
                 const div = document.createElement('div');
                 div.innerHTML = contents[i] || "";
@@ -221,8 +270,8 @@ const CommissionApplyWrite = () => {
                 }
             }
 
-            // ✅ fileInputRefs 통한 contentImages (추가 이미지가 있다면)
-            if (fileInputRefs.current && fileInputRefs.current.length > 0) {
+            // fileInputRefs 는 기존 코드 유지
+            if (fileInputRefs.current?.length > 0) {
                 fileInputRefs.current.forEach((input) => {
                     if (input && input.files) {
                         Array.from(input.files).forEach(file => {
@@ -232,18 +281,22 @@ const CommissionApplyWrite = () => {
                 });
             }
 
-            // API 호출
-            const response = await api.post("/commission/subscription", formData, {
+            const url = isEditMode && subscriptionId
+                ? `/commission/subscription/${subscriptionId}`
+                : `/commission/subscription`;
+
+            const response = await api.post(url, formData, {
                 headers: { "Content-Type": "multipart/form-data" }
             });
 
-            alert("커미션 신청이 완료되었습니다!");
+            alert(isEditMode ? "커미션 수정이 완료되었습니다!" : "커미션 신청이 완료되었습니다!");
             navigate('/commissionPerfect', { state: { commission: response.data } });
         } catch (error) {
             console.error(error);
             alert(error.response?.data?.message || "신청 중 오류가 발생했습니다.");
         }
     };
+
 
 
     if (loading) return <div>로딩 중입니다...</div>;
@@ -309,54 +362,10 @@ const CommissionApplyWrite = () => {
                     ))}
                 </div>
 
-                {/*<div className="refundComponent">*/}
-                {/*    <div className="con">*/}
-                {/*        <p>환불계좌 정보</p>*/}
-                {/*        <div className={`refund-input-group ${errors.refund_bank ? 'error' : ''}`}>*/}
-                {/*            <select*/}
-                {/*                name="refund_bank"*/}
-                {/*                value={formData.refund_bank}*/}
-                {/*                onChange={handleInputChange}*/}
-                {/*                className={errors.refund_bank ? 'error' : ''}*/}
-                {/*            >*/}
-                {/*                <option value="" disabled>은행명을 선택해 주세요</option>*/}
-                {/*                <option value="004">KB국민은행</option>*/}
-                {/*                <option value="020">우리은행</option>*/}
-                {/*                <option value="088">신한은행</option>*/}
-                {/*                <option value="011">NH농협은행</option>*/}
-                {/*                <option value="089">케이뱅크</option>*/}
-                {/*                <option value="090">카카오뱅크</option>*/}
-                {/*                <option value="092">토스뱅크</option>*/}
-                {/*            </select>*/}
-                {/*            {errors.refund_bank && <span className="error-message">은행을 선택해주세요</span>}*/}
-                {/*        </div>*/}
-                {/*        <div className={`refund-input-group ${errors.refund_account ? 'error' : ''}`}>*/}
-                {/*            <input*/}
-                {/*                type="text"*/}
-                {/*                name="refund_account"*/}
-                {/*                placeholder="계좌번호를 입력해 주세요"*/}
-                {/*                value={formData.refund_account}*/}
-                {/*                onChange={handleInputChange}*/}
-                {/*                className={errors.refund_account ? 'error' : ''}*/}
-                {/*            />*/}
-                {/*            {errors.refund_account && <span className="error-message">계좌번호를 입력해주세요</span>}*/}
-                {/*        </div>*/}
-                {/*        <div className={`refund-input-group ${errors.refund_name ? 'error' : ''}`}>*/}
-                {/*            <input*/}
-                {/*                type="text"*/}
-                {/*                name="refund_name"*/}
-                {/*                placeholder="예금주명을 입력해 주세요"*/}
-                {/*                value={formData.refund_name}*/}
-                {/*                onChange={handleInputChange}*/}
-                {/*                className={errors.refund_name ? 'error' : ''}*/}
-                {/*            />*/}
-                {/*            {errors.refund_name && <span className="error-message">예금주명을 입력해주세요</span>}*/}
-                {/*        </div>*/}
-                {/*    </div>*/}
-                {/*</div>*/}
-
                 <div className='ComApllyWriteBtnGroup'>
-                    <button type="submit" className='applySumbitBtn'>등록하기</button>
+                    <button type="submit" className='applySumbitBtn'>
+                        {isEditMode ? "수정하기" : "등록하기"}
+                    </button>
                     <button type="button" className='applyCancelBtn' onClick={() => navigate(-1)}>취소하기</button>
                     <button type="button" className='applyChattingBtn'>채팅하기</button>
                 </div>
